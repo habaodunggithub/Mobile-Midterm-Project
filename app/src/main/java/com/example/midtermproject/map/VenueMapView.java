@@ -10,6 +10,7 @@ import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
 
 import androidx.annotation.Nullable;
 
@@ -22,8 +23,8 @@ import com.example.midtermproject.model.Venue;
  * View chỉ lo việc ghép các mảnh: {@link MapCamera} giữ góc nhìn, {@link VenueRenderer} vẽ,
  * {@link SpotStateSource} cho biết trạng thái từng chỗ. Cử chỉ: kéo một ngón để pan; chụm hai ngón
  * để zoom quanh tâm hai ngón; xoay hai ngón để xoay sơ đồ (tự chỉnh thẳng khi nhấc tay gần góc
- * vuông); hai ngón cùng dịch chuyển cũng kéo sơ đồ theo. Quán tính và chạm chọn được thêm ở các
- * commit và chặng sau.
+ * vuông); hai ngón cùng dịch chuyển cũng kéo sơ đồ theo; vuốt nhanh rồi nhấc tay thì sơ đồ trượt
+ * tiếp và chậm dần. Chạm chọn được thêm ở chặng sau.
  * <p>
  * Zoom hai ngón được tự đo (khoảng cách hai ngón) thay vì dùng {@code ScaleGestureDetector}, vì
  * detector đó chỉ bắt đầu khi hai ngón cách nhau ít nhất {@code getScaledMinimumScalingSpan()};
@@ -203,6 +204,40 @@ public class VenueMapView extends View {
         cameraAnimator.start();
     }
 
+    /**
+     * Trượt tiếp sau khi nhấc tay với vận tốc (vx, vy) px/giây, chậm dần theo {@link FlingDecay}.
+     * Mỗi khung hình dịch thêm phần quãng đường của khung đó qua {@link MapCamera#panBy}, nên luôn bị
+     * kẹp trong giới hạn; dừng khi hết đà hoặc khi chạm biên làm sơ đồ không dịch được nữa (AC-2.14).
+     */
+    private void startFling(float vx, float vy) {
+        final long duration = FlingDecay.durationMillis((float) Math.hypot(vx, vy));
+        if (duration <= 0L) {
+            return;
+        }
+        cancelCameraAnimation();
+        final float[] travelled = {0f, 0f};
+        cameraAnimator = ValueAnimator.ofFloat(0f, 1f);
+        cameraAnimator.setDuration(duration);
+        cameraAnimator.setInterpolator(new LinearInterpolator());
+        cameraAnimator.addUpdateListener(animation -> {
+            final long elapsed = animation.getCurrentPlayTime();
+            final float dx = FlingDecay.distanceAt(vx, elapsed) - travelled[0];
+            final float dy = FlingDecay.distanceAt(vy, elapsed) - travelled[1];
+            travelled[0] += dx;
+            travelled[1] += dy;
+            final float beforeX = camera.getTx();
+            final float beforeY = camera.getTy();
+            camera.panBy(dx, dy);
+            onCameraChanged();
+            // Dừng khi đã muốn dịch nhưng camera không dịch được nữa (chạm biên).
+            final boolean wantedToMove = Math.abs(dx) > 0.01f || Math.abs(dy) > 0.01f;
+            if (wantedToMove && camera.getTx() == beforeX && camera.getTy() == beforeY) {
+                animation.cancel();
+            }
+        });
+        cameraAnimator.start();
+    }
+
     private void cancelCameraAnimation() {
         if (cameraAnimator != null) {
             cameraAnimator.cancel();
@@ -323,6 +358,15 @@ public class VenueMapView extends View {
         @Override
         public boolean onDown(MotionEvent event) {
             // Phải trả về true, nếu không GestureDetector bỏ qua cả chuỗi cử chỉ.
+            return true;
+        }
+
+        @Override
+        public boolean onFling(MotionEvent first, MotionEvent current, float velocityX, float velocityY) {
+            if (current.getPointerCount() > 1 || twoFingersDown) {
+                return false;
+            }
+            startFling(velocityX, velocityY);
             return true;
         }
 
