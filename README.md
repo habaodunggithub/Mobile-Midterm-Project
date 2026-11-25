@@ -55,3 +55,84 @@ Mỗi chỗ có một trong năm trạng thái hiển thị: **Còn trống**, *
 - Hai ngón chụm hoặc nở: zoom. Xoay hai ngón: xoay sơ đồ. Nút ⟲: Reset View. Nút la bàn (hiện khi sơ đồ lệch góc): về góc mặc định.
 - Chạm vào chỗ: chọn hoặc bỏ chọn. Kéo bảng chi tiết ở đáy lên hoặc bấm phần đầu để mở rộng.
 - Nút ⓘ: bảng chú thích. Nút ⋮: "Làm mới dữ liệu".
+
+## 3. Kiến trúc mã nguồn
+
+Dữ liệu đi một chiều và phụ thuộc chỉ đi xuống: `ui/` → `map/`, `storage/` → `state/` → `model/`. Các package `model`, `data`, `state` và các lớp tính toán của `map` là **Java thuần** (không import `android.*`) nên test được bằng JUnit trên JVM.
+
+```
+com.example.midtermproject
+├── model/    Venue, Section, Spot, ZoneType, SpotKind, SpotStatus, DisplayState, SelectionResult
+│             Thực thể bất biến, chỉ là dữ liệu.
+├── data/     MockVenueFactory, SpotStatusPolicy
+│             Sinh sơ đồ giả lập từ một seed cố định.
+├── state/    VenueMapState, SpotFilter, SessionStore, SessionData, SessionCodec
+│             Nguồn sự thật duy nhất của phần người dùng thay đổi được. Java thuần.
+├── map/      MapCamera, HitTester, RotationTracker, FlingDecay        (Java thuần)
+│             VenueMapView, VenueRenderer, SpotRenderer                 (android.*)
+│             Camera và hình học thuần; lớp View và lớp vẽ tách riêng.
+├── storage/  PrefsSessionStore
+│             Hiện thực SessionStore bằng SharedPreferences.
+└── ui/       MainActivity, DetailSheet, FilterBar, LegendCard,
+              SpotListAdapter, BookingConfirmDialog, ResetDataDialog, PriceFormatter
+```
+
+| Lớp | Vai trò |
+|---|---|
+| `VenueMapView` | Custom View duy nhất vẽ sơ đồ (4 constructor cùng gọi `init()`); lo cử chỉ (pan, zoom, xoay, chạm), animation camera, và chỉ ghép các lớp bên dưới |
+| `MapCamera` | Giữ `scale`, `angle`, `tx`, `ty` bằng `float`; pan, zoom, xoay, kẹp biên, fit, đổi tọa độ hai chiều. Không dùng `android.graphics.Matrix` nên test được trên JVM |
+| `VenueRenderer`, `SpotRenderer` | Vẽ nền, sân khấu, từng chỗ theo trạng thái, tên phân khu. Mọi `Paint` và `Path` dựng sẵn trong constructor |
+| `HitTester` | Tìm chỗ dưới điểm chạm (chỉ hình học) |
+| `VenueMapState` | Lựa chọn, vé của bạn, chỗ đang xem, bộ lọc; mọi thay đổi đi qua các hàm của nó rồi báo `Listener` (mô hình Observer) |
+| `DetailSheet`, `FilterBar`, `LegendCard` | Điều khiển các view XML; chỉ đọc từ `VenueMapState`, không giữ bản sao dữ liệu |
+| `MainActivity` | Ghép các mảnh, nhận cú chạm từ sơ đồ, lưu và khôi phục trạng thái |
+
+Các quyết định kiến trúc chính:
+
+- **Một Custom View, không có View cho từng chỗ.** `VenueMapView` kế thừa `View` và vẽ cả 224 chỗ trong `onDraw`; phần vẽ tách sang `VenueRenderer`/`SpotRenderer` để View chỉ còn lo cử chỉ và camera.
+- **Camera giữ số, không giữ `Matrix`.** Công thức tường minh và test được bằng JUnit; `Matrix` chỉ được dựng lúc vẽ từ `scale`, `angle`, `tx`, `ty`.
+- **Cử chỉ:** `GestureDetector` cho kéo một ngón và chạm (`onSingleTapUp`, phản hồi tức thì, không chờ chạm đúp); zoom và xoay hai ngón tự đo, vì `ScaleGestureDetector` chỉ bắt đầu khi hai ngón cách nhau tối thiểu `getScaledMinimumScalingSpan()` (đo được 446px trên emulator Android 15) nên zoom bị trễ rõ rệt.
+- **Bottom Sheet:** `CoordinatorLayout` + `BottomSheetBehavior` (persistent sheet, sơ đồ vẫn chạm được khi sheet mở). Hai hộp thoại xác nhận là `DialogFragment` nên `FragmentManager` tự tạo lại sau khi xoay.
+- **Bố cục dọc và ngang** dùng chung các file include (`view_map_layers`, `view_bottom_sheet`, `view_price_controls`, `view_filter_status`) với **cùng bộ id**, nên `MainActivity` không cần biết hướng màn hình. `layout-land/` chỉ khác ở vị trí các khối.
+
+## 4. Cách tổ chức dữ liệu
+
+### Mô hình (bất biến)
+
+| Lớp | Thuộc tính chính |
+|---|---|
+| `Venue` | kích thước sơ đồ 780 × 520 (đơn vị sơ đồ), hình sân khấu, `List<Section>`, `List<Spot>` (theo thứ tự vẽ), tra cứu theo mã bằng `findSpot(id)` |
+| `Section` | `id` (`STA-A`, `VIP-T`, `VIP-G`, `VIP-P`, `STD-1`…`STD-4`), `name`, `zone`, vị trí nhãn `labelX/labelY` |
+| `Spot` | `id` (ví dụ `VIP-T-A05`), `sectionId`, `zone`, `kind` (`SEAT` hoặc `STANDING_CELL`), `rowLabel`, `number`, `label` (`A05`, tính sẵn để vẽ), `baseStatus`, `price` (đồng), tâm `cx/cy` và `size` |
+
+Hình học của chỗ lưu bằng `float` thuần (không dùng `RectF` hay `Path`) để chạy được trong JUnit. `Spot.baseStatus` (`AVAILABLE`, `BOOKED`, `LOCKED`) là dữ liệu gốc và **không bao giờ đổi**; trạng thái hiển thị (`DisplayState`) được suy ra từ nó và từ `VenueMapState`:
+
+| Ưu tiên | Điều kiện | Hiển thị |
+|---|---|---|
+| 1 | có trong vé của bạn | `MINE` (ngôi sao xanh lục) |
+| 2 | `baseStatus == BOOKED` | `BOOKED` (xám, dấu ✕) |
+| 3 | `baseStatus == LOCKED` | `LOCKED` (nền trắng, gạch chéo) |
+| 4 | có trong lựa chọn | `SELECTED` (mực xanh đen, dấu ✓) |
+| 5 | còn lại | `AVAILABLE` (màu theo khu) |
+
+Hai lớp phủ độc lập: **ngoài bộ lọc** (vẽ mờ, giữ nguyên hình dạng) và **đang xem** (vòng sáng quanh chỗ). Vì chỉ suy ra, bỏ chọn một chỗ thì nó tự trở về đúng dáng vẻ cũ.
+
+### Dữ liệu giả lập
+
+`MockVenueFactory.create()` dựng cùng một sơ đồ mỗi lần (seed `2026`):
+
+- **Standing:** hai khối 4 hàng × 6 ô, bước 24 đơn vị. **VIP:** 3 phân khu × 3 hàng × 8 ghế. **Standard:** 4 phân khu × 4 hàng (6, 6, 7, 7 ghế). Ghế xếp trên vành cung hơi oval quanh tâm mép dưới sân khấu: `x = cx0 + 0,9·r·cosθ`, `y = cy0 + 1,04·r·sinθ`; hàng A gần sân khấu nhất.
+- **Giá theo khu và hàng** (gần sân khấu thì đắt hơn): Standing 1,2 → 0,9 triệu; VIP 2,5 → 1,9 triệu; Standard 0,7 → 0,4 triệu.
+- **Trạng thái gốc:** 8 ghế `LOCKED` ở các cụm cố định (VIP Giữa hàng C ghế 3–6, Standard 1 hàng D ghế 1–2, Standard 4 hàng D ghế 6–7); các chỗ còn lại bốc bằng `new Random(2026)`, ngưỡng 0,34 cho `BOOKED` (khoảng 1/3 số chỗ, trong khoảng 60 đến 90).
+- `MockVenueFactoryTest` kiểm: đúng 224 chỗ, mã không trùng, không hai chỗ chồng nhau, mọi chỗ nằm trong sơ đồ, hai lần gọi cho cùng kết quả.
+
+### Dữ liệu lưu giữa các lần mở app
+
+Chỉ có **lựa chọn** (giữ thứ tự chọn) và **vé của bạn**, ghi bằng `SharedPreferences` (tệp `venue_session`) qua `SessionStore`:
+
+| Khóa | Kiểu | Ví dụ |
+|---|---|---|
+| `selected_ids` | `String`, mã nối bằng dấu phẩy | `"VIP-T-A05,STD-2-D07"` |
+| `my_ticket_ids` | `String` | `"STA-A-A01"` |
+
+Dùng chuỗi nối thay vì `StringSet` vì `StringSet` không giữ thứ tự mà lựa chọn cần giữ thứ tự chọn. Ghi bằng `apply()` nên không chặn giao diện. Dữ liệu đọc lên (có thể cũ hoặc hỏng) luôn đi qua `VenueMapState.restore`, hàm này bỏ mã không tồn tại, mã trùng, chỗ không còn trống và chỗ vừa chọn vừa là vé, nên app không crash vì dữ liệu hỏng.
