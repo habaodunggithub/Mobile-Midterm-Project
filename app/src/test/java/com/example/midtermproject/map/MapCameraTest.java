@@ -564,4 +564,95 @@ public class MapCameraTest {
         MapCamera camera = new MapCamera(PADDING);
         assertFalse(camera.restoreSnapshot(new float[]{100f, 100f, 1f}));
     }
+
+    // ---- AC-5.4: đưa một điểm về giữa vùng nhìn phía trên bảng chi tiết ----
+
+    private static MapCamera withSheet(float angle) {
+        MapCamera camera = camera(390f, 700f, 120f);       // bảng chi tiết thu gọn che 120px phía dưới
+        camera.set(camera.fitScale(angle), angle, 0f, 0f);
+        float dx = 390f / 2f - camera.worldToScreenX(WORLD_WIDTH / 2f, WORLD_HEIGHT / 2f);
+        float dy = (700f - 120f) / 2f - camera.worldToScreenY(WORLD_WIDTH / 2f, WORLD_HEIGHT / 2f);
+        camera.set(camera.getScale(), angle, dx, dy);
+        return camera;
+    }
+
+    private static void apply(MapCamera camera, float[] target) {
+        camera.set(target[0], target[1], target[2], target[3]);
+    }
+
+    @Test
+    public void ac5_4_centerOnTargetPutsThePointInTheMiddleOfTheAreaAboveTheSheet() {
+        for (float angle : TEST_ANGLES) {
+            MapCamera camera = withSheet(angle);
+            float wx = 395f, wy = 265f;                         // sát tâm sơ đồ nên không bị kẹp biên
+            apply(camera, camera.centerOnTarget(wx, wy, camera.getMinScale() * 2.5f));
+            assertEquals("x at " + angle, 390f / 2f, camera.worldToScreenX(wx, wy), 1e-2f);
+            assertEquals("y at " + angle, (700f - 120f) / 2f, camera.worldToScreenY(wx, wy), 1e-2f);
+        }
+    }
+
+    @Test
+    public void ac5_4_theScaleIsAtLeastTheRequestedMinimum() {
+        MapCamera camera = withSheet(-HALF_PI);
+        float wanted = camera.getMinScale() * 2.5f;
+        float[] target = camera.centerOnTarget(380f, 330f, wanted);
+        assertEquals(wanted, target[0], 1e-4f);
+    }
+
+    @Test
+    public void ac5_4_aSceneAlreadyZoomedInIsNotZoomedOut() {
+        MapCamera camera = withSheet(-HALF_PI);
+        camera.zoomBy(3.2f, 195f, 290f);
+        float current = camera.getScale();
+        float[] target = camera.centerOnTarget(380f, 330f, camera.getMinScale() * 2.5f);
+        assertEquals(Math.max(current, camera.getMinScale() * 2.5f), target[0], 1e-4f);
+        assertTrue(target[0] >= current - 1e-4f);
+    }
+
+    @Test
+    public void ac5_4_theTargetScaleNeverExceedsTheMaximum() {
+        MapCamera camera = withSheet(-HALF_PI);
+        float[] target = camera.centerOnTarget(380f, 330f, camera.getMaxScale() * 10f);
+        assertEquals(camera.getMaxScale(), target[0], 1e-4f);
+    }
+
+    @Test
+    public void ac5_4_theTargetKeepsTheCurrentAngle() {
+        MapCamera camera = withSheet((float) Math.toRadians(37));
+        float[] target = camera.centerOnTarget(380f, 330f, camera.getMinScale() * 2.5f);
+        assertEquals(camera.getAngle(), target[1], 0f);
+    }
+
+    @Test
+    public void ac5_4_aPointNearTheEdgeIsClampedToTheBoundsInsteadOfBeingCentered() {
+        MapCamera camera = withSheet(-HALF_PI);
+        float wx = 20f, wy = 480f;                             // góc dưới trái sơ đồ
+        float[] target = camera.centerOnTarget(wx, wy, camera.getMinScale() * 2.5f);
+        apply(camera, target);
+        float[] box = boundingBox(camera);
+        // Khung bao vẫn nằm trong giới hạn kéo, nên điểm không thể nằm đúng giữa.
+        assertTrue(box[0] <= PAN_MARGIN + 1e-2f && box[2] >= 390f - PAN_MARGIN - 1e-2f);
+        assertTrue(box[1] <= PAN_MARGIN + 1e-2f && box[3] >= (700f - 120f) - PAN_MARGIN - 1e-2f);
+        // Điểm vẫn nằm trong vùng nhìn (không bị đẩy ra khỏi màn hình).
+        float sx = camera.worldToScreenX(wx, wy), sy = camera.worldToScreenY(wx, wy);
+        assertTrue(sx > 0f && sx < 390f && sy > 0f && sy < 580f);
+    }
+
+    @Test
+    public void ac5_4_centerOnTargetDoesNotChangeTheCamera() {
+        MapCamera camera = withSheet(-HALF_PI);
+        float scale = camera.getScale(), tx = camera.getTx(), ty = camera.getTy();
+        camera.centerOnTarget(100f, 100f, 5f);
+        assertEquals(scale, camera.getScale(), 0f);
+        assertEquals(tx, camera.getTx(), 0f);
+        assertEquals(ty, camera.getTy(), 0f);
+    }
+
+    @Test
+    public void ac5_4_centerOnTargetOfAnUnreadyCameraReturnsTheCurrentState() {
+        MapCamera camera = new MapCamera(PADDING);
+        float[] target = camera.centerOnTarget(100f, 100f, 5f);
+        assertEquals(1f, target[0], 0f);
+        assertEquals(0f, target[2], 0f);
+    }
 }
