@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Bố cục ngang: panel lọc rộng 260dp bên trái, sơ đồ bên phải (Q36). Máy ngang ít chiều cao, nên mọi control lọc xếp
+    dọc trong panel (cuộn được) thay vì nằm ngang trên đầu như bản dọc. Các lớp của sơ đồ và bảng chi tiết dùng chung
+    với bản dọc qua include; id giống hệt nên MainActivity và FilterBar không cần biết hướng màn hình.
+-->
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.MainActivity">
+
+    <!-- Cột nội dung: panel lọc rồi khung chứa sơ đồ. Lề hệ thống được áp vào đây (xem bản dọc). -->
+    <LinearLayout
+        android:id="@+id/content_column"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipChildren="false"
+        android:orientation="horizontal">
+
+        <!--
+            Panel lọc: nền trắng, cuộn được vì không đủ chỗ trong phần nhìn thấy trên bảng chi tiết. clipToPadding=false
+            và lề dưới do code đặt (FilterBar.setBottomInset) để dòng cuối cuộn lên được trên bảng chi tiết.
+        -->
+        <ScrollView
+            android:id="@+id/filter_panel"
+            android:layout_width="260dp"
+            android:layout_height="match_parent"
+            android:background="@color/surface"
+            android:clipToPadding="false"
+            android:fillViewport="true"
+            android:overScrollMode="ifContentScrolls"
+            android:paddingStart="12dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:divider="@drawable/divider_vertical_8dp"
+                android:orientation="vertical"
+                android:showDividers="middle">
+
+                <include
+                    android:id="@+id/filter_bar"
+                    layout="@layout/view_filter_bar" />
+
+                <!--
+                    Dòng "Đang lọc" ngay dưới ô tìm kiếm và chip, để luôn nằm trong phần nhìn thấy được trên bảng chi tiết.
+                    Ẩn khi mọi tiêu chí đều mặc định.
+                -->
+                <LinearLayout
+                    android:id="@+id/layout_filter_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_panel_card"
+                    android:gravity="center_vertical"
+                    android:minHeight="48dp"
+                    android:orientation="horizontal"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="4dp"
+                    android:visibility="gone">
+
+                    <include layout="@layout/view_filter_status" />
+                </LinearLayout>
+
+                <!-- Các control giá hiện sẵn, không có nút Giá và không có thẻ nổi. -->
+                <LinearLayout
+                    android:id="@+id/card_price_filter"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <include layout="@layout/view_price_controls" />
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
+
+        <FrameLayout
+            android:id="@+id/map_container"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clipChildren="false">
+
+            <include layout="@layout/view_map_layers" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <include layout="@layout/view_bottom_sheet" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

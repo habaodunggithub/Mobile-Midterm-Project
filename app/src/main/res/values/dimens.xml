@@ -1,0 +1,5 @@
+<resources>
+    <!-- Kích thước bảng chú thích; bản ngang (values-land) nhỏ hơn để thẻ thấp, che ít sơ đồ (AC-1.4). -->
+    <dimen name="legend_item_min_height">28dp</dimen>
+    <dimen name="legend_card_padding">8dp</dimen>
+</resources>

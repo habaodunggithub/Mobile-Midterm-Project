@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:layout_columnWeight="1"
     android:gravity="center_vertical"
-    android:minHeight="28dp"
+    android:minHeight="@dimen/legend_item_min_height"
     android:orientation="horizontal"
     android:paddingEnd="4dp">
 

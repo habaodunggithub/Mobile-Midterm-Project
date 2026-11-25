@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Khối phẳng trong panel lọc (bố cục ngang): xám xanh nhạt bo góc 16dp, không đổ bóng vì panel đã trắng. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/chip_available_bg" />
+    <corners android:radius="16dp" />
+</shape>

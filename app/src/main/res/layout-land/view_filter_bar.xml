@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Phần đầu của panel lọc ở bố cục ngang: ô tìm kiếm rồi bốn chip khu xuống dòng khi hết chỗ. Dùng lại đúng id của
+    bản dọc (layout/view_filter_bar.xml) để FilterBar không cần biết đang ở hướng nào; không có nút Giá vì các
+    control giá hiện sẵn trong panel. Thanh tự nhận focus và tắt highlight focus, lý do như bản dọc.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:defaultFocusHighlightEnabled="false"
+    android:descendantFocusability="beforeDescendants"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:orientation="vertical"
+    tools:targetApi="o">
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_search"
+        style="@style/Widget.MidtermProject.SearchField"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:endIconMode="clear_text"
+        app:startIconDrawable="@drawable/ic_search">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_search"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/search_hint"
+            android:imeOptions="actionSearch|flagNoExtractUi"
+            android:inputType="textNoSuggestions"
+            android:maxLength="20"
+            android:maxLines="1"
+            android:minHeight="48dp"
+            android:textColor="@color/sheet_text"
+            android:textColorHint="@color/sheet_text_secondary"
+            android:textSize="14sp" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Panel hẹp nên chip xuống dòng (singleLine=false) thay vì trượt ngang. -->
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chip_group_zone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/filter_zone_group_description"
+        app:chipSpacingHorizontal="8dp"
+        app:chipSpacingVertical="0dp"
+        app:selectionRequired="true"
+        app:singleLine="false"
+        app:singleSelection="true">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_zone_all"
+            style="@style/Widget.MidtermProject.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/filter_zone_all" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_zone_standing"
+            style="@style/Widget.MidtermProject.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/zone_standing" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_zone_vip"
+            style="@style/Widget.MidtermProject.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/zone_vip" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_zone_standard"
+            style="@style/Widget.MidtermProject.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/zone_standard" />
+    </com.google.android.material.chip.ChipGroup>
+</LinearLayout>

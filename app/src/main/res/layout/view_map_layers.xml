@@ -113,6 +113,6 @@
         android:columnCount="@integer/legend_columns"
         android:elevation="4dp"
         android:focusable="false"
-        android:padding="8dp"
+        android:padding="@dimen/legend_card_padding"
         android:visibility="gone" />
 </merge>
