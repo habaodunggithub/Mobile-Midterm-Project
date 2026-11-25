@@ -9,11 +9,13 @@ package com.example.midtermproject.map;
  *   screen = s * R(theta) * world + t        R(theta) = [[cos, -sin], [sin, cos]]
  *   world  = R(-theta) * (screen - t) / s
  * </pre>
- * Lớp này lo phần "vừa khít" (fit), góc mặc định, đổi tọa độ và pan có giới hạn biên; zoom, xoay,
+ * Lớp này lo phần "vừa khít" (fit), góc mặc định, đổi tọa độ, pan có giới hạn biên và zoom; xoay,
  * snapshot được thêm ở các commit sau của Chặng 3.
  */
 public final class MapCamera {
     private static final float HALF_PI = (float) (Math.PI / 2.0);
+    /** Phóng to tối đa bằng ngần này lần mức "vừa khít" ở góc mặc định (REQUIREMENTS Q15). */
+    private static final float MAX_ZOOM_FACTOR = 6f;
 
     /** Lề giữa sơ đồ và mép vùng nhìn khi tính fit, tính bằng px. */
     private final float paddingPx;
@@ -126,6 +128,33 @@ public final class MapCamera {
 
     public float getTy() {
         return ty;
+    }
+
+    /** Nhỏ nhất: vừa khít toàn sơ đồ ở góc xoay hiện tại, nên không thu nhỏ hơn mức thấy trọn sơ đồ. */
+    public float getMinScale() {
+        return fitScale(angle);
+    }
+
+    /** Lớn nhất: 6 lần mức vừa khít ở góc mặc định, nên một chỗ to khoảng 80dp khi dọc. */
+    public float getMaxScale() {
+        return MAX_ZOOM_FACTOR * fitScale(defaultAngle());
+    }
+
+    /**
+     * Phóng/thu theo hệ số {@code factor} quanh điểm (fx, fy) tính bằng px màn hình, thường là tâm
+     * hai ngón. Điểm sơ đồ nằm dưới (fx, fy) đứng yên: từ {@code f = s*R*w + t} cho cả hai tỉ lệ
+     * ta có {@code t' = f - (s'/s) * (f - t)} (AC-2.3). Tỉ lệ mới bị kẹp trong [min, max] (AC-2.4).
+     */
+    public void zoomBy(float factor, float fx, float fy) {
+        if (!isReady()) {
+            return;
+        }
+        final float newScale = Math.max(getMinScale(), Math.min(getMaxScale(), scale * factor));
+        final float ratio = newScale / scale;
+        tx = fx - ratio * (fx - tx);
+        ty = fy - ratio * (fy - ty);
+        scale = newScale;
+        clamp();
     }
 
     /**
