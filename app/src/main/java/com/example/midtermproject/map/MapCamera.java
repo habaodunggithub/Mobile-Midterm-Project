@@ -132,6 +132,28 @@ public final class MapCamera {
         return ty;
     }
 
+    /**
+     * Góc nhìn đích để đưa điểm (wx, wy) của sơ đồ về giữa vùng nhìn phía trên bảng chi tiết, ở tỉ lệ
+     * không nhỏ hơn {@code minScale} (nhưng không vượt quá mức lớn nhất) và không nhỏ hơn tỉ lệ hiện
+     * tại, để người dùng không bị thu nhỏ lại. Giữ nguyên góc xoay hiện tại. Độ dịch được kẹp theo
+     * biên như mọi thao tác khác, nên điểm gần mép sơ đồ có thể không nằm đúng chính giữa.
+     * Chưa thay đổi camera; trả về {tỉ lệ, góc, tx, ty} để làm đích của hiệu ứng.
+     */
+    public float[] centerOnTarget(float wx, float wy, float minScale) {
+        if (!isReady()) {
+            return new float[]{scale, angle, tx, ty};
+        }
+        final float targetScale = Math.max(getMinScale(), Math.min(getMaxScale(), Math.max(scale, minScale)));
+        final float c = (float) Math.cos(angle);
+        final float s = (float) Math.sin(angle);
+        final float regionCenterX = viewWidth / 2f;
+        final float regionCenterY = (viewHeight - bottomInset) / 2f;
+        final float[] clamped = clampedTranslation(targetScale, angle,
+                regionCenterX - targetScale * (wx * c - wy * s),
+                regionCenterY - targetScale * (wx * s + wy * c));
+        return new float[]{targetScale, angle, clamped[0], clamped[1]};
+    }
+
     /** Nhỏ nhất: vừa khít toàn sơ đồ ở góc xoay hiện tại, nên không thu nhỏ hơn mức thấy trọn sơ đồ. */
     public float getMinScale() {
         return fitScale(angle);
@@ -295,21 +317,32 @@ public final class MapCamera {
      * kéo hoàn toàn ra khỏi màn hình (AC-2.2).
      */
     private void clamp() {
-        final float c = (float) Math.cos(angle);
-        final float s = (float) Math.sin(angle);
+        final float[] clamped = clampedTranslation(scale, angle, tx, ty);
+        tx = clamped[0];
+        ty = clamped[1];
+    }
+
+    /**
+     * Độ dịch sau khi kẹp, cho một tỉ lệ và góc xoay bất kỳ (không đổi trạng thái của camera). Dùng
+     * cho cả {@link #clamp()} lẫn việc tính góc nhìn đích mà chưa áp dụng.
+     */
+    private float[] clampedTranslation(float forScale, float forAngle, float forTx, float forTy) {
+        final float c = (float) Math.cos(forAngle);
+        final float s = (float) Math.sin(forAngle);
         // Ba góc còn lại của sơ đồ sau khi phóng và xoay (góc (0, 0) nằm ở gốc), chưa dịch.
-        final float x1 = scale * worldWidth * c;
-        final float y1 = scale * worldWidth * s;
-        final float x2 = -scale * worldHeight * s;
-        final float y2 = scale * worldHeight * c;
+        final float x1 = forScale * worldWidth * c;
+        final float y1 = forScale * worldWidth * s;
+        final float x2 = -forScale * worldHeight * s;
+        final float y2 = forScale * worldHeight * c;
         final float x3 = x1 + x2;
         final float y3 = y1 + y2;
         final float minX = Math.min(Math.min(0f, x1), Math.min(x2, x3));
         final float maxX = Math.max(Math.max(0f, x1), Math.max(x2, x3));
         final float minY = Math.min(Math.min(0f, y1), Math.min(y2, y3));
         final float maxY = Math.max(Math.max(0f, y1), Math.max(y2, y3));
-        tx = clampAxis(tx, minX, maxX, viewWidth);
-        ty = clampAxis(ty, minY, maxY, viewHeight - bottomInset);
+        return new float[]{
+                clampAxis(forTx, minX, maxX, viewWidth),
+                clampAxis(forTy, minY, maxY, viewHeight - bottomInset)};
     }
 
     private float clampAxis(float translation, float min, float max, float viewSize) {
