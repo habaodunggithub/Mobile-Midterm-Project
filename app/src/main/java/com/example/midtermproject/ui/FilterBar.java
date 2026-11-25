@@ -40,6 +40,8 @@ final class FilterBar {
     private final Context context;
     private final VenueMapState state;
     private final TextInputEditText search;
+    /** Khung thanh lọc (nhận focus được): nơi chuyển focus tới khi ô tìm kiếm xong việc. */
+    private final View focusHolder;
     private final ChipGroup zoneChips;
     private final SwitchMaterial availableOnly;
     private final RangeSlider priceSlider;
@@ -61,6 +63,7 @@ final class FilterBar {
         this.context = root.getContext();
         this.state = state;
         this.search = root.findViewById(R.id.et_search);
+        this.focusHolder = root.findViewById(R.id.filter_bar);
         this.zoneChips = root.findViewById(R.id.chip_group_zone);
         this.availableOnly = root.findViewById(R.id.switch_available_only);
         this.priceSlider = root.findViewById(R.id.range_price);
@@ -109,7 +112,9 @@ final class FilterBar {
                 return false;
             }
             hideKeyboard(view);
-            view.clearFocus();
+            // clearFocus() không đủ: Android đưa focus về view đầu tiên nhận được, mà ở panel ngang (ScrollView) đó
+            // lại là chính ô tìm kiếm. Chuyển focus thẳng sang khung thanh lọc thì ô tìm kiếm chắc chắn bỏ focus.
+            focusHolder.requestFocus();
             return true;
         });
     }

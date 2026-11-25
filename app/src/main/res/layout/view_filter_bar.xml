@@ -2,8 +2,8 @@
 <!--
     Thanh lọc ở đầu màn hình dọc: ô tìm kiếm rồi một hàng chip khu. Các id ở đây là chỗ FilterBar tìm control;
     bố cục ngang (layout-land) dùng lại cùng id nhưng xếp thành panel bên trái.
-    Thanh tự nhận focus (beforeDescendants): khi ô tìm kiếm bỏ focus thì focus rơi vào đây, không quay lại
-    chính ô đó (Android luôn đưa focus về view đầu tiên nhận được focus khi chạm).
+    Thanh nhận focus được (beforeDescendants): FilterBar chuyển focus về đây khi ô tìm kiếm xong việc, để ô đó
+    thật sự bỏ focus (xem FilterBar.bindSearch).
     Tắt highlight focus mặc định, nếu không cả thanh bị phủ một lớp xám khi nó đang giữ focus.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
