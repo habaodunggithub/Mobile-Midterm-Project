@@ -3,6 +3,7 @@ package com.example.midtermproject.ui;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.ColorRes;
@@ -56,6 +57,7 @@ final class DetailSheet {
     private final TextView focusInfo;
     private final TextView focusState;
     private final TextView summary;
+    private final Button bookButton;
     private final Drawable chipBackground;
     private final BottomSheetBehavior<View> behavior;
     /** Tên phân khu theo mã, dựng một lần để hiển thị không phải duyệt danh sách mỗi lần. */
@@ -72,6 +74,7 @@ final class DetailSheet {
         this.focusInfo = sheet.findViewById(R.id.tv_focus_info);
         this.focusState = sheet.findViewById(R.id.tv_focus_state);
         this.summary = sheet.findViewById(R.id.tv_selection_summary);
+        this.bookButton = sheet.findViewById(R.id.btn_book);
         // mutate(): chỉ đổi màu của chip này, không ảnh hưởng mọi nơi dùng chung drawable.
         this.chipBackground = focusState.getBackground().mutate();
         this.behavior = BottomSheetBehavior.from(sheet);
@@ -168,6 +171,10 @@ final class DetailSheet {
         final int count = state.getSelectedCount();
         summary.setText(context.getString(R.string.sheet_selection_summary,
                 count, VenueMapState.MAX_SELECTION, PriceFormatter.format(state.getSelectedTotal())));
+        // Nút chỉ bật khi đã chọn ít nhất một chỗ (UC-10: lựa chọn rỗng thì không có hộp thoại).
+        bookButton.setEnabled(count >= 1);
+        bookButton.setText(count >= 1 ? context.getString(R.string.book_button, count)
+                : context.getString(R.string.book_button_empty));
         adapter.refresh(context);
     }
 

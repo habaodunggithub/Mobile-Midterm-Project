@@ -37,6 +37,9 @@
     <!-- Phân khu · hàng · số chỗ · giá; trạng thái hiển thị là chip bên cạnh -->
     <string name="sheet_focus_info">%1$s · Hàng %2$s · %3$s · %4$s đ</string>
     <string name="sheet_selection_summary">Đã chọn %1$d/%2$d · Tổng %3$s đ</string>
+    <!-- Nút đặt vé: chưa chọn chỗ nào thì nút mờ và không có số -->
+    <string name="book_button">Đặt %d vé</string>
+    <string name="book_button_empty">Đặt vé</string>
     <string name="sheet_section_selected">Đang chọn (%1$d)</string>
     <string name="sheet_section_mine">Vé của bạn (%1$d)</string>
     <string name="sheet_spot_title">%1$s · %2$s</string>
