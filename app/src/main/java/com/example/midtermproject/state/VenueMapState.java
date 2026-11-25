@@ -179,6 +179,19 @@ public final class VenueMapState {
         notifyListeners();
     }
 
+    /**
+     * Làm mới dữ liệu: xóa lựa chọn, vé của bạn và chỗ đang xem. Bộ lọc giữ nguyên (AC-8.2).
+     * Báo người nghe đúng một lần.
+     */
+    public void resetAll() {
+        selectedIds.clear();
+        myTicketIds.clear();
+        focusedId = null;
+        // Hết vé của bạn thì các chỗ đó lại khớp tiêu chí "chỉ chỗ trống", nên phải tính lại.
+        recomputeMatches();
+        notifyListeners();
+    }
+
     private boolean isAvailableSpot(String spotId) {
         final Spot spot = venue.findSpot(spotId);
         return spot != null && spot.baseStatus == SpotStatus.AVAILABLE;
