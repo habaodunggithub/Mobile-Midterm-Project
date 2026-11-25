@@ -11,4 +11,28 @@
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>
     </style>
+
+    <!-- Chip lọc khu: chọn một trong bốn; bỏ dấu tick vì nền mực đã đủ báo đang chọn. Vùng chạm vẫn 48dp (mặc định của Chip). -->
+    <style name="Widget.MidtermProject.Chip.Filter" parent="Widget.MaterialComponents.Chip.Choice">
+        <item name="chipBackgroundColor">@color/chip_filter_background</item>
+        <item name="android:textColor">@color/chip_filter_text</item>
+        <item name="android:textSize">14sp</item>
+        <item name="checkedIconVisible">false</item>
+        <item name="chipStrokeWidth">0dp</item>
+    </style>
+
+    <!-- Ô tìm kiếm dạng viên thuốc: nền xám xanh nhạt, viền đổi sang mực khi đang gõ. Gợi ý nằm trong ô, không nổi lên. -->
+    <style name="Widget.MidtermProject.SearchField" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
+        <item name="hintEnabled">false</item>
+        <item name="boxBackgroundColor">@color/chip_available_bg</item>
+        <item name="boxCornerRadiusTopStart">24dp</item>
+        <item name="boxCornerRadiusTopEnd">24dp</item>
+        <item name="boxCornerRadiusBottomStart">24dp</item>
+        <item name="boxCornerRadiusBottomEnd">24dp</item>
+        <item name="boxStrokeColor">@color/field_stroke</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
+        <item name="startIconTint">@color/sheet_text_secondary</item>
+        <item name="endIconTint">@color/sheet_text_secondary</item>
+    </style>
 </resources>

@@ -8,6 +8,11 @@
     <string name="compass_content_description">Xoay sơ đồ về hướng mặc định</string>
     <string name="reset_view_content_description">Đưa sơ đồ về góc nhìn mặc định</string>
 
+    <!-- Thanh lọc -->
+    <string name="search_hint">Tìm mã chỗ, ví dụ B05</string>
+    <string name="filter_zone_all">Tất cả</string>
+    <string name="filter_zone_group_description">Lọc theo khu</string>
+
     <!-- Bảng chú thích -->
     <string name="legend_show_description">Hiện bảng chú thích</string>
     <string name="legend_hide_description">Ẩn bảng chú thích</string>

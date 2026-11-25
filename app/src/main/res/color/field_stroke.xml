@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Viền ô tìm kiếm: xám đậm khi nghỉ (>= 3:1 trên nền), mực xanh đen khi đang gõ. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/spot_selected" android:state_focused="true" />
+    <item android:color="@color/field_stroke_idle" />
+</selector>

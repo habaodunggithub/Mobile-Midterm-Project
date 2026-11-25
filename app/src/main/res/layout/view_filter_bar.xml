@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Thanh lọc ở đầu màn hình dọc: ô tìm kiếm rồi một hàng chip khu. Các id ở đây là chỗ FilterBar tìm control;
+    bố cục ngang (layout-land) dùng lại cùng id nhưng xếp thành panel bên trái.
+    Thanh tự nhận focus (beforeDescendants): khi ô tìm kiếm bỏ focus thì focus rơi vào đây, không quay lại
+    chính ô đó (Android luôn đưa focus về view đầu tiên nhận được focus khi chạm).
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:descendantFocusability="beforeDescendants"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:orientation="vertical"
+    android:paddingStart="12dp"
+    android:paddingTop="8dp"
+    android:paddingEnd="12dp"
+    android:paddingBottom="4dp">
+
+    <!-- Có nút xóa (endIconMode); lọc ngay mỗi lần gõ, không cần bấm tìm (AC-4.2). -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_search"
+        style="@style/Widget.MidtermProject.SearchField"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:endIconMode="clear_text"
+        app:startIconDrawable="@drawable/ic_search">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_search"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/search_hint"
+            android:imeOptions="actionSearch|flagNoExtractUi"
+            android:inputType="textNoSuggestions"
+            android:maxLength="20"
+            android:maxLines="1"
+            android:minHeight="48dp"
+            android:textColor="@color/sheet_text"
+            android:textColorHint="@color/sheet_text_secondary"
+            android:textSize="14sp" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Bốn chip khu trượt ngang được, để máy hẹp không bị cắt chữ. -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:overScrollMode="never"
+        android:scrollbars="none">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chip_group_zone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/filter_zone_group_description"
+            app:chipSpacingHorizontal="8dp"
+            app:selectionRequired="true"
+            app:singleLine="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_zone_all"
+                style="@style/Widget.MidtermProject.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/filter_zone_all" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_zone_standing"
+                style="@style/Widget.MidtermProject.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/zone_standing" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_zone_vip"
+                style="@style/Widget.MidtermProject.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/zone_vip" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_zone_standard"
+                style="@style/Widget.MidtermProject.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/zone_standard" />
+        </com.google.android.material.chip.ChipGroup>
+    </HorizontalScrollView>
+</LinearLayout>

@@ -49,6 +49,9 @@ public class MainActivity extends AppCompatActivity
         mapView.bind(venue, new VenueMapStateSource(state));
         mapView.setOnSpotTapListener(this);
 
+        // Thanh lọc tự nghe state, nên không cần giữ tham chiếu.
+        new FilterBar(findViewById(R.id.filter_bar), state);
+
         detailSheet = new DetailSheet(findViewById(R.id.bottom_sheet), venue, state, this);
         legendCard = new LegendCard(findViewById(R.id.card_legend), findViewById(R.id.btn_legend));
         // Bảng chi tiết thu gọn che bao nhiêu thì cả sơ đồ lẫn bảng chú thích phải chừa bấy nhiêu.
@@ -62,15 +65,15 @@ public class MainActivity extends AppCompatActivity
             detailSheet.render();
         });
 
-        // Chừa lề cho thanh trạng thái và vết khuyết màn hình bằng lề của khung chứa sơ đồ. Phía dưới thì
+        // Chừa lề cho thanh trạng thái và vết khuyết màn hình bằng lề của cột nội dung. Phía dưới thì
         // bảng chi tiết tự chừa chỗ cho thanh điều hướng (nền bảng kéo dài xuống tận đáy màn hình).
-        final View mapContainer = findViewById(R.id.map_container);
+        final View contentColumn = findViewById(R.id.content_column);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.root), (view, insets) -> {
             Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
                     | WindowInsetsCompat.Type.displayCutout());
-            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) mapContainer.getLayoutParams();
+            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) contentColumn.getLayoutParams();
             params.setMargins(bars.left, bars.top, bars.right, 0);
-            mapContainer.setLayoutParams(params);
+            contentColumn.setLayoutParams(params);
             detailSheet.setInsets(bars.left, bars.right, bars.bottom);
             return insets;
         });

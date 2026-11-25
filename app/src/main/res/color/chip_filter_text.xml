@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Chữ chip lọc: mỗi cặp nền/chữ đạt tương phản >= 4,5:1. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/chip_selected_fg" android:state_checked="true" />
+    <item android:color="@color/chip_available_fg" />
+</selector>

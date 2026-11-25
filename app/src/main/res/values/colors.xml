@@ -38,6 +38,9 @@
     <color name="compass_tail">#FF9AA3B5</color>
     <color name="map_button_icon">#FF1C2230</color>
 
+    <!-- Viền ô tìm kiếm khi nghỉ: tương phản >= 3:1 với nền sơ đồ -->
+    <color name="field_stroke_idle">#FF7D8799</color>
+
     <!-- Màu trung tính cho mẫu "ghế tròn" và "ô đứng vuông" trong bảng chú thích (tương phản >= 3:1 trên nền trắng) -->
     <color name="legend_shape">#FF7D8799</color>
 
