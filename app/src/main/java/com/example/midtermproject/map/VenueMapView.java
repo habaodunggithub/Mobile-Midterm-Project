@@ -357,6 +357,9 @@ public class VenueMapView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        // Tự cắt theo khung của View: khung cha tắt clipChildren (để bóng đổ không bị cắt), khi đó canvas không còn
+        // bị giới hạn, và nền sơ đồ (drawColor) sẽ tô đè lên cả thanh lọc nằm phía trên.
+        canvas.clipRect(0, 0, getWidth(), getHeight());
         if (venue == null || states == null || !camera.isReady()) {
             return;
         }
