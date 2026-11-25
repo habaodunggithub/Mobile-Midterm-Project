@@ -27,6 +27,8 @@ import com.example.midtermproject.state.VenueMapState;
 import com.example.midtermproject.storage.PrefsSessionStore;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.util.List;
+
 /**
  * Màn hình duy nhất. Activity chỉ ghép các mảnh: tạo sơ đồ và {@link VenueMapState}, nghe cú chạm từ
  * {@link VenueMapView}, đưa mọi thay đổi qua state, và báo lý do khi chạm vào chỗ không chọn được.
@@ -36,6 +38,9 @@ public class MainActivity extends AppCompatActivity
         implements VenueMapView.OnSpotTapListener, DetailSheet.Callbacks, BookingConfirmDialog.Callback {
     private VenueMapState state;
     private SessionStore store;
+    /** Bản đã ghi lần trước, để chỉ ghi khi lựa chọn hoặc vé của bạn thật sự đổi (đổi bộ lọc hay chỗ đang xem thì không ghi). */
+    private List<String> savedSelected;
+    private List<String> savedMine;
     private VenueMapView mapView;
     private DetailSheet detailSheet;
     private LegendCard legendCard;
@@ -56,6 +61,8 @@ public class MainActivity extends AppCompatActivity
         store = new PrefsSessionStore(this);
         final SessionData saved = store.load();
         state.restore(saved.selected, saved.mine, null, SpotFilter.NONE);
+        savedSelected = state.snapshotSelectedIds();
+        savedMine = state.snapshotMyTicketIds();
         mapView = findViewById(R.id.map_view);
         mapView.bind(venue, new VenueMapStateSource(state));
         mapView.setOnSpotTapListener(this);
@@ -76,6 +83,7 @@ public class MainActivity extends AppCompatActivity
         state.addListener(() -> {
             mapView.invalidate();
             detailSheet.render();
+            saveSessionIfChanged();
         });
 
         // Chừa lề cho thanh trạng thái và vết khuyết màn hình bằng lề của cột nội dung. Phía dưới thì
@@ -101,6 +109,18 @@ public class MainActivity extends AppCompatActivity
             compass.setRotation((float) Math.toDegrees(angleRad));
             compass.setVisibility(atDefault ? View.GONE : View.VISIBLE);
         });
+    }
+
+    /** Ghi lựa chọn (giữ thứ tự) và vé của bạn khi một trong hai khác bản đã ghi (UC-11). {@code apply()} nên không chặn giao diện. */
+    private void saveSessionIfChanged() {
+        final List<String> selected = state.snapshotSelectedIds();
+        final List<String> mine = state.snapshotMyTicketIds();
+        if (selected.equals(savedSelected) && mine.equals(savedMine)) {
+            return;
+        }
+        store.save(selected, mine);
+        savedSelected = selected;
+        savedMine = mine;
     }
 
     @Override
