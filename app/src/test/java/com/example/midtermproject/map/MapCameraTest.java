@@ -150,4 +150,111 @@ public class MapCameraTest {
         assertEquals(0f, target[2], 0f);
         assertEquals(0f, target[3], 0f);
     }
+
+    // ---- Hàm tiện ích cho các test pan, zoom, xoay ----
+
+    private static final float[] TEST_ANGLES = {0f, -HALF_PI, (float) Math.toRadians(37)};
+    private static final float PAN_MARGIN = 3f * PADDING;
+
+    /** Camera dọc, đã phóng {@code zoom} lần so với fit tại góc đó, tâm sơ đồ nằm giữa vùng nhìn. */
+    private static MapCamera zoomedCamera(float angle, float zoom) {
+        MapCamera camera = portrait();
+        camera.set(camera.fitScale(angle) * zoom, angle, 0f, 0f);
+        float dx = 390f / 2f - camera.worldToScreenX(WORLD_WIDTH / 2f, WORLD_HEIGHT / 2f);
+        float dy = 528f / 2f - camera.worldToScreenY(WORLD_WIDTH / 2f, WORLD_HEIGHT / 2f);
+        camera.set(camera.getScale(), angle, dx, dy);
+        return camera;
+    }
+
+    /** Khung bao {minX, minY, maxX, maxY} của sơ đồ trên màn hình. */
+    private static float[] boundingBox(MapCamera camera) {
+        float[][] corners = {{0, 0}, {WORLD_WIDTH, 0}, {0, WORLD_HEIGHT}, {WORLD_WIDTH, WORLD_HEIGHT}};
+        float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE, maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE;
+        for (float[] corner : corners) {
+            float x = camera.worldToScreenX(corner[0], corner[1]);
+            float y = camera.worldToScreenY(corner[0], corner[1]);
+            minX = Math.min(minX, x);
+            maxX = Math.max(maxX, x);
+            minY = Math.min(minY, y);
+            maxY = Math.max(maxY, y);
+        }
+        return new float[]{minX, minY, maxX, maxY};
+    }
+
+    // ---- AC-2.1, AC-2.2: pan ----
+
+    @Test
+    public void ac2_1_panKeepsPointUnderFinger() {
+        for (float angle : TEST_ANGLES) {
+            MapCamera camera = zoomedCamera(angle, 4f);
+            float beforeX = camera.worldToScreenX(300f, 200f);
+            float beforeY = camera.worldToScreenY(300f, 200f);
+            camera.panBy(13f, -9f);
+            assertEquals("x at " + angle, beforeX + 13f, camera.worldToScreenX(300f, 200f), 1e-3f);
+            assertEquals("y at " + angle, beforeY - 9f, camera.worldToScreenY(300f, 200f), 1e-3f);
+        }
+    }
+
+    @Test
+    public void ac2_2_panClampsAtBounds() {
+        for (float angle : TEST_ANGLES) {
+            MapCamera camera = zoomedCamera(angle, 4f);
+            camera.panBy(100000f, 100000f);
+            float[] box = boundingBox(camera);
+            assertEquals("minX at " + angle, PAN_MARGIN, box[0], 1e-2f);
+            assertEquals("minY at " + angle, PAN_MARGIN, box[1], 1e-2f);
+
+            camera.panBy(-100000f, -100000f);
+            box = boundingBox(camera);
+            assertEquals("maxX at " + angle, 390f - PAN_MARGIN, box[2], 1e-2f);
+            assertEquals("maxY at " + angle, 528f - PAN_MARGIN, box[3], 1e-2f);
+        }
+    }
+
+    @Test
+    public void ac2_2_panLeavesAMarginOfTheVenueOnScreenAtAnyAngle() {
+        for (float angle : TEST_ANGLES) {
+            MapCamera camera = zoomedCamera(angle, 4f);
+            for (float[] direction : new float[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, -1}}) {
+                camera.panBy(direction[0] * 100000f, direction[1] * 100000f);
+                float[] box = boundingBox(camera);
+                assertTrue("still visible at " + angle,
+                        box[2] > 0f && box[0] < 390f && box[3] > 0f && box[1] < 528f);
+            }
+        }
+    }
+
+    @Test
+    public void ac2_2_centersWhenBoundingBoxSmaller() {
+        for (float angle : TEST_ANGLES) {
+            MapCamera camera = zoomedCamera(angle, 1f);
+            camera.panBy(120f, -80f);
+            float[] box = boundingBox(camera);
+            float boxWidth = box[2] - box[0];
+            float boxHeight = box[3] - box[1];
+            if (boxWidth <= 390f) {
+                assertEquals("x center at " + angle, 390f / 2f, (box[0] + box[2]) / 2f, 1e-2f);
+            }
+            if (boxHeight <= 528f) {
+                assertEquals("y center at " + angle, 528f / 2f, (box[1] + box[3]) / 2f, 1e-2f);
+            }
+        }
+    }
+
+    @Test
+    public void panIsIgnoredUntilTheCameraIsReady() {
+        MapCamera camera = new MapCamera(PADDING);
+        camera.panBy(50f, 50f);
+        assertEquals(0f, camera.getTx(), 0f);
+        assertEquals(0f, camera.getTy(), 0f);
+    }
+
+    @Test
+    public void bottomInsetMovesTheLowerBoundOfThePan() {
+        MapCamera camera = camera(390f, 600f, 120f);
+        camera.set(camera.getScale() * 3f, camera.getAngle(), 0f, 0f);
+        camera.panBy(0f, -100000f);
+        float[] box = boundingBox(camera);
+        assertEquals(600f - 120f - PAN_MARGIN, box[3], 1e-2f);
+    }
 }
