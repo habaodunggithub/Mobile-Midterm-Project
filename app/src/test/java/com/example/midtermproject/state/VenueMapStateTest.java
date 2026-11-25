@@ -535,4 +535,44 @@ public class VenueMapStateTest {
         assertEquals(before - 1, state.getMatchCount());
         assertFalse(state.matchesFilter(spot));
     }
+
+    // ---- AC-8.2: làm mới dữ liệu ----
+
+    @Test
+    public void ac8_2_resetClearsAllButFilter() {
+        List<Spot> available = spotsWith(SpotStatus.AVAILABLE, null);
+        SpotFilter filter = SpotFilter.NONE.withZone(ZoneType.STANDARD).withQuery("std");
+        state.toggleSelection(available.get(0).id);
+        state.bookSelection();
+        state.restore(ids(available, 10, 12), state.snapshotMyTicketIds(), available.get(10).id, filter);
+        notifications = 0;
+
+        state.resetAll();
+
+        assertEquals(0, state.getSelectedCount());
+        assertTrue(state.getMySpots().isEmpty());
+        assertNull(state.getFocusedId());
+        assertEquals(filter, state.getFilter());
+        assertEquals(1, notifications);
+    }
+
+    @Test
+    public void ac8_2_resetMakesFormerTicketsSelectableAgain() {
+        Spot spot = anAvailableSpot();
+        state.toggleSelection(spot.id);
+        state.bookSelection();
+        state.resetAll();
+        assertEquals(DisplayState.AVAILABLE, state.getDisplayState(spot));
+        assertEquals(SelectionResult.SELECTED, state.toggleSelection(spot.id));
+    }
+
+    @Test
+    public void ac8_2_resetRecomputesMatchesForAvailableOnly() {
+        List<Spot> available = spotsWith(SpotStatus.AVAILABLE, null);
+        state.restore(new ArrayList<String>(), ids(available, 0, 3),
+                null, SpotFilter.NONE.withAvailableOnly(true));
+        assertEquals(133 - 3, state.getMatchCount());
+        state.resetAll();
+        assertEquals(133, state.getMatchCount());
+    }
 }
