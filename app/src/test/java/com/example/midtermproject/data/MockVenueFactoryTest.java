@@ -362,4 +362,86 @@ public class MockVenueFactoryTest {
             }
         }
     }
+
+    // ---- Bố cục siết gọn (Chặng 1B) ----
+
+    @Test
+    public void worldHasThePlannedSize() {
+        Venue venue = MockVenueFactory.create();
+        assertEquals(780f, venue.worldWidth, 0f);
+        assertEquals(520f, venue.worldHeight, 0f);
+    }
+
+    @Test
+    public void contentFillsTheWorldWithSmallMarginsOnAllSides() {
+        Venue venue = MockVenueFactory.create();
+        float left = venue.stageLeft, right = venue.stageRight, top = venue.stageTop;
+        float bottom = venue.stageBottom;
+        for (Spot spot : venue.getSpots()) {
+            left = Math.min(left, spot.cx - spot.size);
+            right = Math.max(right, spot.cx + spot.size);
+            top = Math.min(top, spot.cy - spot.size);
+            bottom = Math.max(bottom, spot.cy + spot.size);
+        }
+        float[] margins = {left, venue.worldWidth - right, top, venue.worldHeight - bottom};
+        for (float margin : margins) {
+            assertTrue("margin " + margin, margin >= 15f && margin <= 30f);
+        }
+    }
+
+    @Test
+    public void spotsInTheSameSectionKeepThreeUnitsOfClearance() {
+        List<Spot> spots = MockVenueFactory.create().getSpots();
+        for (int i = 0; i < spots.size(); i++) {
+            for (int j = i + 1; j < spots.size(); j++) {
+                Spot a = spots.get(i);
+                Spot b = spots.get(j);
+                if (a.sectionId.equals(b.sectionId)) {
+                    double gap = Math.hypot(a.cx - b.cx, a.cy - b.cy) - a.size - b.size;
+                    assertTrue(a.id + " and " + b.id + ": gap " + gap, gap >= 3.0);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void spotsInDifferentSectionsKeepFourteenUnitsOfAisle() {
+        List<Spot> spots = MockVenueFactory.create().getSpots();
+        for (int i = 0; i < spots.size(); i++) {
+            for (int j = i + 1; j < spots.size(); j++) {
+                Spot a = spots.get(i);
+                Spot b = spots.get(j);
+                if (!a.sectionId.equals(b.sectionId)) {
+                    double gap = Math.hypot(a.cx - b.cx, a.cy - b.cy) - a.size - b.size;
+                    assertTrue(a.id + " and " + b.id + ": gap " + gap, gap >= 14.0);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void statusesDoNotDependOnTheGeometry() {
+        // Số ghế đã đặt chỉ phụ thuộc seed và thứ tự dựng, nên đổi hình học không được làm nó lệch.
+        int booked = 0;
+        for (Spot spot : MockVenueFactory.create().getSpots()) {
+            if (spot.baseStatus == SpotStatus.BOOKED) {
+                booked++;
+            }
+        }
+        assertEquals(83, booked);
+    }
+
+    @Test
+    public void seatDiameterAtFitMeetsTheTargetsInBothOrientations() {
+        // Công thức fit đầy đủ nằm ở MapCamera (Chặng 3); ở đây chỉ kiểm kích thước world cho phép đạt mục tiêu.
+        // Dọc: sơ đồ xoay 90 độ nên rộng/cao hoán đổi; vùng sơ đồ 390 x 528dp, lề 16dp mỗi bên.
+        Venue venue = MockVenueFactory.create();
+        double portraitFit = Math.min((390 - 32) / (double) venue.worldHeight,
+                (528 - 32) / (double) venue.worldWidth);
+        double landscapeFit = Math.min((631 - 32) / (double) venue.worldWidth,
+                (277 - 32) / (double) venue.worldHeight);
+        double diameter = 2 * MockVenueFactory.SEAT_RADIUS;
+        assertTrue("portrait " + diameter * portraitFit, diameter * portraitFit >= 12.0);
+        assertTrue("landscape " + diameter * landscapeFit, diameter * landscapeFit >= 9.0);
+    }
 }
