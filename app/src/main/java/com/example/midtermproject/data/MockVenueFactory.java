@@ -17,7 +17,7 @@ import java.util.List;
  * trước sân khấu; các ghế VIP và Standard xếp theo vành cung quanh tâm (giữa mép dưới sân khấu).
  * <p>
  * Thứ tự dựng cũng là thứ tự bốc số ngẫu nhiên cho trạng thái, nên không được đảo thứ tự:
- * Standing A, Standing B, VIP Trái, VIP Giữa, VIP Phải, (các phân khu Standard được thêm ở bước sau).
+ * Standing A, Standing B, VIP Trái, VIP Giữa, VIP Phải, Standard 1 đến 4 (từ trái sang phải).
  */
 public final class MockVenueFactory {
     public static final long SEED = 2026L;
@@ -49,6 +49,13 @@ public final class MockVenueFactory {
     private static final long VIP_PRICE_STEP = 300_000L;
     private static final float VIP_LABEL_RADIUS = 344f;     // lối đi giữa vành VIP và vành Standard
 
+    // Standard: 4 phân khu x 4 hàng (6, 6, 7, 7 ghế), vành cung xa sân khấu.
+    private static final float[] STANDARD_ROW_RADII = {376f, 402f, 428f, 454f};
+    private static final int[] STANDARD_SEATS_PER_ROW = {6, 6, 7, 7};
+    private static final long STANDARD_BASE_PRICE = 700_000L;
+    private static final long STANDARD_PRICE_STEP = 100_000L;
+    private static final float STANDARD_LABEL_RADIUS = 490f;   // ngoài hàng D, nằm dưới sơ đồ
+
     private MockVenueFactory() {
     }
 
@@ -56,6 +63,7 @@ public final class MockVenueFactory {
         Builder builder = new Builder(new SpotStatusPolicy(SEED));
         addStandingBlocks(builder);
         addVipSections(builder);
+        addStandardSections(builder);
         return builder.build();
     }
 
@@ -78,6 +86,22 @@ public final class MockVenueFactory {
                 65f, 115f, VIP_BASE_PRICE, VIP_PRICE_STEP, VIP_LABEL_RADIUS);
         addArcSection(builder, "VIP-P", "VIP Phải", ZoneType.VIP, VIP_ROW_RADII, VIP_SEATS_PER_ROW,
                 5f, 55f, VIP_BASE_PRICE, VIP_PRICE_STEP, VIP_LABEL_RADIUS);
+    }
+
+    private static void addStandardSections(Builder builder) {
+        // Dựng từ trái sang phải trên màn hình: Standard 1 (góc lớn nhất) đến Standard 4.
+        addArcSection(builder, "STD-1", "Standard 1", ZoneType.STANDARD,
+                STANDARD_ROW_RADII, STANDARD_SEATS_PER_ROW,
+                139f, 175f, STANDARD_BASE_PRICE, STANDARD_PRICE_STEP, STANDARD_LABEL_RADIUS);
+        addArcSection(builder, "STD-2", "Standard 2", ZoneType.STANDARD,
+                STANDARD_ROW_RADII, STANDARD_SEATS_PER_ROW,
+                95f, 131f, STANDARD_BASE_PRICE, STANDARD_PRICE_STEP, STANDARD_LABEL_RADIUS);
+        addArcSection(builder, "STD-3", "Standard 3", ZoneType.STANDARD,
+                STANDARD_ROW_RADII, STANDARD_SEATS_PER_ROW,
+                49f, 85f, STANDARD_BASE_PRICE, STANDARD_PRICE_STEP, STANDARD_LABEL_RADIUS);
+        addArcSection(builder, "STD-4", "Standard 4", ZoneType.STANDARD,
+                STANDARD_ROW_RADII, STANDARD_SEATS_PER_ROW,
+                5f, 41f, STANDARD_BASE_PRICE, STANDARD_PRICE_STEP, STANDARD_LABEL_RADIUS);
     }
 
     /**
