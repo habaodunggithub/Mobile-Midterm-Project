@@ -655,4 +655,60 @@ public class MapCameraTest {
         assertEquals(1f, target[0], 0f);
         assertEquals(0f, target[2], 0f);
     }
+
+    // ---- NFR-4: khung nhìn thấy dùng để bỏ qua chỗ ngoài màn hình ----
+
+    @Test
+    public void nfr4_fitViewSeesTheWholeWorld() {
+        float[] bounds = new float[4];
+        portrait().getVisibleWorldBounds(bounds);
+        assertTrue(bounds[0] <= 0f && bounds[1] <= 0f);
+        assertTrue(bounds[2] >= WORLD_WIDTH && bounds[3] >= WORLD_HEIGHT);
+    }
+
+    @Test
+    public void nfr4_zoomingInShrinksTheBoundsAroundTheFocus() {
+        MapCamera camera = landscape();
+        float[] before = new float[4];
+        camera.getVisibleWorldBounds(before);
+        camera.zoomBy(3f, 315f, 138f);
+        float[] after = new float[4];
+        camera.getVisibleWorldBounds(after);
+        assertEquals((before[2] - before[0]) / 3f, after[2] - after[0], 0.5f);
+        assertEquals((before[3] - before[1]) / 3f, after[3] - after[1], 0.5f);
+        assertTrue(after[0] > before[0] && after[2] < before[2]);
+    }
+
+    @Test
+    public void nfr4_everyScreenPointIsInsideTheBoundsAfterPanZoomAndRotate() {
+        MapCamera camera = portrait();
+        camera.zoomBy(2.5f, 120f, 300f);
+        camera.rotateBy(0.7f, 195f, 264f);
+        camera.panBy(-40f, 25f);
+        float[] bounds = new float[4];
+        camera.getVisibleWorldBounds(bounds);
+        for (float sx = 0f; sx <= 390f; sx += 39f) {
+            for (float sy = 0f; sy <= 528f; sy += 48f) {
+                float wx = camera.screenToWorldX(sx, sy);
+                float wy = camera.screenToWorldY(sx, sy);
+                assertTrue(wx >= bounds[0] - 1e-3f && wx <= bounds[2] + 1e-3f);
+                assertTrue(wy >= bounds[1] - 1e-3f && wy <= bounds[3] + 1e-3f);
+            }
+        }
+    }
+
+    @Test
+    public void nfr4_boundsGrowWhenTheViewIsRotated() {
+        MapCamera camera = portrait();
+        camera.zoomBy(2f, 195f, 264f);
+        float[] straight = new float[4];
+        camera.getVisibleWorldBounds(straight);
+        camera.rotateBy((float) (Math.PI / 4.0), 195f, 264f);
+        float[] tilted = new float[4];
+        camera.getVisibleWorldBounds(tilted);
+        // Khung bao của hình chữ nhật nghiêng 45 độ luôn có diện tích lớn hơn hình chữ nhật thẳng.
+        float straightArea = (straight[2] - straight[0]) * (straight[3] - straight[1]);
+        float tiltedArea = (tilted[2] - tilted[0]) * (tilted[3] - tilted[1]);
+        assertTrue(tiltedArea > straightArea * 1.1f);
+    }
 }
