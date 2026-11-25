@@ -19,6 +19,16 @@ import java.util.List;
 
 public class MockVenueFactoryTest {
 
+    /** Hai chỗ khác phân khu phải cách nhau ít nhất một đường kính ghế cộng lối đi tối thiểu. */
+    private static final double MIN_CROSS_SECTION_DISTANCE = 2 * MockVenueFactory.SEAT_RADIUS + 14;
+
+    /** Khoảng cách từ tâm vành cung tới (x, y) sau khi bỏ hệ số oval, tức bán kính "danh nghĩa". */
+    private static double ringRadius(Venue venue, float x, float y) {
+        double dx = (x - venue.arcCenterX) / MockVenueFactory.RING_SCALE_X;
+        double dy = (y - venue.arcCenterY) / MockVenueFactory.RING_SCALE_Y;
+        return Math.hypot(dx, dy);
+    }
+
     private static List<Spot> spotsOf(Venue venue, ZoneType zone) {
         List<Spot> result = new ArrayList<>();
         for (Spot spot : venue.getSpots()) {
@@ -137,14 +147,14 @@ public class MockVenueFactoryTest {
         Spot rowA = venue.findSpot("STA-A-A01");
         Spot rowD = venue.findSpot("STA-A-D01");
         assertTrue(rowA.cy < rowD.cy);
-        assertEquals(40f, (rowA.cy - rowA.size) - venue.stageBottom, 0.001f);
+        assertEquals(MockVenueFactory.STANDING_GAP, (rowA.cy - rowA.size) - venue.stageBottom, 0.001f);
     }
 
     @Test
     public void standingLabelsSitInTheCorridorBetweenStageAndCells() {
         Venue venue = MockVenueFactory.create();
         Section a = sectionById(venue, "STA-A");
-        assertEquals(110f, a.labelY, 0.001f);
+        assertEquals(MockVenueFactory.STAGE_BOTTOM + MockVenueFactory.STANDING_GAP / 2f, a.labelY, 0.001f);
         assertTrue(a.labelX < venue.arcCenterX);
     }
 
@@ -162,12 +172,11 @@ public class MockVenueFactoryTest {
     @Test
     public void vipSeatsAreRoundAndLieOnTheirRowRadius() {
         Venue venue = MockVenueFactory.create();
-        float[] radii = {260f, 286f, 312f};
+        float[] radii = MockVenueFactory.VIP_ROW_RADII;
         for (Spot spot : spotsOf(venue, ZoneType.VIP)) {
             assertEquals(spot.id, SpotKind.SEAT, spot.kind);
             int row = spot.rowLabel.charAt(0) - 'A';
-            double distance = Math.hypot(spot.cx - venue.arcCenterX, spot.cy - venue.arcCenterY);
-            assertEquals(spot.id, radii[row], distance, 0.01);
+            assertEquals(spot.id, radii[row], ringRadius(venue, spot.cx, spot.cy), 0.01);
         }
     }
 
@@ -208,16 +217,15 @@ public class MockVenueFactoryTest {
         double aisle = Math.hypot(
                 venue.findSpot("VIP-T-A08").cx - venue.findSpot("VIP-G-A01").cx,
                 venue.findSpot("VIP-T-A08").cy - venue.findSpot("VIP-G-A01").cy);
-        assertTrue("aisle between VIP sections: " + aisle, aisle >= 40.0);
+        assertTrue("aisle between VIP sections: " + aisle, aisle >= MIN_CROSS_SECTION_DISTANCE);
     }
 
     @Test
     public void vipLabelsSitBetweenTheVipAndStandardRings() {
         Venue venue = MockVenueFactory.create();
         Section middle = sectionById(venue, "VIP-G");
-        double distance = Math.hypot(middle.labelX - venue.arcCenterX,
-                middle.labelY - venue.arcCenterY);
-        assertEquals(344.0, distance, 0.01);
+        assertEquals(MockVenueFactory.VIP_LABEL_RADIUS,
+                ringRadius(venue, middle.labelX, middle.labelY), 0.01);
         assertEquals(venue.arcCenterX, middle.labelX, 0.01f);
     }
 
@@ -349,7 +357,7 @@ public class MockVenueFactoryTest {
                 Spot b = spots.get(j);
                 if (!a.sectionId.equals(b.sectionId)) {
                     double distance = Math.hypot(a.cx - b.cx, a.cy - b.cy);
-                    assertTrue(a.id + " and " + b.id + ": " + distance, distance >= 40.0);
+                    assertTrue(a.id + " and " + b.id + ": " + distance, distance >= MIN_CROSS_SECTION_DISTANCE);
                 }
             }
         }
