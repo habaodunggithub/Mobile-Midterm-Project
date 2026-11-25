@@ -4,11 +4,14 @@
     bố cục ngang (layout-land) dùng lại cùng id nhưng xếp thành panel bên trái.
     Thanh tự nhận focus (beforeDescendants): khi ô tìm kiếm bỏ focus thì focus rơi vào đây, không quay lại
     chính ô đó (Android luôn đưa focus về view đầu tiên nhận được focus khi chạm).
+    Tắt highlight focus mặc định, nếu không cả thanh bị phủ một lớp xám khi nó đang giữ focus.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:defaultFocusHighlightEnabled="false"
     android:descendantFocusability="beforeDescendants"
     android:focusable="true"
     android:focusableInTouchMode="true"
@@ -16,7 +19,8 @@
     android:paddingStart="12dp"
     android:paddingTop="8dp"
     android:paddingEnd="12dp"
-    android:paddingBottom="4dp">
+    android:paddingBottom="4dp"
+    tools:targetApi="o">
 
     <!-- Có nút xóa (endIconMode); lọc ngay mỗi lần gõ, không cần bấm tìm (AC-4.2). -->
     <com.google.android.material.textfield.TextInputLayout
