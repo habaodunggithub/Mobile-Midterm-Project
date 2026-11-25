@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Màu mẫu của template cũ: chỉ còn theme hiện tại dùng, sẽ bỏ khi đổi theme. -->
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
@@ -7,4 +8,40 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Hướng thiết kế A (Tonal). Mỗi cặp màu nền/ký hiệu đã được kiểm tương phản:
+         chữ >= 4,5:1; hình và ký hiệu có nghĩa >= 3:1 so với màu kề nó. -->
+
+    <!-- Nền và chữ trên sơ đồ -->
+    <color name="map_background">#FFF3F5F9</color>
+    <color name="stage_fill">#FFDDE2EC</color>
+    <color name="stage_text">#FF3B445A</color>
+    <color name="label_text">#FF3B445A</color>
+    <color name="label_halo">#FFF3F5F9</color>
+
+    <!-- Ba khu: màu nền chỗ, màu chữ trên chỗ và màu viền (viền giúp chỗ đạt 3:1 trên nền) -->
+    <color name="zone_standing">#FFF2A93B</color>
+    <color name="zone_standing_stroke">#FFB8730A</color>
+    <color name="on_zone_standing">#FF3B2600</color>
+    <color name="zone_vip">#FF7B5BD6</color>
+    <color name="zone_vip_stroke">#FF5C40B8</color>
+    <color name="on_zone_vip">#FFFFFFFF</color>
+    <color name="zone_standard">#FF4FA3E0</color>
+    <color name="zone_standard_stroke">#FF2B7FBF</color>
+    <color name="on_zone_standard">#FF06263F</color>
+
+    <!-- Các trạng thái hiển thị còn lại -->
+    <color name="spot_selected">#FF1C2230</color>
+    <color name="on_spot_selected">#FFFFFFFF</color>
+    <color name="spot_mine">#FF12A150</color>
+    <color name="on_spot_mine">#FFFFFFFF</color>
+    <color name="spot_booked">#FFCDD2DB</color>
+    <color name="spot_booked_stroke">#FF7D8799</color>
+    <color name="on_spot_booked">#FF596273</color>
+    <color name="spot_locked_fill">#FFFFFFFF</color>
+    <color name="spot_locked_stroke">#FF59616F</color>
+
+    <!-- Vòng đánh dấu chỗ đang xem: viền trắng bên dưới, vòng mực bên trên để thấy trên mọi màu -->
+    <color name="focus_ring_halo">#FFFFFFFF</color>
+    <color name="focus_ring">#FF1C2230</color>
 </resources>

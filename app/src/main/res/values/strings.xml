@@ -1,3 +1,30 @@
 <resources>
-    <string name="app_name">MidtermProject</string>
+    <string name="app_name">Sơ đồ concert</string>
+
+    <!-- Sơ đồ -->
+    <string name="stage_label">SÂN KHẤU</string>
+    <string name="map_content_description">Sơ đồ chỗ ngồi của đêm concert</string>
+
+    <!-- Tên khu và trạng thái hiển thị (dùng cho chú thích và bảng chi tiết) -->
+    <string name="zone_standing">Standing</string>
+    <string name="zone_vip">VIP</string>
+    <string name="zone_standard">Standard</string>
+    <string name="state_available">Còn trống</string>
+    <string name="state_selected">Đang chọn</string>
+    <string name="state_mine">Vé của bạn</string>
+    <string name="state_booked">Đã đặt</string>
+    <string name="state_locked">Bị khóa</string>
+    <string name="state_out_of_filter">Ngoài bộ lọc</string>
+
+    <!-- Thông báo ngắn M1 đến M10 -->
+    <string name="msg_booked">Chỗ này đã có người đặt</string>
+    <string name="msg_locked">Chỗ này đang bị khóa</string>
+    <string name="msg_mine">Đây là vé của bạn</string>
+    <string name="msg_out_of_filter">Chỗ nằm ngoài bộ lọc hiện tại</string>
+    <string name="msg_limit_reached">Tối đa 8 chỗ mỗi lần đặt</string>
+    <string name="msg_booking_done">Đã đặt %d vé</string>
+    <string name="msg_no_match">Không có chỗ phù hợp</string>
+    <string name="msg_nothing_selected">Chưa chọn chỗ nào</string>
+    <string name="msg_tap_a_spot">Chạm vào một chỗ để xem thông tin</string>
+    <string name="msg_data_reset">Đã làm mới dữ liệu</string>
 </resources>
