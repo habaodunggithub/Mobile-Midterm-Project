@@ -146,4 +146,87 @@ public class MockVenueFactoryTest {
         assertEquals(110f, a.labelY, 0.001f);
         assertTrue(a.labelX < venue.arcCenterX);
     }
+
+    // ---- VIP ----
+
+    @Test
+    public void vipHasSeventyTwoSeatsInThreeSections() {
+        Venue venue = MockVenueFactory.create();
+        assertEquals(72, spotsOf(venue, ZoneType.VIP).size());
+        assertEquals("VIP Trái", sectionById(venue, "VIP-T").name);
+        assertEquals("VIP Giữa", sectionById(venue, "VIP-G").name);
+        assertEquals("VIP Phải", sectionById(venue, "VIP-P").name);
+    }
+
+    @Test
+    public void vipSeatsAreRoundAndLieOnTheirRowRadius() {
+        Venue venue = MockVenueFactory.create();
+        float[] radii = {260f, 286f, 312f};
+        for (Spot spot : spotsOf(venue, ZoneType.VIP)) {
+            assertEquals(spot.id, SpotKind.SEAT, spot.kind);
+            int row = spot.rowLabel.charAt(0) - 'A';
+            double distance = Math.hypot(spot.cx - venue.arcCenterX, spot.cy - venue.arcCenterY);
+            assertEquals(spot.id, radii[row], distance, 0.01);
+        }
+    }
+
+    @Test
+    public void vipIdsFollowSectionRowNumberPattern() {
+        for (Spot spot : spotsOf(MockVenueFactory.create(), ZoneType.VIP)) {
+            assertTrue(spot.id, spot.id.matches("VIP-[TGP]-[A-C]0[1-8]"));
+        }
+    }
+
+    @Test
+    public void vipPriceDropsByThreeHundredThousandPerRow() {
+        for (Spot spot : spotsOf(MockVenueFactory.create(), ZoneType.VIP)) {
+            long expected = 2_500_000L - (spot.rowLabel.charAt(0) - 'A') * 300_000L;
+            assertEquals(spot.id, expected, spot.price);
+        }
+    }
+
+    @Test
+    public void seatNumbersGrowFromLeftToRightOnScreen() {
+        Venue venue = MockVenueFactory.create();
+        for (String row : new String[]{"A", "B", "C"}) {
+            for (String section : new String[]{"VIP-T", "VIP-G", "VIP-P"}) {
+                for (int number = 1; number < 8; number++) {
+                    Spot left = venue.findSpot(section + "-" + row + "0" + number);
+                    Spot right = venue.findSpot(section + "-" + row + "0" + (number + 1));
+                    assertTrue(left.id + " should be left of " + right.id, left.cx < right.cx);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void vipSectionsAreOrderedLeftToRightAndSeparatedByAisles() {
+        Venue venue = MockVenueFactory.create();
+        assertTrue(venue.findSpot("VIP-T-A08").cx < venue.findSpot("VIP-G-A01").cx);
+        assertTrue(venue.findSpot("VIP-G-A08").cx < venue.findSpot("VIP-P-A01").cx);
+        double aisle = Math.hypot(
+                venue.findSpot("VIP-T-A08").cx - venue.findSpot("VIP-G-A01").cx,
+                venue.findSpot("VIP-T-A08").cy - venue.findSpot("VIP-G-A01").cy);
+        assertTrue("aisle between VIP sections: " + aisle, aisle >= 40.0);
+    }
+
+    @Test
+    public void vipLabelsSitBetweenTheVipAndStandardRings() {
+        Venue venue = MockVenueFactory.create();
+        Section middle = sectionById(venue, "VIP-G");
+        double distance = Math.hypot(middle.labelX - venue.arcCenterX,
+                middle.labelY - venue.arcCenterY);
+        assertEquals(344.0, distance, 0.01);
+        assertEquals(venue.arcCenterX, middle.labelX, 0.01f);
+    }
+
+    @Test
+    public void vipLockedSeatsAreTheMixerClusterInTheMiddleSection() {
+        Venue venue = MockVenueFactory.create();
+        for (Spot spot : spotsOf(venue, ZoneType.VIP)) {
+            boolean expectedLocked = spot.sectionId.equals("VIP-G")
+                    && spot.rowLabel.equals("C") && spot.number >= 3 && spot.number <= 6;
+            assertEquals(spot.id, expectedLocked, spot.baseStatus == SpotStatus.LOCKED);
+        }
+    }
 }
