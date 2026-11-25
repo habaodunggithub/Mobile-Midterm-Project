@@ -1,6 +1,8 @@
 package com.example.midtermproject.ui;
 
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageButton;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -42,6 +44,14 @@ public class MainActivity extends AppCompatActivity {
         Venue venue = MockVenueFactory.create();
         VenueMapView mapView = findViewById(R.id.map_view);
         mapView.bind(venue, new PreviewStateSource());
+
+        // La bàn chỉ hiện khi sơ đồ lệch khỏi góc mặc định; kim xoay cùng sơ đồ nên luôn chỉ về sân khấu.
+        ImageButton compass = findViewById(R.id.btn_compass);
+        compass.setOnClickListener(v -> mapView.rotateToDefault());
+        mapView.setOnAngleChangedListener((angleRad, atDefault) -> {
+            compass.setRotation((float) Math.toDegrees(angleRad));
+            compass.setVisibility(atDefault ? View.GONE : View.VISIBLE);
+        });
     }
 
     /**

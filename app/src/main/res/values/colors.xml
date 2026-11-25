@@ -32,6 +32,11 @@
     <color name="spot_locked_fill">#FFFFFFFF</color>
     <color name="spot_locked_stroke">#FF59616F</color>
 
+    <!-- Nút nổi trên sơ đồ -->
+    <color name="surface">#FFFFFFFF</color>
+    <color name="compass_needle">#FF1C2230</color>
+    <color name="compass_tail">#FF9AA3B5</color>
+
     <!-- Vòng đánh dấu chỗ đang xem: viền trắng bên dưới, vòng mực bên trên để thấy trên mọi màu -->
     <color name="focus_ring_halo">#FFFFFFFF</color>
     <color name="focus_ring">#FF1C2230</color>

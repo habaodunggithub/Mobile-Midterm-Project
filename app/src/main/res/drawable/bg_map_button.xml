@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Nút nổi trên sơ đồ (hướng thiết kế A): vuông bo góc 16dp, nền trắng. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/surface" />
+    <corners android:radius="16dp" />
+</shape>

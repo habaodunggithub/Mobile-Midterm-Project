@@ -5,6 +5,8 @@
     <string name="stage_label">SÂN KHẤU</string>
     <string name="map_content_description">Sơ đồ chỗ ngồi của đêm concert</string>
 
+    <string name="compass_content_description">Xoay sơ đồ về hướng mặc định</string>
+
     <!-- Tên khu và trạng thái hiển thị (dùng cho chú thích và bảng chi tiết) -->
     <string name="zone_standing">Standing</string>
     <string name="zone_vip">VIP</string>

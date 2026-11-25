@@ -36,6 +36,8 @@ public class VenueMapView extends View {
     private static final float FIT_PADDING_DP = 16f;
     /** Khi kéo, mép sơ đồ được lùi vào trong vùng nhìn tối đa ngần này dp (AC-2.2). */
     private static final float PAN_MARGIN_DP = 48f;
+    /** Thời gian hiệu ứng đưa sơ đồ về góc mặc định bằng nút la bàn (AC-2.11). */
+    private static final long COMPASS_DURATION_MS = 300L;
     /** Thời gian hiệu ứng Reset View (AC-2.5). */
     private static final long RESET_DURATION_MS = 300L;
     /** Hai ngón phải xoay quá ngần này độ thì sơ đồ mới bắt đầu xoay (REQUIREMENTS Q32). */
@@ -53,6 +55,10 @@ public class VenueMapView extends View {
     private int bottomInsetPx;
     /** Hiệu ứng camera đang chạy (Reset View, tự chỉnh thẳng, la bàn); chạm vào màn hình sẽ hủy nó. */
     private ValueAnimator cameraAnimator;
+
+    private OnAngleChangedListener angleListener;
+    private float notifiedAngle = Float.NaN;
+    private boolean notifiedAtDefault;
 
     private GestureDetector gestureDetector;
     private float touchSlop;
@@ -98,13 +104,51 @@ public class VenueMapView extends View {
         gestureDetector = new GestureDetector(context, new PanListener());
     }
 
+    /** Được báo mỗi khi góc xoay của sơ đồ đổi, để Activity xoay kim và ẩn/hiện nút la bàn. */
+    public interface OnAngleChangedListener {
+        void onAngleChanged(float angleRad, boolean atDefault);
+    }
+
+    public void setOnAngleChangedListener(OnAngleChangedListener listener) {
+        this.angleListener = listener;
+        notifiedAngle = Float.NaN;
+        notifyAngleIfChanged();
+    }
+
+    /** Nút la bàn: xoay về góc mặc định theo chiều ngắn nhất, giữ tâm và tỉ lệ (AC-2.11). */
+    public void rotateToDefault() {
+        if (camera.isReady()) {
+            animateRotationAboutCenter(
+                    MapCamera.shortestAngleDelta(camera.getAngle(), camera.defaultAngle()), COMPASS_DURATION_MS);
+        }
+    }
+
+    /** Mọi chỗ làm đổi camera đều gọi hàm này để vẽ lại và báo cho người nghe góc xoay. */
+    private void onCameraChanged() {
+        invalidate();
+        notifyAngleIfChanged();
+    }
+
+    private void notifyAngleIfChanged() {
+        if (angleListener == null || !camera.isReady()) {
+            return;
+        }
+        final float angle = camera.getAngle();
+        final boolean atDefault = camera.isAtDefaultAngle();
+        if (angle != notifiedAngle || atDefault != notifiedAtDefault) {
+            notifiedAngle = angle;
+            notifiedAtDefault = atDefault;
+            angleListener.onAngleChanged(angle, atDefault);
+        }
+    }
+
     /** Gắn dữ liệu sơ đồ và nguồn trạng thái, rồi đưa góc nhìn về mặc định. */
     public void bind(Venue venue, SpotStateSource states) {
         this.venue = venue;
         this.states = states;
         camera.setWorldSize(venue.worldWidth, venue.worldHeight);
         camera.resetToFit();
-        invalidate();
+        onCameraChanged();
     }
 
     /** Đưa sơ đồ về góc nhìn mặc định (vị trí, tỉ lệ và góc xoay) bằng hiệu ứng mượt (AC-2.5). */
@@ -133,7 +177,7 @@ public class VenueMapView extends View {
                     MapCamera.normalizeAngle(startAngle + angleDelta * f),
                     startTx + (target[2] - startTx) * f,
                     startTy + (target[3] - startTy) * f);
-            invalidate();
+            onCameraChanged();
         });
         cameraAnimator.start();
     }
@@ -154,7 +198,7 @@ public class VenueMapView extends View {
             final float f = (float) animation.getAnimatedValue();
             camera.rotateBy(delta * (f - previous[0]), centerX, centerY);
             previous[0] = f;
-            invalidate();
+            onCameraChanged();
         });
         cameraAnimator.start();
     }
@@ -171,7 +215,7 @@ public class VenueMapView extends View {
         bottomInsetPx = px;
         camera.setViewport(getWidth(), getHeight(), bottomInsetPx);
         camera.resetToFit();
-        invalidate();
+        onCameraChanged();
     }
 
     @Override
@@ -180,6 +224,7 @@ public class VenueMapView extends View {
         cancelCameraAnimation();
         camera.setViewport(width, height, bottomInsetPx);
         camera.resetToFit();
+        notifyAngleIfChanged();
     }
 
     @Override
@@ -259,7 +304,7 @@ public class VenueMapView extends View {
             camera.zoomBy(span / lastSpan, focusX, focusY);
             lastSpan = span;
         }
-        invalidate();
+        onCameraChanged();
     }
 
     /** Khi nhấc ngón: nếu vừa xoay và góc gần một góc vuông thì tự chỉnh thẳng (AC-2.10). */
@@ -288,7 +333,7 @@ public class VenueMapView extends View {
             }
             // distanceX là (vị trí cũ - vị trí mới), nên dịch sơ đồ theo chiều ngược lại.
             camera.panBy(-distanceX, -distanceY);
-            invalidate();
+            onCameraChanged();
             return true;
         }
     }
