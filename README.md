@@ -195,3 +195,36 @@ Nếu điểm chạm nằm trong vùng của nhiều chỗ (ở mức Fit, vùng
 Vì hit-test làm trong **tọa độ sơ đồ** sau khi đổi ngược toàn bộ phép biến đổi, ghế vẫn tròn và ô đứng vẫn vuông bất kể sơ đồ đang xoay thế nào, nên hit-test đúng ở mọi góc nhìn chứ không chỉ ở góc mặc định. Bằng chứng nằm ở các test `ac3_9_*`, ví dụ `HitTesterTest.ac3_9_correctAfterPanAndZoom` và `ac3_9_correctAfterZoomAroundAnOffCenterFocusAndRotation`: với 3 góc xoay (0°, −90°, 37°), 3 mức zoom và 4 độ pan (36 cấu hình), mọi chỗ đang nằm trong màn hình được chạm lệch tâm 6 hướng (cách tâm 0,45 bán kính trên màn hình) và phải trả về đúng chỗ đó.
 
 `HitTester` chỉ làm hình học, xét **mọi** chỗ. Việc được phép chọn hay không (chỗ đã đặt, bị khóa, ngoài bộ lọc, quá 8 chỗ) là quy tắc nghiệp vụ nằm trong `VenueMapState.toggleSelection`, nên chạm vào chỗ không chọn được vẫn nhận ra chỗ đó để báo lý do.
+
+## 7. Quản lý trạng thái
+
+**Tách ba lớp:** dữ liệu (`model/`, `data/`: sơ đồ bất biến), trạng thái (`state/`: phần người dùng thay đổi) và lớp vẽ (`map/`, `ui/`). Dữ liệu đi một chiều: *chạm → `VenueMapState` → báo `Listener` → sơ đồ và bảng chi tiết cùng vẽ lại*. Sơ đồ, bộ lọc và bảng chi tiết **chỉ đọc** từ state, không giữ bản sao riêng, nên chúng không thể lệch nhau (đồng bộ hai chiều).
+
+`VenueMapState` giữ: các chỗ đang chọn (`LinkedHashSet`, giữ thứ tự chọn, tối đa 8), vé của bạn, chỗ đang xem và bộ lọc (`SpotFilter` bất biến, mỗi lần đổi tạo bản mới). Mọi thay đổi đi qua các hàm lệnh `toggleSelection`, `removeSelection`, `setFocused`, `setFilter`, `bookSelection`, `restore`, `resetAll`; mỗi hàm báo `Listener` đúng một lần. Các bất biến luôn đúng: lựa chọn và vé không giao nhau; chỗ đã chọn đều có trạng thái gốc `AVAILABLE`; không quá 8 chỗ; chỗ đang xem là `null` hoặc có thật.
+
+Quy tắc chọn nằm trong `toggleSelection`, trả về `SelectionResult` để giao diện báo lý do: vé của bạn, đã đặt, bị khóa, ngoài bộ lọc, hoặc đã đủ 8 chỗ (chỉ bỏ chọn được qua nút ✕ trong bảng chi tiết nếu chỗ đã ra ngoài bộ lọc). Chạm vào chỗ không chọn được thì chỗ đó vẫn thành "chỗ đang xem".
+
+### Giữ trạng thái khi xoay màn hình
+
+Mỗi dữ liệu chỉ có **một nguồn**:
+
+| Dữ liệu | Nơi giữ | Vì sao |
+|---|---|---|
+| Lựa chọn (giữ thứ tự) và vé của bạn | `SharedPreferences` qua `SessionStore`, ghi mỗi khi một trong hai đổi | còn lại cả khi tắt hẳn app (AC-7.5) |
+| Chỗ đang xem, bộ lọc, ảnh chụp góc nhìn, bảng chú thích | `Bundle` trong `onSaveInstanceState` | chỉ cần qua xoay màn hình và khi hệ thống hủy Activity |
+| Bảng chi tiết mở rộng hay thu gọn | `BottomSheetBehavior` tự lưu | |
+| Hộp thoại xác nhận | `FragmentManager` dựng lại từ `arguments` | |
+
+`onCreate` sinh lại sơ đồ từ cùng seed, đọc `SessionStore`, lấy thêm chỗ đang xem và bộ lọc từ `Bundle` (nếu có), rồi gọi `VenueMapState.restore` **đúng một lần**; hàm này loại mọi mã sai nên dữ liệu hỏng không làm app crash. Các control lọc được vẽ từ state, và đặt `android:saveEnabled="false"` để Android không tự khôi phục chip, chữ tìm kiếm, công tắc, thanh giá bằng giá trị cũ (nếu không thì bộ lọc có hai nguồn).
+
+**Góc nhìn** được lưu dưới dạng `{điểm sơ đồ ở tâm vùng nhìn (x, y), tỉ lệ so với Fit}`, **không lưu `tx, ty` thô**, vì sau khi xoay máy kích thước vùng nhìn đã khác: cùng một `tx, ty` sẽ chỉ vào chỗ khác. Góc xoay không lưu, sau khi tạo lại sơ đồ về góc mặc định của hướng mới. `VenueMapView` áp ảnh chụp ngay khi đo xong kích thước; ảnh hỏng thì dùng Fit.
+
+## 8. Tối ưu hiệu năng
+
+- **Không cấp phát trong `onDraw`:** mọi `Paint`, `Path`, `Matrix`, `RectF` và mảng tạm được dựng sẵn khi khởi tạo (`VenueRenderer`, `SpotRenderer`, `VenueMapView`); nhãn chỗ (`A05`) là `String` tính sẵn trong `Spot`; không nối chuỗi hay `String.format` lúc vẽ. `./gradlew lint` không có cảnh báo `DrawAllocation`.
+- **Chỉ vẽ lại khi cần:** `invalidate()` chỉ được gọi khi camera đổi (cử chỉ, animation) hoặc khi `VenueMapState` báo thay đổi; animation dùng `postInvalidateOnAnimation()`.
+- **Culling:** mỗi khung hình `MapCamera.getVisibleWorldBounds` trả về khung bao của vùng nhìn trong tọa độ sơ đồ (bốn góc màn hình đổi ngược về sơ đồ, có tính cả xoay); `VenueRenderer` bỏ qua các chỗ nằm hẳn ngoài khung này (có lề 24dp cho vòng sáng và viền). Khi zoom lớn chỉ còn vài chục chỗ được vẽ.
+- **Mức chi tiết (LOD):** mã chỗ, dấu ✓ ✕ ★ chỉ vẽ khi chỗ đủ to trên màn hình (đường kính từ 22dp); gạch chéo của chỗ bị khóa từ 9dp. Ở mức Fit chỉ vẽ hình tròn hoặc vuông.
+- **Cắt theo khung:** `onDraw` tự `clipRect` theo khung của View, và chữ tên phân khu vẽ trong tọa độ màn hình nên luôn cùng cỡ.
+- **Phần cứng:** vẽ bằng `View` thường nên được tăng tốc bởi GPU; 224 chỗ không cần `SurfaceView`.
+- **Số đo** (`dumpsys gfxinfo`, emulator Pixel 6 API 35, pinch và pan liên tục 5 vòng, 390 khung hình): trung vị 16 ms, 90% dưới 23 ms, 99% dưới 32 ms; 80% số khung trong 17 ms; thời gian GPU trung vị 11 ms. Đây là số đo trên emulator (GPU giả lập), chưa đo trên máy thật.
