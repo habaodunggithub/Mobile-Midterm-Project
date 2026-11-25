@@ -50,7 +50,7 @@
             android:text="@string/filter_clear" />
     </LinearLayout>
 
-    <!-- Cột nút nổi góc trên phải sơ đồ, xếp dọc và cách nhau 8dp: bảng chú thích, Reset View, rồi la bàn (chỉ hiện khi lệch góc). -->
+    <!-- Cột nút nổi góc trên phải sơ đồ, xếp dọc và cách nhau 8dp: bảng chú thích, Reset View, la bàn (chỉ hiện khi lệch góc), rồi menu ⋮. -->
     <LinearLayout
         android:id="@+id/map_button_column"
         android:layout_width="wrap_content"
@@ -95,6 +95,19 @@
             android:scaleType="fitCenter"
             android:src="@drawable/ic_compass"
             android:visibility="gone" />
+
+        <!-- Menu ⋮ (Q39): hiện chỉ có "Làm mới dữ liệu". Đứng cuối cột để xa các nút dùng thường xuyên. -->
+        <ImageButton
+            android:id="@+id/btn_more"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_map_button"
+            android:contentDescription="@string/more_content_description"
+            android:elevation="4dp"
+            android:padding="12dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_more_vert" />
     </LinearLayout>
 
     <!--

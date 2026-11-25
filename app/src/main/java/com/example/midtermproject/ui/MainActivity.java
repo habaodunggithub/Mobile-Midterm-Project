@@ -5,6 +5,7 @@ import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.PopupMenu;
 
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
@@ -101,6 +102,14 @@ public class MainActivity extends AppCompatActivity
 
         // Reset View chỉ đưa góc nhìn về mặc định, không động tới bộ lọc, lựa chọn hay chỗ đang xem (AC-2.5).
         findViewById(R.id.btn_reset_view).setOnClickListener(v -> mapView.resetView());
+
+        // Nút ⋮ mở menu nhỏ (Q39). Mục "Làm mới dữ liệu" được nối với hộp thoại xác nhận ở commit sau.
+        final ImageButton moreButton = findViewById(R.id.btn_more);
+        moreButton.setOnClickListener(v -> {
+            final PopupMenu menu = new PopupMenu(this, moreButton);
+            menu.inflate(R.menu.menu_map_more);
+            menu.show();
+        });
 
         // La bàn chỉ hiện khi sơ đồ lệch khỏi góc mặc định; kim xoay cùng sơ đồ nên luôn chỉ về sân khấu.
         ImageButton compass = findViewById(R.id.btn_compass);
