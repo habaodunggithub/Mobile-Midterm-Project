@@ -238,6 +238,7 @@
             <!--
                 Bảng chú thích: các mục được thêm bằng code (LegendCard). Mặc định ẩn. Lề dưới được code cộng thêm
                 chiều cao bảng chi tiết đang thu gọn, vì khung chứa sơ đồ kéo dài xuống dưới bảng.
+                clickable để thẻ nhận chạm: không thì chạm lên thẻ lọt xuống sơ đồ và chọn nhầm chỗ nằm bên dưới.
             -->
             <GridLayout
                 android:id="@+id/card_legend"
@@ -246,8 +247,10 @@
                 android:layout_gravity="bottom"
                 android:layout_margin="12dp"
                 android:background="@drawable/bg_legend_card"
+                android:clickable="true"
                 android:columnCount="@integer/legend_columns"
                 android:elevation="4dp"
+                android:focusable="false"
                 android:padding="8dp"
                 android:visibility="gone" />
         </FrameLayout>
