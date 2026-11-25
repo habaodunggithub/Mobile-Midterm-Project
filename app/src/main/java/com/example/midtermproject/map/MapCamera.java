@@ -375,4 +375,34 @@ public final class MapCamera {
         final float dy = (sy - ty) / scale;
         return -dx * (float) Math.sin(angle) + dy * (float) Math.cos(angle);
     }
+
+    /**
+     * Khung chữ nhật (theo trục của sơ đồ) bao quanh vùng đang nhìn thấy, ghi vào {@code outLeftTopRightBottom}
+     * dưới dạng {trái, trên, phải, dưới}. Dùng để bỏ qua các chỗ nằm ngoài màn hình khi vẽ (culling).
+     * <p>
+     * Vùng nhìn là hình chữ nhật trên màn hình; khi sơ đồ xoay, nó thành hình chữ nhật nghiêng trong tọa độ
+     * sơ đồ, nên khung bao là min/max của bốn góc màn hình sau khi đổi về tọa độ sơ đồ. Khung này hơi rộng hơn
+     * vùng nhìn thật khi xoay, nhưng không bao giờ thiếu, nên bỏ qua chỗ nằm ngoài nó là an toàn.
+     * Lấy cả chiều cao màn hình (kể cả phần bảng chi tiết che) để phần lộ ra khi bảng kéo xuống đã được vẽ.
+     */
+    public void getVisibleWorldBounds(float[] outLeftTopRightBottom) {
+        float left = Float.POSITIVE_INFINITY;
+        float top = Float.POSITIVE_INFINITY;
+        float right = Float.NEGATIVE_INFINITY;
+        float bottom = Float.NEGATIVE_INFINITY;
+        for (int corner = 0; corner < 4; corner++) {
+            final float sx = (corner & 1) == 0 ? 0f : viewWidth;
+            final float sy = (corner & 2) == 0 ? 0f : viewHeight;
+            final float wx = screenToWorldX(sx, sy);
+            final float wy = screenToWorldY(sx, sy);
+            left = Math.min(left, wx);
+            top = Math.min(top, wy);
+            right = Math.max(right, wx);
+            bottom = Math.max(bottom, wy);
+        }
+        outLeftTopRightBottom[0] = left;
+        outLeftTopRightBottom[1] = top;
+        outLeftTopRightBottom[2] = right;
+        outLeftTopRightBottom[3] = bottom;
+    }
 }
