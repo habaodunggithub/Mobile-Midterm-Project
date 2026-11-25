@@ -29,6 +29,12 @@ import java.util.List;
  * Không cấp phát gì trong {@link #draw}.
  */
 public final class VenueRenderer {
+    /**
+     * Chỗ chỉ bị bỏ qua khi cách vùng nhìn xa hơn ngần này dp (đổi ra đơn vị sơ đồ khi so sánh), vì vòng chỗ đang
+     * xem, quầng và nét viền vẽ rộng ra ngoài hình của chỗ.
+     */
+    private static final float CULL_MARGIN_DP = 24f;
+
     private final SpotRenderer spotRenderer;
     private final float density;
 
@@ -83,16 +89,18 @@ public final class VenueRenderer {
      * @param scale         tỉ lệ hiện tại, dùng để chọn mức chi tiết và bề dày nét
      * @param angleRad      góc xoay hiện tại, để mã chỗ và ký hiệu luôn đứng thẳng trên màn hình
      * @param pulse         độ nhấp nháy của vòng chỗ đang xem (0 đến 1)
+     * @param visibleBounds {trái, trên, phải, dưới} của vùng nhìn thấy theo tọa độ sơ đồ
+     *                      ({@link MapCamera#getVisibleWorldBounds}); chỗ nằm ngoài khung này không được vẽ
      */
     public void draw(Canvas canvas, Venue venue, SpotStateSource states, Matrix worldToScreen,
-                     float scale, float angleRad, float pulse) {
+                     float scale, float angleRad, float pulse, float[] visibleBounds) {
         canvas.drawColor(background);
 
         canvas.save();
         canvas.concat(worldToScreen);
         drawStage(canvas, venue);
         drawStandingLabels(canvas, venue);
-        drawSpots(canvas, venue, states, scale, angleRad, pulse);
+        drawSpots(canvas, venue, states, scale, angleRad, pulse, visibleBounds);
         canvas.restore();
 
         drawSectionLabels(canvas, venue, worldToScreen);
@@ -126,11 +134,22 @@ public final class VenueRenderer {
     }
 
     private void drawSpots(Canvas canvas, Venue venue, SpotStateSource states, float scale, float angleRad,
-                           float pulse) {
+                           float pulse, float[] visibleBounds) {
         spotRenderer.beginFrame(scale, (float) Math.toDegrees(angleRad), pulse);
+        // Culling: bỏ qua chỗ nằm hẳn ngoài vùng nhìn (kể cả phần vòng sáng và viền vẽ rộng ra), nên khi
+        // phóng to chỉ vẽ vài chục chỗ thay vì cả 224 chỗ.
+        final float margin = CULL_MARGIN_DP * density / scale;
+        final float left = visibleBounds[0] - margin;
+        final float top = visibleBounds[1] - margin;
+        final float right = visibleBounds[2] + margin;
+        final float bottom = visibleBounds[3] + margin;
         final List<Spot> spots = venue.getSpots();
         for (int i = 0; i < spots.size(); i++) {
             final Spot spot = spots.get(i);
+            if (spot.cx + spot.size < left || spot.cx - spot.size > right
+                    || spot.cy + spot.size < top || spot.cy - spot.size > bottom) {
+                continue;
+            }
             spotRenderer.draw(canvas, spot, states.displayStateOf(spot),
                     states.isDimmed(spot), states.isFocused(spot));
         }

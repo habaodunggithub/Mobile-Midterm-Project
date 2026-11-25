@@ -61,6 +61,8 @@ public class VenueMapView extends View {
     private MapCamera camera;
     private VenueRenderer renderer;
     private final Matrix worldToScreen = new Matrix();
+    /** {trái, trên, phải, dưới} của vùng nhìn thấy theo tọa độ sơ đồ; cấp phát một lần, dùng lại mỗi khung hình. */
+    private final float[] visibleBounds = new float[4];
 
     private Venue venue;
     private SpotStateSource states;
@@ -405,7 +407,9 @@ public class VenueMapView extends View {
         worldToScreen.setScale(camera.getScale(), camera.getScale());
         worldToScreen.postRotate((float) Math.toDegrees(camera.getAngle()));
         worldToScreen.postTranslate(camera.getTx(), camera.getTy());
-        renderer.draw(canvas, venue, states, worldToScreen, camera.getScale(), camera.getAngle(), focusPulse);
+        camera.getVisibleWorldBounds(visibleBounds);
+        renderer.draw(canvas, venue, states, worldToScreen, camera.getScale(), camera.getAngle(), focusPulse,
+                visibleBounds);
     }
 
     // Lint chỉ tìm performClick() ngay trong hàm này; ở đây nó được gọi trong handleTap() khi một cú
