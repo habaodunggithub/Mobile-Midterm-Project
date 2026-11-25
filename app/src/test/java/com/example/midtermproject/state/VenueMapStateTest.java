@@ -352,4 +352,119 @@ public class VenueMapStateTest {
         }
         assertEquals("step " + step, expectedMatches, state.getMatchCount());
     }
+
+    // ---- Vé của bạn và khôi phục (AC-3.6, AC-7.5, AC-7.6) ----
+
+    private List<String> ids(List<Spot> spots, int from, int to) {
+        List<String> result = new ArrayList<>();
+        for (int i = from; i < to; i++) {
+            result.add(spots.get(i).id);
+        }
+        return result;
+    }
+
+    @Test
+    public void ac3_6_rejectsAnOwnTicketButFocusesIt() {
+        List<Spot> available = spotsWith(SpotStatus.AVAILABLE, null);
+        Spot mine = available.get(5);
+        state.restore(new ArrayList<String>(), java.util.Arrays.asList(mine.id), null, SpotFilter.NONE);
+        assertEquals(DisplayState.MINE, state.getDisplayState(mine));
+        assertEquals(SelectionResult.REJECTED_MINE, state.toggleSelection(mine.id));
+        assertEquals(mine.id, state.getFocusedId());
+        assertFalse(state.isSelected(mine.id));
+        assertEquals(0, state.getSelectedCount());
+    }
+
+    @Test
+    public void ac3_6_aTicketShowsAsMineEvenIfItWasAlsoSelected() {
+        Spot spot = spotsWith(SpotStatus.AVAILABLE, null).get(5);
+        state.restore(java.util.Arrays.asList(spot.id), java.util.Arrays.asList(spot.id), null, SpotFilter.NONE);
+        assertEquals(DisplayState.MINE, state.getDisplayState(spot));
+        assertEquals(0, state.getSelectedCount());
+        assertEquals(java.util.Arrays.asList(spot), state.getMySpots());
+    }
+
+    @Test
+    public void ac4_3_ownTicketsAreNotOpenForTheAvailableOnlyFilter() {
+        List<Spot> available = spotsWith(SpotStatus.AVAILABLE, null);
+        state.restore(new ArrayList<String>(), ids(available, 0, 3),
+                null, SpotFilter.NONE.withAvailableOnly(true));
+        assertEquals(133 - 3, state.getMatchCount());
+        assertFalse(state.matchesFilter(available.get(0)));
+        assertTrue(state.matchesFilter(available.get(3)));
+    }
+
+    @Test
+    public void ac7_5_restoreKeepsTheOrderOfTheSelection() {
+        List<Spot> available = spotsWith(SpotStatus.AVAILABLE, null);
+        List<String> order = java.util.Arrays.asList(available.get(9).id, available.get(1).id, available.get(40).id);
+        state.restore(order, new ArrayList<String>(), null, SpotFilter.NONE);
+        assertEquals(order, state.snapshotSelectedIds());
+    }
+
+    @Test
+    public void ac7_6_restoreDropsInvalidIds() {
+        Spot good = spotsWith(SpotStatus.AVAILABLE, null).get(0);
+        Spot booked = spotsWith(SpotStatus.BOOKED, null).get(0);
+        Spot locked = spotsWith(SpotStatus.LOCKED, null).get(0);
+        List<String> saved = java.util.Arrays.asList("NOT-A-SPOT", booked.id, good.id, locked.id, good.id, "", null);
+        state.restore(saved, saved, "STILL-NOT-A-SPOT", null);
+        // Cả lựa chọn và vé đều chỉ còn chỗ hợp lệ, không trùng; chỗ vừa chọn vừa là vé thuộc về vé.
+        assertEquals(java.util.Arrays.asList(good.id), state.snapshotMyTicketIds());
+        assertEquals(0, state.getSelectedCount());
+        assertNull(state.getFocusedId());
+        assertEquals(SpotFilter.NONE, state.getFilter());
+    }
+
+    @Test
+    public void ac7_6_restoreAcceptsNullLists() {
+        state.restore(null, null, null, null);
+        assertEquals(0, state.getSelectedCount());
+        assertTrue(state.getMySpots().isEmpty());
+    }
+
+    @Test
+    public void ac7_6_restoreKeepsAtMostTheLimit() {
+        List<Spot> available = spotsWith(SpotStatus.AVAILABLE, null);
+        state.restore(ids(available, 0, 20), new ArrayList<String>(), null, SpotFilter.NONE);
+        assertEquals(VenueMapState.MAX_SELECTION, state.getSelectedCount());
+        assertEquals(ids(available, 0, 8), state.snapshotSelectedIds());
+    }
+
+    @Test
+    public void ac7_6_restoreKeepsAValidFocusAndFilter() {
+        Spot spot = anAvailableSpot();
+        SpotFilter filter = SpotFilter.NONE.withZone(ZoneType.VIP).withQuery("vip g");
+        state.restore(new ArrayList<String>(), new ArrayList<String>(), spot.id, filter);
+        assertEquals(spot, state.getFocusedSpot());
+        assertEquals(filter, state.getFilter());
+        assertEquals("vip g", state.getFilter().rawQuery);
+    }
+
+    @Test
+    public void restoreNotifiesOnce() {
+        state.restore(new ArrayList<String>(), new ArrayList<String>(), null, SpotFilter.NONE);
+        assertEquals(1, notifications);
+    }
+
+    @Test
+    public void ac7_6_invariantsHoldAfterRestoringGarbage() {
+        Random random = new Random(7);
+        List<Spot> spots = venue.getSpots();
+        for (int round = 0; round < 200; round++) {
+            List<String> selected = new ArrayList<>(), mine = new ArrayList<>();
+            for (int i = random.nextInt(14); i > 0; i--) {
+                selected.add(random.nextInt(10) == 0 ? "bad-" + i : spots.get(random.nextInt(spots.size())).id);
+            }
+            for (int i = random.nextInt(6); i > 0; i--) {
+                mine.add(spots.get(random.nextInt(spots.size())).id);
+            }
+            state.restore(selected, mine, random.nextBoolean() ? null : "x", SpotFilter.NONE.withAvailableOnly(random.nextBoolean()));
+            assertInvariants(round);
+            for (Spot ticket : state.getMySpots()) {
+                assertEquals(SpotStatus.AVAILABLE, ticket.baseStatus);
+                assertFalse(state.isSelected(ticket.id));
+            }
+        }
+    }
 }
