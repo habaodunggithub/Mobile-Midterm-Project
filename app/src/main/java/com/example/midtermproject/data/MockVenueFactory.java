@@ -17,7 +17,7 @@ import java.util.List;
  * trước sân khấu; các ghế VIP và Standard xếp theo vành cung quanh tâm (giữa mép dưới sân khấu).
  * <p>
  * Thứ tự dựng cũng là thứ tự bốc số ngẫu nhiên cho trạng thái, nên không được đảo thứ tự:
- * Standing A, Standing B, (các phân khu VIP, Standard được thêm ở các bước sau).
+ * Standing A, Standing B, VIP Trái, VIP Giữa, VIP Phải, (các phân khu Standard được thêm ở bước sau).
  */
 public final class MockVenueFactory {
     public static final long SEED = 2026L;
@@ -39,12 +39,23 @@ public final class MockVenueFactory {
     private static final long STANDING_BASE_PRICE = 1_200_000L;
     private static final long STANDING_PRICE_STEP = 100_000L;
 
+    // Ghế trên các vành cung: hình tròn, bán kính chung.
+    private static final float SEAT_RADIUS = 10f;
+
+    // VIP: 3 phân khu x 3 hàng x 8 ghế, vành cung gần sân khấu.
+    private static final float[] VIP_ROW_RADII = {260f, 286f, 312f};
+    private static final int[] VIP_SEATS_PER_ROW = {8, 8, 8};
+    private static final long VIP_BASE_PRICE = 2_500_000L;
+    private static final long VIP_PRICE_STEP = 300_000L;
+    private static final float VIP_LABEL_RADIUS = 344f;     // lối đi giữa vành VIP và vành Standard
+
     private MockVenueFactory() {
     }
 
     public static Venue create() {
         Builder builder = new Builder(new SpotStatusPolicy(SEED));
         addStandingBlocks(builder);
+        addVipSections(builder);
         return builder.build();
     }
 
@@ -56,6 +67,50 @@ public final class MockVenueFactory {
         float top = STAGE_BOTTOM + STANDING_GAP;
         addGridSection(builder, "STA-A", "Standing A", leftA, top, blockWidth);
         addGridSection(builder, "STA-B", "Standing B", leftB, top, blockWidth);
+    }
+
+    private static void addVipSections(Builder builder) {
+        // Góc theta đo từ trục +x theo chiều kim đồng hồ trên màn hình (90 độ = thẳng xuống).
+        // Dựng từ trái sang phải trên màn hình: Trái (góc lớn), Giữa, Phải (góc nhỏ).
+        addArcSection(builder, "VIP-T", "VIP Trái", ZoneType.VIP, VIP_ROW_RADII, VIP_SEATS_PER_ROW,
+                125f, 175f, VIP_BASE_PRICE, VIP_PRICE_STEP, VIP_LABEL_RADIUS);
+        addArcSection(builder, "VIP-G", "VIP Giữa", ZoneType.VIP, VIP_ROW_RADII, VIP_SEATS_PER_ROW,
+                65f, 115f, VIP_BASE_PRICE, VIP_PRICE_STEP, VIP_LABEL_RADIUS);
+        addArcSection(builder, "VIP-P", "VIP Phải", ZoneType.VIP, VIP_ROW_RADII, VIP_SEATS_PER_ROW,
+                5f, 55f, VIP_BASE_PRICE, VIP_PRICE_STEP, VIP_LABEL_RADIUS);
+    }
+
+    /**
+     * Dựng một phân khu ghế trên vành cung quanh tâm (arcCenterX, arcCenterY).
+     * Hàng A nằm gần sân khấu nhất. Trong mỗi hàng, ghế số 1 nằm bên trái trên màn hình:
+     * <pre>
+     *   theta(k) = endDeg - (k - 1) * (endDeg - startDeg) / (n - 1)
+     *   cx = arcCenterX + r * cos(theta)      cy = arcCenterY + r * sin(theta)
+     * </pre>
+     */
+    private static void addArcSection(Builder builder, String sectionId, String name, ZoneType zone,
+                                      float[] rowRadii, int[] seatsPerRow,
+                                      float startDeg, float endDeg,
+                                      long basePrice, long priceStep, float labelRadius) {
+        float centerX = (STAGE_LEFT + STAGE_RIGHT) / 2f;
+        float centerY = STAGE_BOTTOM;
+
+        double midRad = Math.toRadians((startDeg + endDeg) / 2.0);
+        builder.addSection(new Section(sectionId, name, zone,
+                (float) (centerX + labelRadius * Math.cos(midRad)),
+                (float) (centerY + labelRadius * Math.sin(midRad))));
+
+        for (int row = 0; row < rowRadii.length; row++) {
+            int seats = seatsPerRow[row];
+            long price = basePrice - row * priceStep;
+            for (int k = 1; k <= seats; k++) {
+                double step = seats > 1 ? (endDeg - startDeg) / (seats - 1) : 0.0;
+                double theta = Math.toRadians(endDeg - (k - 1) * step);
+                float cx = (float) (centerX + rowRadii[row] * Math.cos(theta));
+                float cy = (float) (centerY + rowRadii[row] * Math.sin(theta));
+                builder.addSpot(sectionId, zone, SpotKind.SEAT, row, k, price, cx, cy, SEAT_RADIUS);
+            }
+        }
     }
 
     /** Dựng một khối ô đứng dạng lưới, hàng A nằm sát sân khấu nhất. */
