@@ -257,4 +257,75 @@ public class MapCameraTest {
         float[] box = boundingBox(camera);
         assertEquals(600f - 120f - PAN_MARGIN, box[3], 1e-2f);
     }
+
+    // ---- AC-2.3, AC-2.4: zoom ----
+
+    @Test
+    public void ac2_3_zoomKeepsFocalPointFixed() {
+        for (float angle : TEST_ANGLES) {
+            MapCamera camera = zoomedCamera(angle, 4f);
+            float fx = 390f / 2f + 25f, fy = 528f / 2f - 40f;
+            float wx = camera.screenToWorldX(fx, fy), wy = camera.screenToWorldY(fx, fy);
+            camera.zoomBy(1.2f, fx, fy);
+            assertEquals("x at " + angle, fx, camera.worldToScreenX(wx, wy), 1e-2f);
+            assertEquals("y at " + angle, fy, camera.worldToScreenY(wx, wy), 1e-2f);
+
+            camera.zoomBy(0.8f, fx, fy);
+            assertEquals("x back at " + angle, fx, camera.worldToScreenX(wx, wy), 1e-2f);
+            assertEquals("y back at " + angle, fy, camera.worldToScreenY(wx, wy), 1e-2f);
+        }
+    }
+
+    @Test
+    public void ac2_3_zoomChangesTheScaleByTheGivenFactor() {
+        MapCamera camera = zoomedCamera(-HALF_PI, 2f);
+        float before = camera.getScale();
+        camera.zoomBy(1.5f, 195f, 264f);
+        assertEquals(before * 1.5f, camera.getScale(), 1e-4f);
+    }
+
+    @Test
+    public void ac2_4_zoomClampsToMinMax() {
+        for (float angle : new float[]{0f, -HALF_PI}) {
+            MapCamera camera = zoomedCamera(angle, 2f);
+            camera.zoomBy(100000f, 195f, 264f);
+            assertEquals("max at " + angle, camera.getMaxScale(), camera.getScale(), 1e-4f);
+
+            camera.zoomBy(0.00001f, 195f, 264f);
+            assertEquals("min at " + angle, camera.getMinScale(), camera.getScale(), 1e-4f);
+            assertEquals("min is fit at " + angle, camera.fitScale(angle), camera.getScale(), 1e-4f);
+        }
+    }
+
+    @Test
+    public void ac2_4_maxScaleIsSixTimesTheFitAtTheDefaultAngleWhateverTheCurrentAngle() {
+        MapCamera rotated = zoomedCamera(0f, 1f);
+        MapCamera upright = zoomedCamera(-HALF_PI, 1f);
+        assertEquals(6f * upright.fitScale(-HALF_PI), rotated.getMaxScale(), 1e-4f);
+        assertEquals(rotated.getMaxScale(), upright.getMaxScale(), 1e-4f);
+    }
+
+    @Test
+    public void maxScaleMakesASeatAtLeastAFingerWide() {
+        // Một ngón tay cần khoảng 48dp; ở mức zoom tối đa ghế phải to hơn thế.
+        assertTrue(SEAT_DIAMETER * portrait().getMaxScale() >= 48f);
+        assertTrue(SEAT_DIAMETER * landscape().getMaxScale() >= 48f);
+    }
+
+    @Test
+    public void zoomingOutToTheMinimumCentersTheVenue() {
+        MapCamera camera = zoomedCamera(-HALF_PI, 4f);
+        camera.panBy(100000f, 100000f);
+        camera.zoomBy(0.00001f, 20f, 20f);
+        float[] box = boundingBox(camera);
+        assertEquals(390f / 2f, (box[0] + box[2]) / 2f, 1e-2f);
+        assertEquals(528f / 2f, (box[1] + box[3]) / 2f, 1e-2f);
+    }
+
+    @Test
+    public void zoomIsIgnoredUntilTheCameraIsReady() {
+        MapCamera camera = new MapCamera(PADDING);
+        camera.zoomBy(2f, 10f, 10f);
+        assertEquals(1f, camera.getScale(), 0f);
+    }
 }
