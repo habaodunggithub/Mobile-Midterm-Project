@@ -121,16 +121,12 @@
                 android:textSize="14sp" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/tv_empty_selection"
+        <!-- Danh sách chỗ đang chọn và vé của bạn; cuộn được khi dài hơn phần bảng cho phép (AC-5.2). -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_spots"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:minHeight="72dp"
-            android:padding="16dp"
-            android:text="@string/msg_nothing_selected"
-            android:textColor="@color/sheet_text_secondary"
-            android:textSize="14sp" />
+            android:overScrollMode="ifContentScrolls" />
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

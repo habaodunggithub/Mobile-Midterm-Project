@@ -28,7 +28,8 @@ import com.google.android.material.snackbar.Snackbar;
  * {@link VenueMapView}, đưa mọi thay đổi qua state, và báo lý do khi chạm vào chỗ không chọn được.
  * Sơ đồ vẽ lại mỗi khi state đổi (dữ liệu đi một chiều: chạm, rồi state, rồi vẽ).
  */
-public class MainActivity extends AppCompatActivity implements VenueMapView.OnSpotTapListener {
+public class MainActivity extends AppCompatActivity
+        implements VenueMapView.OnSpotTapListener, DetailSheet.Callbacks {
     private VenueMapState state;
     private VenueMapView mapView;
     private DetailSheet detailSheet;
@@ -47,7 +48,7 @@ public class MainActivity extends AppCompatActivity implements VenueMapView.OnSp
         mapView.bind(venue, new VenueMapStateSource(state));
         mapView.setOnSpotTapListener(this);
 
-        detailSheet = new DetailSheet(findViewById(R.id.bottom_sheet), venue, state);
+        detailSheet = new DetailSheet(findViewById(R.id.bottom_sheet), venue, state, this);
         detailSheet.setPeekHeightListener(mapView::setBottomInset);
         // Mọi thay đổi đều đi qua state; state báo thì cả sơ đồ lẫn bảng chi tiết cùng vẽ lại.
         state.addListener(() -> {
@@ -80,6 +81,23 @@ public class MainActivity extends AppCompatActivity implements VenueMapView.OnSp
     @Override
     public void onSpotTapped(Spot spot) {
         showResult(state.toggleSelection(spot.id));
+    }
+
+    /** Bấm ✕ ở một dòng: bỏ chỗ khỏi lựa chọn; sơ đồ và bảng cùng vẽ lại nhờ state báo (UC-07). */
+    @Override
+    public void onRemoveRequested(Spot spot) {
+        state.removeSelection(spot.id);
+    }
+
+    /**
+     * Bấm một dòng: thu bảng về dạng thu gọn để thấy sơ đồ (Q34), đặt chỗ làm chỗ đang xem rồi chạy
+     * hiệu ứng đưa chỗ về giữa sơ đồ (UC-08, AC-5.4).
+     */
+    @Override
+    public void onLocateRequested(Spot spot) {
+        detailSheet.collapse();
+        state.setFocused(spot.id);
+        mapView.locateSpot(spot);
     }
 
     /** Chạm vào lối đi, sân khấu hoặc ngoài sơ đồ: bỏ chỗ đang xem, giữ nguyên lựa chọn (AC-3.8). */

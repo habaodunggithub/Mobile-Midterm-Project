@@ -10,6 +10,8 @@ import androidx.annotation.StringRes;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.midtermproject.R;
 import com.example.midtermproject.model.DisplayState;
@@ -36,14 +38,24 @@ final class DetailSheet {
         void onPeekHeightChanged(int peekHeightPx);
     }
 
+    /** Việc người dùng yêu cầu từ bảng; Activity thực hiện bằng cách đi qua state và sơ đồ. */
+    interface Callbacks {
+        /** Bấm một dòng: đưa chỗ đó về giữa sơ đồ. */
+        void onLocateRequested(Spot spot);
+
+        /** Bấm ✕: bỏ chỗ khỏi lựa chọn. */
+        void onRemoveRequested(Spot spot);
+    }
+
     private final Context context;
     private final VenueMapState state;
+    private final SpotListAdapter adapter;
+    private final RecyclerView list;
     private final View sheet;
     private final View header;
     private final TextView focusInfo;
     private final TextView focusState;
     private final TextView summary;
-    private final TextView emptyText;
     private final Drawable chipBackground;
     private final BottomSheetBehavior<View> behavior;
     /** Tên phân khu theo mã, dựng một lần để hiển thị không phải duyệt danh sách mỗi lần. */
@@ -52,7 +64,7 @@ final class DetailSheet {
     private int navigationInset;
     private PeekHeightListener peekHeightListener;
 
-    DetailSheet(View sheet, Venue venue, VenueMapState state) {
+    DetailSheet(View sheet, Venue venue, VenueMapState state, Callbacks callbacks) {
         this.context = sheet.getContext();
         this.state = state;
         this.sheet = sheet;
@@ -60,7 +72,6 @@ final class DetailSheet {
         this.focusInfo = sheet.findViewById(R.id.tv_focus_info);
         this.focusState = sheet.findViewById(R.id.tv_focus_state);
         this.summary = sheet.findViewById(R.id.tv_selection_summary);
-        this.emptyText = sheet.findViewById(R.id.tv_empty_selection);
         // mutate(): chỉ đổi màu của chip này, không ảnh hưởng mọi nơi dùng chung drawable.
         this.chipBackground = focusState.getBackground().mutate();
         this.behavior = BottomSheetBehavior.from(sheet);
@@ -68,6 +79,20 @@ final class DetailSheet {
         for (Section section : venue.getSections()) {
             sectionNames.put(section.id, section.name);
         }
+        adapter = new SpotListAdapter(context, venue, state, new SpotListAdapter.Listener() {
+            @Override
+            public void onSpotClicked(Spot spot) {
+                callbacks.onLocateRequested(spot);
+            }
+
+            @Override
+            public void onRemoveClicked(Spot spot) {
+                callbacks.onRemoveRequested(spot);
+            }
+        });
+        list = sheet.findViewById(R.id.rv_spots);
+        list.setLayoutManager(new LinearLayoutManager(context));
+        list.setAdapter(adapter);
         behavior.setMaxHeight((int) (context.getResources().getDisplayMetrics().heightPixels * MAX_HEIGHT_FRACTION));
         header.setOnClickListener(v -> toggle());
         // Chiều cao phần đầu đổi (ví dụ cỡ chữ hệ thống) thì peekHeight phải đổi theo.
@@ -80,12 +105,22 @@ final class DetailSheet {
             @Override
             public void onStateChanged(View bottomSheet, int newState) {
                 updateHeaderAction();
+                updateListVisibility(newState);
             }
 
             @Override
             public void onSlide(View bottomSheet, float slideOffset) {
+                // Danh sách hiện dần khi kéo lên: 0 ở dạng thu gọn, đủ rõ khi bảng mới lên được một phần tư.
+                list.setAlpha(Math.max(0f, Math.min(1f, slideOffset * 4f)));
             }
         });
+        // Sau khi xoay máy, BottomSheetBehavior tự khôi phục trạng thái cũ mà không báo callback nào,
+        // nên đồng bộ lại danh sách và chữ hướng dẫn mỗi khi bảng được bố trí lại.
+        sheet.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+            updateListVisibility(behavior.getState());
+            updateHeaderAction();
+        });
+        updateListVisibility(behavior.getState());
         updateHeaderAction();
         render();
     }
@@ -133,7 +168,7 @@ final class DetailSheet {
         final int count = state.getSelectedCount();
         summary.setText(context.getString(R.string.sheet_selection_summary,
                 count, VenueMapState.MAX_SELECTION, PriceFormatter.format(state.getSelectedTotal())));
-        emptyText.setVisibility(count == 0 ? View.VISIBLE : View.GONE);
+        adapter.refresh(context);
     }
 
     private void renderFocus() {
@@ -184,6 +219,23 @@ final class DetailSheet {
         focusState.setTextColor(ContextCompat.getColor(context, foreground));
         chipBackground.setTint(ContextCompat.getColor(context, background));
         focusState.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Dạng thu gọn chỉ hiện phần đầu. Thanh điều hướng kiểu cử chỉ trong suốt nên vùng dưới phần đầu
+     * vẫn nhìn thấy được; ẩn danh sách để dòng đầu của nó không lấp ló ở đó (INVISIBLE vẫn giữ chỗ nên
+     * chiều cao của bảng không đổi, và trình đọc màn hình bỏ qua danh sách đang ẩn).
+     */
+    private void updateListVisibility(int sheetState) {
+        if (sheetState == BottomSheetBehavior.STATE_COLLAPSED) {
+            list.setVisibility(View.INVISIBLE);
+            list.setAlpha(0f);
+        } else {
+            list.setVisibility(View.VISIBLE);
+            if (sheetState == BottomSheetBehavior.STATE_EXPANDED) {
+                list.setAlpha(1f);
+            }
+        }
     }
 
     /** Người dùng trình đọc màn hình nghe "Mở rộng bảng chi tiết" hoặc "Thu gọn bảng chi tiết" khi bấm đúp. */
