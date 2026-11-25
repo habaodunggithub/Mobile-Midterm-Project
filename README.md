@@ -136,3 +136,62 @@ Chỉ có **lựa chọn** (giữ thứ tự chọn) và **vé của bạn**, gh
 | `my_ticket_ids` | `String` | `"STA-A-A01"` |
 
 Dùng chuỗi nối thay vì `StringSet` vì `StringSet` không giữ thứ tự mà lựa chọn cần giữ thứ tự chọn. Ghi bằng `apply()` nên không chặn giao diện. Dữ liệu đọc lên (có thể cũ hoặc hỏng) luôn đi qua `VenueMapState.restore`, hàm này bỏ mã không tồn tại, mã trùng, chỗ không còn trống và chỗ vừa chọn vừa là vé, nên app không crash vì dữ liệu hỏng.
+
+## 5. Công thức chuyển đổi tọa độ
+
+Có hai hệ tọa độ: **tọa độ sơ đồ** (world, đơn vị riêng, gốc ở góc trên trái của sơ đồ 780 × 520, trục y hướng xuống) và **tọa độ màn hình** (px của `VenueMapView`). Quy ước: góc dương là **theo chiều kim đồng hồ trên màn hình**, giống `Matrix.postRotate` của Android.
+
+`MapCamera` giữ bốn số: tỉ lệ `s`, góc `θ` (radian) và độ dịch `t = (tx, ty)` (px). Phép biến đổi:
+
+```
+screen = s · R(θ) · world + t         R(θ) = [ cosθ  −sinθ ]
+                                             [ sinθ   cosθ ]
+
+world  = R(−θ) · (screen − t) / s     (chiều ngược lại, dùng khi chạm)
+```
+
+Trong code (`MapCamera.worldToScreenX/Y` và `screenToWorldX/Y`), hai chiều đều cần **cả hai tọa độ** vì có xoay:
+
+```java
+screenX = s * (wx * cosθ - wy * sinθ) + tx;
+screenY = s * (wx * sinθ + wy * cosθ) + ty;
+
+dx = (sx - tx) / s;  dy = (sy - ty) / s;
+worldX =  dx * cosθ + dy * sinθ;
+worldY = -dx * sinθ + dy * cosθ;
+```
+
+Khi vẽ, `VenueMapView` dựng `Matrix` từ chính bốn số này (`setScale(s, s)`, `postRotate(θ°)`, `postTranslate(tx, ty)`) rồi `canvas.concat(matrix)`. Vì hit-test và việc vẽ dùng chung một công thức nên không thể lệch nhau.
+
+| Thao tác | Công thức | Ý nghĩa |
+|---|---|---|
+| **Pan** | `t' = t + (dx, dy)`, rồi kẹp biên | kéo bao nhiêu px thì dịch bấy nhiêu |
+| **Zoom** hệ số `k` quanh điểm `f` | `s' = clamp(s·k)`, `t' = f − (s'/s)·(f − t)` | điểm sơ đồ nằm dưới `f` (tâm hai ngón) đứng yên |
+| **Xoay** góc `Δ` quanh `f` | `θ' = θ + Δ`, `t' = f − R(Δ)·(f − t)` | điểm sơ đồ dưới `f` đứng yên |
+| **Fit** | `min((W − 2p)/Wθ, (H − bottomInset − 2p)/Hθ)`, `p = 16dp` | sơ đồ vừa vùng nhìn ở góc `θ`; `Wθ = W|cosθ| + H|sinθ|`, `Hθ = W|sinθ| + H|cosθ|` là khung bao của sơ đồ đã xoay |
+| **Giới hạn zoom** | nhỏ nhất = Fit tại góc hiện tại, lớn nhất = `6 ×` Fit tại góc mặc định | tại mức lớn nhất một ghế to khoảng 42dp |
+| **Kẹp biên** | mép khung bao chỉ được lùi vào trong mép vùng nhìn tối đa 48dp | không kéo sơ đồ ra khỏi màn hình; nếu khung bao nhỏ hơn vùng nhìn thì căn giữa |
+
+Góc mặc định là `−90°` khi màn hình dọc (sân khấu bên trái, để sơ đồ lấp đầy chiều cao) và `0°` khi ngang (sân khấu ở trên). `bottomInset` là chiều cao bảng chi tiết đang thu gọn: sơ đồ được căn giữa phía trên bảng.
+
+Xoay hai ngón dùng `RotationTracker` (Java thuần): từ hai điểm chạm tính góc đường nối bằng `atan2`, trả độ lệch so với lần trước, chuẩn hóa về `(−π, π]` để không nhảy 360° khi đi qua trục ±180°. Sơ đồ chỉ bắt đầu xoay khi đường nối quay quá 6°, và tự chỉnh thẳng nếu nhấc tay trong ±8° quanh một góc vuông.
+
+## 6. Phương pháp hit-testing
+
+Khi người dùng chạm, `VenueMapView.handleTap` làm ba bước:
+
+1. Đổi điểm chạm từ màn hình sang tọa độ sơ đồ bằng `MapCamera.screenToWorldX/Y` (công thức ngược ở mục 5, đã tính cả pan, zoom và xoay hiện tại).
+2. Tính dung sai bằng **dp rồi chia cho tỉ lệ**: `tolerance = 8dp · density / s`. Chia cho `s` để vùng nới luôn là 8dp trên màn hình ở mọi mức zoom (nếu quên thì khi zoom lớn vùng nới phình ra gấp nhiều lần và chạm lệch vẫn "trúng").
+3. `HitTester.findSpotAt` duyệt các chỗ, dùng `Spot.hitTest`:
+
+```java
+dx = wx - cx;  dy = wy - cy;  reach = size + tolerance;
+ghế tròn:   dx*dx + dy*dy <= reach*reach     // khoảng cách tới tâm
+ô đứng:     |dx| <= reach && |dy| <= reach   // ô vuông không xoay trong tọa độ sơ đồ
+```
+
+Nếu điểm chạm nằm trong vùng của nhiều chỗ (ở mức Fit, vùng đã nới của các chỗ kề nhau chồng lên nhau) thì chọn chỗ có **tâm gần điểm chạm nhất**. Không trúng chỗ nào (lối đi, sân khấu) thì báo "chạm vào chỗ trống" và bỏ chỗ đang xem.
+
+Vì hit-test làm trong **tọa độ sơ đồ** sau khi đổi ngược toàn bộ phép biến đổi, ghế vẫn tròn và ô đứng vẫn vuông bất kể sơ đồ đang xoay thế nào, nên hit-test đúng ở mọi góc nhìn chứ không chỉ ở góc mặc định. Bằng chứng nằm ở các test `ac3_9_*`, ví dụ `HitTesterTest.ac3_9_correctAfterPanAndZoom` và `ac3_9_correctAfterZoomAroundAnOffCenterFocusAndRotation`: với 3 góc xoay (0°, −90°, 37°), 3 mức zoom và 4 độ pan (36 cấu hình), mọi chỗ đang nằm trong màn hình được chạm lệch tâm 6 hướng (cách tâm 0,45 bán kính trên màn hình) và phải trả về đúng chỗ đó.
+
+`HitTester` chỉ làm hình học, xét **mọi** chỗ. Việc được phép chọn hay không (chỗ đã đặt, bị khóa, ngoài bộ lọc, quá 8 chỗ) là quy tắc nghiệp vụ nằm trong `VenueMapState.toggleSelection`, nên chạm vào chỗ không chọn được vẫn nhận ra chỗ đó để báo lý do.
