@@ -20,7 +20,11 @@ import com.example.midtermproject.map.VenueMapView;
 import com.example.midtermproject.model.SelectionResult;
 import com.example.midtermproject.model.Spot;
 import com.example.midtermproject.model.Venue;
+import com.example.midtermproject.state.SessionData;
+import com.example.midtermproject.state.SessionStore;
+import com.example.midtermproject.state.SpotFilter;
 import com.example.midtermproject.state.VenueMapState;
+import com.example.midtermproject.storage.PrefsSessionStore;
 import com.google.android.material.snackbar.Snackbar;
 
 /**
@@ -31,6 +35,7 @@ import com.google.android.material.snackbar.Snackbar;
 public class MainActivity extends AppCompatActivity
         implements VenueMapView.OnSpotTapListener, DetailSheet.Callbacks, BookingConfirmDialog.Callback {
     private VenueMapState state;
+    private SessionStore store;
     private VenueMapView mapView;
     private DetailSheet detailSheet;
     private LegendCard legendCard;
@@ -46,6 +51,11 @@ public class MainActivity extends AppCompatActivity
 
         Venue venue = MockVenueFactory.create();
         state = new VenueMapState(venue);
+        // Lựa chọn và vé của bạn đến từ dữ liệu đã lưu, và chỉ đọc ở đây một lần (ADR-08). Lần đầu mở app thì
+        // dữ liệu rỗng (AC-7.7); mã sai hoặc hỏng được state tự loại (AC-7.6). Làm trước khi có người nghe state.
+        store = new PrefsSessionStore(this);
+        final SessionData saved = store.load();
+        state.restore(saved.selected, saved.mine, null, SpotFilter.NONE);
         mapView = findViewById(R.id.map_view);
         mapView.bind(venue, new VenueMapStateSource(state));
         mapView.setOnSpotTapListener(this);
