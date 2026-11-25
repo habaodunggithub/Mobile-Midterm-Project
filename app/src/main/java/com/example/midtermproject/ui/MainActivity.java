@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -38,6 +39,16 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity
         implements VenueMapView.OnSpotTapListener, DetailSheet.Callbacks, BookingConfirmDialog.Callback,
                    ResetDataDialog.Callback {
+    // Các khóa của gói trạng thái tạm (REQUIREMENTS 7.2). Lựa chọn và vé của bạn không nằm trong đây:
+    // chúng chỉ đến từ SessionStore để mỗi dữ liệu có đúng một nguồn.
+    private static final String KEY_FOCUSED_ID = "state.focused_id";
+    private static final String KEY_FILTER_ZONE = "filter.zone";
+    private static final String KEY_FILTER_QUERY = "filter.query";
+    private static final String KEY_FILTER_AVAILABLE_ONLY = "filter.available_only";
+    private static final String KEY_FILTER_PRICE_RANGE = "filter.price_range";
+    private static final String KEY_CAMERA_SNAPSHOT = "camera.snapshot";
+    private static final String KEY_LEGEND_VISIBLE = "ui.legend_visible";
+
     private VenueMapState state;
     private SessionStore store;
     /** Bản đã ghi lần trước, để chỉ ghi khi lựa chọn hoặc vé của bạn thật sự đổi (đổi bộ lọc hay chỗ đang xem thì không ghi). */
@@ -126,6 +137,24 @@ public class MainActivity extends AppCompatActivity
             compass.setRotation((float) Math.toDegrees(angleRad));
             compass.setVisibility(atDefault ? View.GONE : View.VISIBLE);
         });
+    }
+
+    /**
+     * Ghi những thứ chưa nằm trong dữ liệu lưu bền: chỗ đang xem, bộ lọc, góc nhìn và bảng chú thích
+     * (AC-7.1, AC-7.3). Góc xoay của sơ đồ không được ghi: sau khi tạo lại, góc về mặc định của hướng mới (AC-2.13).
+     * Bảng chi tiết mở rộng hay thu gọn do {@code BottomSheetBehavior} tự lưu.
+     */
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(KEY_FOCUSED_ID, state.getFocusedId());
+        final SpotFilter filter = state.getFilter();
+        outState.putString(KEY_FILTER_ZONE, filter.zone == null ? null : filter.zone.name());
+        outState.putString(KEY_FILTER_QUERY, filter.rawQuery);
+        outState.putBoolean(KEY_FILTER_AVAILABLE_ONLY, filter.availableOnly);
+        outState.putLongArray(KEY_FILTER_PRICE_RANGE, new long[]{filter.minPrice, filter.maxPrice});
+        outState.putFloatArray(KEY_CAMERA_SNAPSHOT, mapView.getCameraSnapshot());
+        outState.putBoolean(KEY_LEGEND_VISIBLE, legendCard.isShown());
     }
 
     /** Ghi lựa chọn (giữ thứ tự) và vé của bạn khi một trong hai khác bản đã ghi (UC-11). {@code apply()} nên không chặn giao diện. */
