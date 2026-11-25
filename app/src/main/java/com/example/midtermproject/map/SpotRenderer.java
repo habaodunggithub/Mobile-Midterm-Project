@@ -67,6 +67,8 @@ public final class SpotRenderer {
     private float scale = 1f;
     /** Góc (độ) cần xoay ngược lại để chữ và ký hiệu đứng thẳng trên màn hình. */
     private float uprightDegrees;
+    /** 0 đến 1: độ "nhấp nháy" của vòng chỗ đang xem khi vừa được định vị; 0 là vòng bình thường. */
+    private float pulse;
     private boolean dimmed;
 
     public SpotRenderer(Context context) {
@@ -108,11 +110,13 @@ public final class SpotRenderer {
      * Gọi một lần mỗi khung hình, trước khi vẽ các chỗ.
      *
      * @param angleDegrees góc xoay hiện tại của sơ đồ, theo chiều kim đồng hồ
+     * @param pulse        độ nhấp nháy của vòng chỗ đang xem, từ 0 đến 1 (xem {@link #drawFocusRing})
      */
-    public void beginFrame(float scale, float angleDegrees) {
+    public void beginFrame(float scale, float angleDegrees, float pulse) {
         this.scale = scale;
         this.pixel = 1f / scale;
         this.uprightDegrees = -angleDegrees;
+        this.pulse = pulse;
     }
 
     /** Chỗ bán kính {@code radiusWorld} có đủ to trên màn hình để vẽ mã chỗ và ký hiệu không. */
@@ -198,12 +202,16 @@ public final class SpotRenderer {
         shape(canvas, spot, radius, strokePaint(color, 1.2f * density, HALO_ALPHA));
     }
 
-    /** Vòng đôi: viền trắng bên dưới, vòng mực bên trên, nên thấy được trên mọi màu nền. */
+    /**
+     * Vòng đôi: viền trắng bên dưới, vòng mực bên trên, nên thấy được trên mọi màu nền. Khi vừa định
+     * vị, vòng nở ra và dày lên theo {@code pulse} để thu hút mắt, rồi trở về bình thường.
+     */
     private void drawFocusRing(Canvas canvas, Spot spot) {
         dimmed = false;
-        final float radius = spot.size + 4.2f * density * pixel;
-        shape(canvas, spot, radius, strokePaint(focusHalo, 4f * density, 255));
-        shape(canvas, spot, radius, strokePaint(focusInk, 1.8f * density, 255));
+        final float grow = 1f + 3.2f * pulse;
+        final float radius = spot.size + 4.2f * density * pixel * grow;
+        shape(canvas, spot, radius, strokePaint(focusHalo, (4f + 4f * pulse) * density, 255));
+        shape(canvas, spot, radius, strokePaint(focusInk, (1.8f + 2.4f * pulse) * density, 255));
     }
 
     private void drawLabel(Canvas canvas, Spot spot, int color) {

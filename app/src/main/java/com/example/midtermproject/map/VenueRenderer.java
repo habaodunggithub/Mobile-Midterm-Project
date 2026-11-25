@@ -82,16 +82,17 @@ public final class VenueRenderer {
      * @param worldToScreen ma trận đổi tọa độ sơ đồ sang màn hình (scale, xoay, dịch)
      * @param scale         tỉ lệ hiện tại, dùng để chọn mức chi tiết và bề dày nét
      * @param angleRad      góc xoay hiện tại, để mã chỗ và ký hiệu luôn đứng thẳng trên màn hình
+     * @param pulse         độ nhấp nháy của vòng chỗ đang xem (0 đến 1)
      */
     public void draw(Canvas canvas, Venue venue, SpotStateSource states, Matrix worldToScreen,
-                     float scale, float angleRad) {
+                     float scale, float angleRad, float pulse) {
         canvas.drawColor(background);
 
         canvas.save();
         canvas.concat(worldToScreen);
         drawStage(canvas, venue);
         drawStandingLabels(canvas, venue);
-        drawSpots(canvas, venue, states, scale, angleRad);
+        drawSpots(canvas, venue, states, scale, angleRad, pulse);
         canvas.restore();
 
         drawSectionLabels(canvas, venue, worldToScreen);
@@ -124,8 +125,9 @@ public final class VenueRenderer {
         }
     }
 
-    private void drawSpots(Canvas canvas, Venue venue, SpotStateSource states, float scale, float angleRad) {
-        spotRenderer.beginFrame(scale, (float) Math.toDegrees(angleRad));
+    private void drawSpots(Canvas canvas, Venue venue, SpotStateSource states, float scale, float angleRad,
+                           float pulse) {
+        spotRenderer.beginFrame(scale, (float) Math.toDegrees(angleRad), pulse);
         final List<Spot> spots = venue.getSpots();
         for (int i = 0; i < spots.size(); i++) {
             final Spot spot = spots.get(i);

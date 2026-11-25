@@ -1,5 +1,7 @@
 package com.example.midtermproject.map;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -41,6 +43,11 @@ public class VenueMapView extends View {
     private static final float PAN_MARGIN_DP = 48f;
     /** Dung sai khi chạm: chạm cách mép chỗ không quá ngần này dp vẫn tính là trúng (AC-3.9). */
     private static final float TAP_TOLERANCE_DP = 8f;
+    /** Khi định vị một chỗ: phóng ít nhất lên ngần này lần mức vừa khít (AC-5.4). */
+    private static final float LOCATE_MIN_ZOOM = 2.5f;
+    private static final long LOCATE_DURATION_MS = 350L;
+    /** Vòng chỗ đang xem nhấp nháy hai lần sau khi định vị. */
+    private static final long PULSE_DURATION_MS = 700L;
     /** Thời gian hiệu ứng đưa sơ đồ về góc mặc định bằng nút la bàn (AC-2.11). */
     private static final long COMPASS_DURATION_MS = 300L;
     /** Thời gian hiệu ứng Reset View (AC-2.5). */
@@ -60,6 +67,9 @@ public class VenueMapView extends View {
     private int bottomInsetPx;
     /** Hiệu ứng camera đang chạy (Reset View, tự chỉnh thẳng, la bàn); chạm vào màn hình sẽ hủy nó. */
     private ValueAnimator cameraAnimator;
+    /** Hiệu ứng nhấp nháy của vòng chỗ đang xem, chạy ngay sau khi định vị xong. */
+    private ValueAnimator pulseAnimator;
+    private float focusPulse;
 
     private OnAngleChangedListener angleListener;
     private OnSpotTapListener tapListener;
@@ -178,16 +188,51 @@ public class VenueMapView extends View {
         onCameraChanged();
     }
 
+    /**
+     * Định vị một chỗ (từ bảng chi tiết): đưa chỗ đó về giữa vùng sơ đồ phía trên bảng, phóng ít
+     * nhất lên 2,5 lần mức vừa khít, rồi vòng chỗ đang xem nhấp nháy hai lần (AC-5.4, UC-08).
+     * Chạm vào màn hình giữa chừng thì dừng ngay; chỗ vẫn là chỗ đang xem.
+     */
+    public void locateSpot(Spot spot) {
+        if (!camera.isReady()) {
+            return;
+        }
+        final float[] target = camera.centerOnTarget(spot.cx, spot.cy, camera.getMinScale() * LOCATE_MIN_ZOOM);
+        animateCameraTo(target, LOCATE_DURATION_MS, this::startPulse);
+    }
+
+    private void startPulse() {
+        cancelPulse();
+        pulseAnimator = ValueAnimator.ofFloat(0f, 1f);
+        pulseAnimator.setDuration(PULSE_DURATION_MS);
+        pulseAnimator.addUpdateListener(animation -> {
+            // Hai nhịp: sin^2(2 pi t) lên xuống hai lần rồi về 0.
+            final float t = (float) animation.getAnimatedValue();
+            final double wave = Math.sin(2.0 * Math.PI * t);
+            focusPulse = (float) (wave * wave);
+            postInvalidateOnAnimation();
+        });
+        pulseAnimator.start();
+    }
+
+    private void cancelPulse() {
+        if (pulseAnimator != null) {
+            pulseAnimator.cancel();
+            pulseAnimator = null;
+        }
+        focusPulse = 0f;
+    }
+
     /** Đưa sơ đồ về góc nhìn mặc định (vị trí, tỉ lệ và góc xoay) bằng hiệu ứng mượt (AC-2.5). */
     public void resetView() {
-        animateCameraTo(camera.fitTarget(), RESET_DURATION_MS);
+        animateCameraTo(camera.fitTarget(), RESET_DURATION_MS, null);
     }
 
     /**
      * Nội suy camera từ trạng thái hiện tại tới {tỉ lệ, góc, tx, ty} của {@code target}. Góc đi theo
      * chiều ngắn nhất. Một hiệu ứng mới thay thế hiệu ứng đang chạy.
      */
-    private void animateCameraTo(float[] target, long durationMs) {
+    private void animateCameraTo(float[] target, long durationMs, Runnable onFinished) {
         cancelCameraAnimation();
         final float startScale = camera.getScale();
         final float startAngle = camera.getAngle();
@@ -206,6 +251,23 @@ public class VenueMapView extends View {
                     startTy + (target[3] - startTy) * f);
             onCameraChanged();
         });
+        if (onFinished != null) {
+            cameraAnimator.addListener(new AnimatorListenerAdapter() {
+                private boolean cancelled;
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+                    cancelled = true;
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    if (!cancelled) {
+                        onFinished.run();
+                    }
+                }
+            });
+        }
         cameraAnimator.start();
     }
 
@@ -265,6 +327,7 @@ public class VenueMapView extends View {
     }
 
     private void cancelCameraAnimation() {
+        cancelPulse();
         if (cameraAnimator != null) {
             cameraAnimator.cancel();
             cameraAnimator = null;
@@ -298,7 +361,7 @@ public class VenueMapView extends View {
         worldToScreen.setScale(camera.getScale(), camera.getScale());
         worldToScreen.postRotate((float) Math.toDegrees(camera.getAngle()));
         worldToScreen.postTranslate(camera.getTx(), camera.getTy());
-        renderer.draw(canvas, venue, states, worldToScreen, camera.getScale(), camera.getAngle());
+        renderer.draw(canvas, venue, states, worldToScreen, camera.getScale(), camera.getAngle(), focusPulse);
     }
 
     // Lint chỉ tìm performClick() ngay trong hàm này; ở đây nó được gọi trong handleTap() khi một cú
