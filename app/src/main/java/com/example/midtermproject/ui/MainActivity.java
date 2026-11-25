@@ -17,6 +17,10 @@ import com.example.midtermproject.model.Spot;
 import com.example.midtermproject.model.SpotStatus;
 import com.example.midtermproject.model.Venue;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -37,18 +41,32 @@ public class MainActivity extends AppCompatActivity {
 
         Venue venue = MockVenueFactory.create();
         VenueMapView mapView = findViewById(R.id.map_view);
-        mapView.bind(venue, new BaseStatusSource());
+        mapView.bind(venue, new PreviewStateSource());
     }
 
-    /** Tạm thời: chỉ tô theo trạng thái gốc, chưa có lựa chọn, bộ lọc hay chỗ đang xem. */
-    private static final class BaseStatusSource implements SpotStateSource {
+    /**
+     * TẠM THỜI (gỡ ở Chặng 4, khi đã có VenueMapState): dữ liệu mẫu để xem đủ 5 trạng thái hiển thị và
+     * vòng đánh dấu chỗ đang xem. Thứ tự ưu tiên giống REQUIREMENTS 6.3: vé của bạn, đã đặt, bị khóa,
+     * đang chọn, còn trống.
+     */
+    private static final class PreviewStateSource implements SpotStateSource {
+        private final Set<String> selected = new HashSet<>(Arrays.asList("VIP-G-B02", "VIP-G-B03", "STD-3-A03"));
+        private final Set<String> mine = new HashSet<>(Arrays.asList("VIP-G-A05", "STA-A-A02", "STA-A-A03"));
+        private final String focused = "VIP-G-B03";
+
         @Override
         public DisplayState displayStateOf(Spot spot) {
+            if (mine.contains(spot.id)) {
+                return DisplayState.MINE;
+            }
             if (spot.baseStatus == SpotStatus.BOOKED) {
                 return DisplayState.BOOKED;
             }
             if (spot.baseStatus == SpotStatus.LOCKED) {
                 return DisplayState.LOCKED;
+            }
+            if (selected.contains(spot.id)) {
+                return DisplayState.SELECTED;
             }
             return DisplayState.AVAILABLE;
         }
@@ -60,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public boolean isFocused(Spot spot) {
-            return false;
+            return spot.id.equals(focused);
         }
     }
 }
