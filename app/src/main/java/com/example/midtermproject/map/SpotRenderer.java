@@ -115,6 +115,11 @@ public final class SpotRenderer {
         this.uprightDegrees = -angleDegrees;
     }
 
+    /** Chỗ bán kính {@code radiusWorld} có đủ to trên màn hình để vẽ mã chỗ và ký hiệu không. */
+    public boolean showsDetails(float radiusWorld) {
+        return 2f * radiusWorld * scale >= detailMinDiameterPx;
+    }
+
     /**
      * Vẽ một chỗ.
      *
@@ -123,7 +128,7 @@ public final class SpotRenderer {
      */
     public void draw(Canvas canvas, Spot spot, DisplayState state, boolean dimmed, boolean focused) {
         this.dimmed = dimmed;
-        final boolean detail = 2f * spot.size * scale >= detailMinDiameterPx;
+        final boolean detail = showsDetails(spot.size);
         switch (state) {
             case SELECTED:
                 drawSelected(canvas, spot, detail);
