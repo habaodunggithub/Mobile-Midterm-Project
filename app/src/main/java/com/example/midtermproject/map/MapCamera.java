@@ -10,10 +10,12 @@ package com.example.midtermproject.map;
  *   world  = R(-theta) * (screen - t) / s
  * </pre>
  * Lớp này lo phần "vừa khít" (fit), góc mặc định, đổi tọa độ, pan có giới hạn biên, zoom và xoay;
- * snap góc và snapshot được thêm ở các commit sau của Chặng 3.
+ * tự chỉnh về góc vuông và kiểm tra góc mặc định; snapshot được thêm ở commit sau của Chặng 3.
  */
 public final class MapCamera {
     private static final float HALF_PI = (float) (Math.PI / 2.0);
+    /** Góc lệch không quá ngần này so với góc mặc định (0,5 độ) thì coi như đang ở góc mặc định. */
+    private static final float DEFAULT_ANGLE_TOLERANCE = (float) Math.toRadians(0.5);
     /** Phóng to tối đa bằng ngần này lần mức "vừa khít" ở góc mặc định (REQUIREMENTS Q15). */
     private static final float MAX_ZOOM_FACTOR = 6f;
 
@@ -185,6 +187,29 @@ public final class MapCamera {
             scale = minScale;
         }
         clamp();
+    }
+
+    /**
+     * Góc vuông (0, 90, 180, 270 độ) gần góc hiện tại nhất, nếu góc hiện tại lệch không quá
+     * {@code toleranceRad}; ngược lại trả về NaN (AC-2.10). Kết quả nằm trong (-pi, pi].
+     */
+    public float nearestRightAngle(float toleranceRad) {
+        final float current = normalizeAngle(angle);
+        final float target = Math.round(current / HALF_PI) * HALF_PI;
+        if (Math.abs(current - target) <= toleranceRad) {
+            return normalizeAngle(target);
+        }
+        return Float.NaN;
+    }
+
+    /** Sơ đồ đang ở góc mặc định (sai số 0,5 độ) thì ẩn nút la bàn (AC-2.11). */
+    public boolean isAtDefaultAngle() {
+        return Math.abs(normalizeAngle(angle - defaultAngle())) <= DEFAULT_ANGLE_TOLERANCE;
+    }
+
+    /** Góc phải quay (theo chiều ngắn nhất, trong (-pi, pi]) để đi từ {@code from} tới {@code to}. */
+    public static float shortestAngleDelta(float from, float to) {
+        return normalizeAngle(to - from);
     }
 
     /** Đưa góc về khoảng (-pi, pi] để hai góc cách nhau 360 độ được coi là một. */
