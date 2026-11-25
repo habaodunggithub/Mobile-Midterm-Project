@@ -14,6 +14,7 @@ import com.example.midtermproject.model.ZoneType;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MockVenueFactoryTest {
@@ -227,6 +228,130 @@ public class MockVenueFactoryTest {
             boolean expectedLocked = spot.sectionId.equals("VIP-G")
                     && spot.rowLabel.equals("C") && spot.number >= 3 && spot.number <= 6;
             assertEquals(spot.id, expectedLocked, spot.baseStatus == SpotStatus.LOCKED);
+        }
+    }
+
+    // ---- Standard ----
+
+    @Test
+    public void standardHasOneHundredFourSeatsInFourSections() {
+        Venue venue = MockVenueFactory.create();
+        assertEquals(104, spotsOf(venue, ZoneType.STANDARD).size());
+        for (String id : new String[]{"STD-1", "STD-2", "STD-3", "STD-4"}) {
+            assertEquals("Standard " + id.charAt(4), sectionById(venue, id).name);
+        }
+    }
+
+    @Test
+    public void standardRowsHaveSixSixSevenSevenSeats() {
+        Venue venue = MockVenueFactory.create();
+        int[] expected = {6, 6, 7, 7};
+        for (String section : new String[]{"STD-1", "STD-2", "STD-3", "STD-4"}) {
+            for (int row = 0; row < 4; row++) {
+                String rowLabel = String.valueOf((char) ('A' + row));
+                int count = 0;
+                for (Spot spot : venue.getSpots()) {
+                    if (spot.sectionId.equals(section) && spot.rowLabel.equals(rowLabel)) {
+                        count++;
+                    }
+                }
+                assertEquals(section + " row " + rowLabel, expected[row], count);
+            }
+        }
+    }
+
+    @Test
+    public void standardIdsFollowSectionRowNumberPattern() {
+        for (Spot spot : spotsOf(MockVenueFactory.create(), ZoneType.STANDARD)) {
+            assertTrue(spot.id, spot.id.matches("STD-[1-4]-[A-D]0[1-7]"));
+            assertEquals(spot.id, SpotKind.SEAT, spot.kind);
+        }
+    }
+
+    @Test
+    public void standardPriceDropsByOneHundredThousandPerRow() {
+        for (Spot spot : spotsOf(MockVenueFactory.create(), ZoneType.STANDARD)) {
+            long expected = 700_000L - (spot.rowLabel.charAt(0) - 'A') * 100_000L;
+            assertEquals(spot.id, expected, spot.price);
+        }
+    }
+
+    @Test
+    public void standardSectionsAreOrderedLeftToRight() {
+        Venue venue = MockVenueFactory.create();
+        assertTrue(venue.findSpot("STD-1-A06").cx < venue.findSpot("STD-2-A01").cx);
+        assertTrue(venue.findSpot("STD-2-A06").cx < venue.findSpot("STD-3-A01").cx);
+        assertTrue(venue.findSpot("STD-3-A06").cx < venue.findSpot("STD-4-A01").cx);
+    }
+
+    // ---- Toàn bộ sơ đồ ----
+
+    @Test
+    public void totalSpotCountMeetsTheExamRange() {
+        int total = MockVenueFactory.create().getSpots().size();
+        assertEquals(224, total);
+        assertTrue("exam grading needs 150-250 objects", total >= 150 && total <= 250);
+    }
+
+    @Test
+    public void venueHasNineSectionsAndEverySpotBelongsToOne() {
+        Venue venue = MockVenueFactory.create();
+        assertEquals(9, venue.getSections().size());
+        for (Spot spot : venue.getSpots()) {
+            sectionById(venue, spot.sectionId);
+        }
+    }
+
+    @Test
+    public void exactlyEightSpotsAreLockedAtTheDesignedPlaces() {
+        List<String> locked = new ArrayList<>();
+        for (Spot spot : MockVenueFactory.create().getSpots()) {
+            if (spot.baseStatus == SpotStatus.LOCKED) {
+                locked.add(spot.id);
+            }
+        }
+        // `locked` được gom theo thứ tự dựng sơ đồ, nên so sánh trực tiếp với danh sách mong đợi.
+        assertEquals(Arrays.asList(
+                "VIP-G-C03", "VIP-G-C04", "VIP-G-C05", "VIP-G-C06",
+                "STD-1-D01", "STD-1-D02", "STD-4-D06", "STD-4-D07"), locked);
+    }
+
+    @Test
+    public void bookedCountIsAboutOneThird() {
+        int booked = 0;
+        for (Spot spot : MockVenueFactory.create().getSpots()) {
+            if (spot.baseStatus == SpotStatus.BOOKED) {
+                booked++;
+            }
+        }
+        assertTrue("booked = " + booked, booked >= 60 && booked <= 90);
+    }
+
+    @Test
+    public void allThreeBaseStatusesAppear() {
+        boolean available = false;
+        boolean booked = false;
+        boolean locked = false;
+        for (Spot spot : MockVenueFactory.create().getSpots()) {
+            available |= spot.baseStatus == SpotStatus.AVAILABLE;
+            booked |= spot.baseStatus == SpotStatus.BOOKED;
+            locked |= spot.baseStatus == SpotStatus.LOCKED;
+        }
+        assertTrue(available && booked && locked);
+    }
+
+    @Test
+    public void spotsOfDifferentSectionsAreSeparatedByAnAisle() {
+        List<Spot> spots = MockVenueFactory.create().getSpots();
+        for (int i = 0; i < spots.size(); i++) {
+            for (int j = i + 1; j < spots.size(); j++) {
+                Spot a = spots.get(i);
+                Spot b = spots.get(j);
+                if (!a.sectionId.equals(b.sectionId)) {
+                    double distance = Math.hypot(a.cx - b.cx, a.cy - b.cy);
+                    assertTrue(a.id + " and " + b.id + ": " + distance, distance >= 40.0);
+                }
+            }
         }
     }
 }
