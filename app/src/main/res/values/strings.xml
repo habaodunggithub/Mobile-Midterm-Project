@@ -50,6 +50,12 @@
     <string name="sheet_expand_description">Mở rộng bảng chi tiết</string>
     <string name="sheet_collapse_description">Thu gọn bảng chi tiết</string>
 
+    <!-- Hộp thoại xác nhận (đặt vé, làm mới dữ liệu) -->
+    <string name="dialog_cancel">Hủy</string>
+    <string name="dialog_confirm">Xác nhận</string>
+    <string name="dialog_book_title">Đặt %1$d vé?</string>
+    <string name="dialog_book_message">Các chỗ: %1$s\n\nTổng tiền: %2$s đ</string>
+
     <!-- Tên khu và trạng thái hiển thị (dùng cho chú thích và bảng chi tiết) -->
     <string name="zone_standing">Standing</string>
     <string name="zone_vip">VIP</string>
