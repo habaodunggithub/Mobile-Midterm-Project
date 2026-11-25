@@ -70,6 +70,8 @@ public class VenueMapView extends View {
     /** Hiệu ứng nhấp nháy của vòng chỗ đang xem, chạy ngay sau khi định vị xong. */
     private ValueAnimator pulseAnimator;
     private float focusPulse;
+    /** Ảnh chụp góc nhìn cần khôi phục khi vùng nhìn đã có kích thước (sau khi Activity bị tạo lại). */
+    private float[] pendingSnapshot;
 
     private OnAngleChangedListener angleListener;
     private OnSpotTapListener tapListener;
@@ -341,7 +343,7 @@ public class VenueMapView extends View {
     public void setBottomInset(int px) {
         bottomInsetPx = px;
         camera.setViewport(getWidth(), getHeight(), bottomInsetPx);
-        camera.resetToFit();
+        applyPendingSnapshotOrFit();
         onCameraChanged();
     }
 
@@ -350,8 +352,44 @@ public class VenueMapView extends View {
         super.onSizeChanged(width, height, oldWidth, oldHeight);
         cancelCameraAnimation();
         camera.setViewport(width, height, bottomInsetPx);
-        camera.resetToFit();
+        applyPendingSnapshotOrFit();
         notifyAngleIfChanged();
+    }
+
+    /**
+     * Ảnh chụp góc nhìn hiện tại để Activity ghi vào {@code Bundle}: {điểm sơ đồ ở tâm vùng nhìn x, y, tỉ lệ so
+     * với mức vừa khít}. Chưa có kích thước thì trả {@code null} (chưa có gì để lưu).
+     */
+    @Nullable
+    public float[] getCameraSnapshot() {
+        return camera.isReady() ? camera.snapshot() : null;
+    }
+
+    /**
+     * Đặt ảnh chụp cần khôi phục. View chưa có kích thước ở thời điểm này, nên ảnh được áp khi có kích thước;
+     * ảnh hỏng thì dùng góc nhìn vừa khít (UC-11).
+     */
+    public void setPendingCameraSnapshot(@Nullable float[] snapshot) {
+        pendingSnapshot = snapshot;
+    }
+
+    /**
+     * Có ảnh chụp thì khôi phục nó, không thì (hoặc ảnh hỏng) đưa về vừa khít. Ảnh được giữ đến khi bảng chi tiết
+     * báo chiều cao thu gọn (bottomInset > 0): lúc mới mở, kích thước vùng nhìn đổi hai lần (khung rồi bảng) và
+     * lần đầu còn thiếu phần bảng che.
+     */
+    private void applyPendingSnapshotOrFit() {
+        if (!camera.isReady()) {
+            return;     // chưa có kích thước: giữ ảnh chụp cho lần sau, không coi là ảnh hỏng
+        }
+        if (pendingSnapshot != null && camera.restoreSnapshot(pendingSnapshot)) {
+            if (bottomInsetPx > 0) {
+                pendingSnapshot = null;
+            }
+            return;
+        }
+        pendingSnapshot = null;
+        camera.resetToFit();
     }
 
     @Override
