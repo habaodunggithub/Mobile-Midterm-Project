@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity
     private VenueMapView mapView;
     private DetailSheet detailSheet;
     private LegendCard legendCard;
+    private FilterBar filterBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,16 +50,17 @@ public class MainActivity extends AppCompatActivity
         mapView.bind(venue, new VenueMapStateSource(state));
         mapView.setOnSpotTapListener(this);
 
-        // Các control lọc tự nghe state, nên không cần giữ tham chiếu. Truyền cả khung gốc vì control nằm ở hai chỗ:
-        // thanh lọc phía trên và thẻ giá nổi trên sơ đồ.
-        new FilterBar(findViewById(R.id.root), state);
+        // Các control lọc tự nghe state. Truyền cả khung gốc vì chúng nằm ở nhiều chỗ: thanh lọc phía trên, các thẻ
+        // nổi trên sơ đồ và thông báo không có kết quả.
+        filterBar = new FilterBar(findViewById(R.id.root), state);
 
         detailSheet = new DetailSheet(findViewById(R.id.bottom_sheet), venue, state, this);
         legendCard = new LegendCard(findViewById(R.id.card_legend), findViewById(R.id.btn_legend));
-        // Bảng chi tiết thu gọn che bao nhiêu thì cả sơ đồ lẫn bảng chú thích phải chừa bấy nhiêu.
+        // Bảng chi tiết thu gọn che bao nhiêu thì sơ đồ, bảng chú thích và thông báo M7 phải chừa bấy nhiêu.
         detailSheet.setPeekHeightListener(peekHeightPx -> {
             mapView.setBottomInset(peekHeightPx);
             legendCard.setBottomInset(peekHeightPx);
+            filterBar.setBottomInset(peekHeightPx);
         });
         // Mọi thay đổi đều đi qua state; state báo thì cả sơ đồ lẫn bảng chi tiết cùng vẽ lại.
         state.addListener(() -> {

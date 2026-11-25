@@ -149,6 +149,45 @@
                 </LinearLayout>
             </LinearLayout>
 
+            <!--
+                Thông báo M7 khi bộ lọc không khớp chỗ nào (AC-4.7): thẻ ở giữa vùng sơ đồ, kèm nút Xóa lọc. Lề dưới được
+                code cộng thêm chiều cao bảng chi tiết đang thu gọn để thẻ nằm giữa phần sơ đồ nhìn thấy được.
+            -->
+            <LinearLayout
+                android:id="@+id/layout_no_result"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="24dp"
+                android:accessibilityLiveRegion="polite"
+                android:background="@drawable/bg_legend_card"
+                android:clickable="true"
+                android:elevation="4dp"
+                android:focusable="false"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:paddingStart="24dp"
+                android:paddingTop="16dp"
+                android:paddingEnd="24dp"
+                android:paddingBottom="4dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/msg_no_match"
+                    android:textColor="@color/sheet_text"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btn_clear_filter_no_result"
+                    style="@style/Widget.MidtermProject.Button.Text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/filter_clear" />
+            </LinearLayout>
+
             <!-- Cột nút nổi góc trên phải sơ đồ, xếp dọc và cách nhau 8dp: bảng chú thích, Reset View, rồi la bàn (chỉ hiện khi lệch góc). -->
             <LinearLayout
                 android:id="@+id/map_button_column"

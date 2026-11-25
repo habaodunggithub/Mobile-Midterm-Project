@@ -4,6 +4,7 @@ import android.content.Context;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
@@ -45,6 +46,9 @@ final class FilterBar {
     private final TextView priceRange;
     private final View statusCard;
     private final TextView statusText;
+    private final View noResultBanner;
+    /** Lề dưới ban đầu của thông báo M7, để cộng thêm chiều cao bảng chi tiết thay vì thay thế nó. */
+    private final int bannerEdgeMarginPx;
     /** Đang cập nhật control từ state: bỏ qua sự kiện do chính việc đó gây ra, để không lặp vô hạn. */
     private boolean syncing;
     /** Ngón tay đang kéo thanh giá: chỉ áp dụng khi nhấc tay để không tính lại bộ lọc liên tục. */
@@ -61,6 +65,8 @@ final class FilterBar {
         this.priceRange = root.findViewById(R.id.tv_price_range);
         this.statusCard = root.findViewById(R.id.layout_filter_status);
         this.statusText = root.findViewById(R.id.tv_filter_status);
+        this.noResultBanner = root.findViewById(R.id.layout_no_result);
+        this.bannerEdgeMarginPx = ((ViewGroup.MarginLayoutParams) noResultBanner.getLayoutParams()).bottomMargin;
 
         bindSearch();
         bindZoneChips();
@@ -68,7 +74,10 @@ final class FilterBar {
         bindPriceSlider();
         bindAdvancedToggle(root);
         // Xóa lọc đưa mọi tiêu chí về mặc định; lựa chọn và vé của bạn không bị đụng tới (AC-4.8).
-        root.findViewById(R.id.btn_clear_filter).setOnClickListener(v -> state.setFilter(SpotFilter.NONE));
+        // Có hai nút cùng làm việc này: ở dòng "Đang lọc" và ở thông báo không có kết quả.
+        final View.OnClickListener clearFilter = v -> state.setFilter(SpotFilter.NONE);
+        root.findViewById(R.id.btn_clear_filter).setOnClickListener(clearFilter);
+        root.findViewById(R.id.btn_clear_filter_no_result).setOnClickListener(clearFilter);
 
         state.addListener(this::syncFromState);
         syncFromState();
@@ -188,6 +197,15 @@ final class FilterBar {
         showPriceRange();
         syncing = false;
         renderStatus();
+        // Không chỗ nào khớp: mọi chỗ đã bị làm mờ, hiện thông báo M7 kèm nút Xóa lọc (AC-4.7).
+        noResultBanner.setVisibility(state.getMatchCount() == 0 ? View.VISIBLE : View.GONE);
+    }
+
+    /** Đặt thông báo M7 giữa phần sơ đồ nằm trên bảng chi tiết đang thu gọn (cao {@code peekHeightPx}). */
+    void setBottomInset(int peekHeightPx) {
+        final ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) noResultBanner.getLayoutParams();
+        params.bottomMargin = peekHeightPx + bannerEdgeMarginPx;
+        noResultBanner.setLayoutParams(params);
     }
 
     /** Dòng "Đang lọc" chỉ hiện khi có ít nhất một tiêu chí khác mặc định (AC-4.6). */
