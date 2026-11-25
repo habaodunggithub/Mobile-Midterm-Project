@@ -7,6 +7,13 @@
 
     <string name="compass_content_description">Xoay sơ đồ về hướng mặc định</string>
 
+    <!-- Bảng chi tiết -->
+    <!-- Phân khu · hàng · số chỗ · giá; trạng thái hiển thị là chip bên cạnh -->
+    <string name="sheet_focus_info">%1$s · Hàng %2$s · %3$s · %4$s đ</string>
+    <string name="sheet_selection_summary">Đã chọn %1$d/%2$d · Tổng %3$s đ</string>
+    <string name="sheet_expand_description">Mở rộng bảng chi tiết</string>
+    <string name="sheet_collapse_description">Thu gọn bảng chi tiết</string>
+
     <!-- Tên khu và trạng thái hiển thị (dùng cho chú thích và bảng chi tiết) -->
     <string name="zone_standing">Standing</string>
     <string name="zone_vip">VIP</string>

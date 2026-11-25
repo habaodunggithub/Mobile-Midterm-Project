@@ -37,6 +37,19 @@
     <color name="compass_needle">#FF1C2230</color>
     <color name="compass_tail">#FF9AA3B5</color>
 
+    <!-- Bảng chi tiết (hướng A): nền trắng, chữ mực; mỗi chip trạng thái là một cặp nền/chữ đạt tương phản >= 4,5:1 -->
+    <color name="sheet_text">#FF1C2230</color>
+    <color name="sheet_text_secondary">#FF4A5366</color>
+    <color name="sheet_handle">#FF9AA3B5</color>
+    <color name="chip_available_bg">#FFE6EAF2</color>
+    <color name="chip_available_fg">#FF2C3446</color>
+    <color name="chip_selected_bg">#FF1C2230</color>
+    <color name="chip_selected_fg">#FFFFFFFF</color>
+    <color name="chip_mine_bg">#FFD3F0E0</color>
+    <color name="chip_mine_fg">#FF0B5C2E</color>
+    <color name="chip_unavailable_bg">#FFE3E6EC</color>
+    <color name="chip_unavailable_fg">#FF464F61</color>
+
     <!-- Vòng đánh dấu chỗ đang xem: viền trắng bên dưới, vòng mực bên trên để thấy trên mọi màu -->
     <color name="focus_ring_halo">#FFFFFFFF</color>
     <color name="focus_ring">#FF1C2230</color>

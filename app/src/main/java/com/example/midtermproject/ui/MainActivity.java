@@ -3,6 +3,7 @@ package com.example.midtermproject.ui;
 import android.os.Bundle;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 
 import androidx.annotation.StringRes;
@@ -30,6 +31,7 @@ import com.google.android.material.snackbar.Snackbar;
 public class MainActivity extends AppCompatActivity implements VenueMapView.OnSpotTapListener {
     private VenueMapState state;
     private VenueMapView mapView;
+    private DetailSheet detailSheet;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,20 +41,32 @@ public class MainActivity extends AppCompatActivity implements VenueMapView.OnSp
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         setContentView(R.layout.activity_main);
 
-        // Chừa lề cho thanh trạng thái, thanh điều hướng và vết khuyết màn hình.
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.root), (view, insets) -> {
-            Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
-                    | WindowInsetsCompat.Type.displayCutout());
-            view.setPadding(bars.left, bars.top, bars.right, bars.bottom);
-            return insets;
-        });
-
         Venue venue = MockVenueFactory.create();
         state = new VenueMapState(venue);
         mapView = findViewById(R.id.map_view);
         mapView.bind(venue, new VenueMapStateSource(state));
         mapView.setOnSpotTapListener(this);
-        state.addListener(() -> mapView.invalidate());
+
+        detailSheet = new DetailSheet(findViewById(R.id.bottom_sheet), venue, state);
+        detailSheet.setPeekHeightListener(mapView::setBottomInset);
+        // Mọi thay đổi đều đi qua state; state báo thì cả sơ đồ lẫn bảng chi tiết cùng vẽ lại.
+        state.addListener(() -> {
+            mapView.invalidate();
+            detailSheet.render();
+        });
+
+        // Chừa lề cho thanh trạng thái và vết khuyết màn hình bằng lề của khung chứa sơ đồ. Phía dưới thì
+        // bảng chi tiết tự chừa chỗ cho thanh điều hướng (nền bảng kéo dài xuống tận đáy màn hình).
+        final View mapContainer = findViewById(R.id.map_container);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.root), (view, insets) -> {
+            Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
+                    | WindowInsetsCompat.Type.displayCutout());
+            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) mapContainer.getLayoutParams();
+            params.setMargins(bars.left, bars.top, bars.right, 0);
+            mapContainer.setLayoutParams(params);
+            detailSheet.setInsets(bars.left, bars.right, bars.bottom);
+            return insets;
+        });
 
         // La bàn chỉ hiện khi sơ đồ lệch khỏi góc mặc định; kim xoay cùng sơ đồ nên luôn chỉ về sân khấu.
         ImageButton compass = findViewById(R.id.btn_compass);
@@ -102,6 +116,9 @@ public class MainActivity extends AppCompatActivity implements VenueMapView.OnSp
     }
 
     private void showMessage(@StringRes int message) {
-        Snackbar.make(findViewById(R.id.root), message, Snackbar.LENGTH_SHORT).show();
+        // Neo vào bảng chi tiết để thông báo nằm ngay trên bảng, không bị bảng hay thanh điều hướng che.
+        Snackbar.make(findViewById(R.id.root), message, Snackbar.LENGTH_SHORT)
+                .setAnchorView(R.id.bottom_sheet)
+                .show();
     }
 }
