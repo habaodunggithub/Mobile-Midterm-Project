@@ -9,8 +9,8 @@ package com.example.midtermproject.map;
  *   screen = s * R(theta) * world + t        R(theta) = [[cos, -sin], [sin, cos]]
  *   world  = R(-theta) * (screen - t) / s
  * </pre>
- * Lớp này lo phần "vừa khít" (fit), góc mặc định, đổi tọa độ, pan có giới hạn biên và zoom; xoay,
- * snapshot được thêm ở các commit sau của Chặng 3.
+ * Lớp này lo phần "vừa khít" (fit), góc mặc định, đổi tọa độ, pan có giới hạn biên, zoom và xoay;
+ * snap góc và snapshot được thêm ở các commit sau của Chặng 3.
  */
 public final class MapCamera {
     private static final float HALF_PI = (float) (Math.PI / 2.0);
@@ -155,6 +155,50 @@ public final class MapCamera {
         ty = fy - ratio * (fy - ty);
         scale = newScale;
         clamp();
+    }
+
+    /**
+     * Xoay sơ đồ thêm {@code delta} radian (dương là theo chiều kim đồng hồ) quanh điểm (fx, fy) tính
+     * bằng px màn hình, thường là tâm hai ngón. Điểm sơ đồ dưới (fx, fy) đứng yên: từ
+     * {@code f = s*R(theta)*w + t} ta có {@code t' = f - R(delta) * (f - t)} (AC-2.8).
+     * <p>
+     * Xoay làm khung bao đổi kích thước nên mức "vừa khít" cũng đổi; nếu tỉ lệ hiện tại nhỏ hơn mức
+     * nhỏ nhất mới thì phóng lên quanh cùng điểm đó.
+     */
+    public void rotateBy(float delta, float fx, float fy) {
+        if (!isReady()) {
+            return;
+        }
+        final float c = (float) Math.cos(delta);
+        final float s = (float) Math.sin(delta);
+        final float dx = tx - fx;
+        final float dy = ty - fy;
+        tx = fx + c * dx - s * dy;
+        ty = fy + s * dx + c * dy;
+        angle = normalizeAngle(angle + delta);
+
+        final float minScale = getMinScale();
+        if (scale < minScale) {
+            final float ratio = minScale / scale;
+            tx = fx - ratio * (fx - tx);
+            ty = fy - ratio * (fy - ty);
+            scale = minScale;
+        }
+        clamp();
+    }
+
+    /** Đưa góc về khoảng (-pi, pi] để hai góc cách nhau 360 độ được coi là một. */
+    public static float normalizeAngle(float angle) {
+        final float pi = (float) Math.PI;
+        final float twoPi = 2f * pi;
+        float result = angle % twoPi;
+        // So sánh bằng float: góc (float) pi là biên và phải được giữ nguyên là +pi.
+        if (result > pi) {
+            result -= twoPi;
+        } else if (result <= -pi) {
+            result += twoPi;
+        }
+        return result;
     }
 
     /**
