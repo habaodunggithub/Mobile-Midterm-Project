@@ -21,8 +21,9 @@ import com.example.midtermproject.model.Venue;
  * <p>
  * View chỉ lo việc ghép các mảnh: {@link MapCamera} giữ góc nhìn, {@link VenueRenderer} vẽ,
  * {@link SpotStateSource} cho biết trạng thái từng chỗ. Cử chỉ: kéo một ngón để pan; chụm hai ngón
- * để zoom quanh tâm hai ngón; hai ngón cùng dịch chuyển cũng kéo sơ đồ theo. Xoay, quán tính và
- * chạm chọn được thêm ở các commit và chặng sau.
+ * để zoom quanh tâm hai ngón; xoay hai ngón để xoay sơ đồ (tự chỉnh thẳng khi nhấc tay gần góc
+ * vuông); hai ngón cùng dịch chuyển cũng kéo sơ đồ theo. Quán tính và chạm chọn được thêm ở các
+ * commit và chặng sau.
  * <p>
  * Zoom hai ngón được tự đo (khoảng cách hai ngón) thay vì dùng {@code ScaleGestureDetector}, vì
  * detector đó chỉ bắt đầu khi hai ngón cách nhau ít nhất {@code getScaledMinimumScalingSpan()};
@@ -37,6 +38,11 @@ public class VenueMapView extends View {
     private static final float PAN_MARGIN_DP = 48f;
     /** Thời gian hiệu ứng Reset View (AC-2.5). */
     private static final long RESET_DURATION_MS = 300L;
+    /** Hai ngón phải xoay quá ngần này độ thì sơ đồ mới bắt đầu xoay (REQUIREMENTS Q32). */
+    private static final float ROTATION_THRESHOLD_DEG = 6f;
+    /** Nhấc tay khi lệch không quá ngần này độ so với góc vuông thì tự chỉnh thẳng (AC-2.10). */
+    private static final float SNAP_TOLERANCE_DEG = 8f;
+    private static final long SNAP_DURATION_MS = 150L;
 
     private MapCamera camera;
     private VenueRenderer renderer;
@@ -50,6 +56,8 @@ public class VenueMapView extends View {
 
     private GestureDetector gestureDetector;
     private float touchSlop;
+    private final RotationTracker rotationTracker =
+            new RotationTracker((float) Math.toRadians(ROTATION_THRESHOLD_DEG));
 
     // Trạng thái cử chỉ hai ngón.
     private boolean twoFingersDown;
@@ -130,6 +138,27 @@ public class VenueMapView extends View {
         cameraAnimator.start();
     }
 
+    /**
+     * Xoay sơ đồ thêm {@code delta} radian quanh tâm vùng nhìn trong {@code durationMs}. Mỗi khung
+     * hình xoay thêm phần góc của khung đó, nên điểm ở tâm vùng nhìn đứng yên.
+     */
+    private void animateRotationAboutCenter(float delta, long durationMs) {
+        cancelCameraAnimation();
+        final float centerX = getWidth() / 2f;
+        final float centerY = (getHeight() - bottomInsetPx) / 2f;
+        final float[] previous = {0f};
+        cameraAnimator = ValueAnimator.ofFloat(0f, 1f);
+        cameraAnimator.setDuration(durationMs);
+        cameraAnimator.setInterpolator(new DecelerateInterpolator());
+        cameraAnimator.addUpdateListener(animation -> {
+            final float f = (float) animation.getAnimatedValue();
+            camera.rotateBy(delta * (f - previous[0]), centerX, centerY);
+            previous[0] = f;
+            invalidate();
+        });
+        cameraAnimator.start();
+    }
+
     private void cancelCameraAnimation() {
         if (cameraAnimator != null) {
             cameraAnimator.cancel();
@@ -192,7 +221,10 @@ public class VenueMapView extends View {
         final int action = event.getActionMasked();
         if (action == MotionEvent.ACTION_POINTER_UP || action == MotionEvent.ACTION_UP
                 || action == MotionEvent.ACTION_CANCEL || event.getPointerCount() < 2) {
-            twoFingersDown = false;
+            if (twoFingersDown) {
+                twoFingersDown = false;
+                finishTwoFingerGesture(action != MotionEvent.ACTION_CANCEL);
+            }
             return;
         }
         final float focusX = (event.getX(0) + event.getX(1)) / 2f;
@@ -205,6 +237,7 @@ public class VenueMapView extends View {
             initialSpan = span;
             lastSpan = span;
             zooming = false;
+            rotationTracker.begin(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
             return;
         }
         if (action != MotionEvent.ACTION_MOVE) {
@@ -214,6 +247,11 @@ public class VenueMapView extends View {
         lastFocusX = focusX;
         lastFocusY = focusY;
 
+        final float rotation = rotationTracker.update(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
+        if (rotation != 0f) {
+            camera.rotateBy(rotation, focusX, focusY);
+        }
+
         if (!zooming && Math.abs(span - initialSpan) > touchSlop) {
             zooming = true;
             lastSpan = span;
@@ -222,6 +260,17 @@ public class VenueMapView extends View {
             lastSpan = span;
         }
         invalidate();
+    }
+
+    /** Khi nhấc ngón: nếu vừa xoay và góc gần một góc vuông thì tự chỉnh thẳng (AC-2.10). */
+    private void finishTwoFingerGesture(boolean allowSnap) {
+        if (!allowSnap || !rotationTracker.isEngaged()) {
+            return;
+        }
+        final float target = camera.nearestRightAngle((float) Math.toRadians(SNAP_TOLERANCE_DEG));
+        if (!Float.isNaN(target)) {
+            animateRotationAboutCenter(MapCamera.shortestAngleDelta(camera.getAngle(), target), SNAP_DURATION_MS);
+        }
     }
 
     /** Kéo một ngón: pan theo ngón tay (AC-2.1). */
