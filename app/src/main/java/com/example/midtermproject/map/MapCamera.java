@@ -10,7 +10,7 @@ package com.example.midtermproject.map;
  *   world  = R(-theta) * (screen - t) / s
  * </pre>
  * Lớp này lo phần "vừa khít" (fit), góc mặc định, đổi tọa độ, pan có giới hạn biên, zoom và xoay;
- * tự chỉnh về góc vuông và kiểm tra góc mặc định; snapshot được thêm ở commit sau của Chặng 3.
+ * tự chỉnh về góc vuông, kiểm tra góc mặc định và snapshot.
  */
 public final class MapCamera {
     private static final float HALF_PI = (float) (Math.PI / 2.0);
@@ -210,6 +210,55 @@ public final class MapCamera {
     /** Góc phải quay (theo chiều ngắn nhất, trong (-pi, pi]) để đi từ {@code from} tới {@code to}. */
     public static float shortestAngleDelta(float from, float to) {
         return normalizeAngle(to - from);
+    }
+
+    /**
+     * Ảnh chụp vùng đang xem, độc lập với kích thước màn hình: {điểm sơ đồ ở tâm vùng nhìn (x, y),
+     * tỉ lệ so với mức vừa khít ở góc mặc định}. Không lưu độ dịch thô vì sau khi xoay điện thoại
+     * kích thước vùng nhìn đã khác. Góc xoay không được lưu (REQUIREMENTS Q29).
+     */
+    public float[] snapshot() {
+        final float regionCenterX = viewWidth / 2f;
+        final float regionCenterY = (viewHeight - bottomInset) / 2f;
+        return new float[]{
+                screenToWorldX(regionCenterX, regionCenterY),
+                screenToWorldY(regionCenterX, regionCenterY),
+                scale / fitScale(defaultAngle())};
+    }
+
+    /**
+     * Khôi phục từ {@link #snapshot()} trên vùng nhìn hiện tại: góc về góc mặc định của hướng mới,
+     * điểm đã lưu nằm giữa vùng nhìn, tỉ lệ so với mức vừa khít được giữ nguyên.
+     *
+     * @return {@code false} nếu snapshot hỏng hoặc camera chưa sẵn sàng; khi đó camera không đổi
+     */
+    public boolean restoreSnapshot(float[] snapshot) {
+        if (!isReady() || snapshot == null || snapshot.length != 3) {
+            return false;
+        }
+        final float centerX = snapshot[0];
+        final float centerY = snapshot[1];
+        final float ratio = snapshot[2];
+        if (!isFinite(centerX) || !isFinite(centerY) || !isFinite(ratio) || ratio <= 0f
+                || centerX < 0f || centerX > worldWidth || centerY < 0f || centerY > worldHeight) {
+            return false;
+        }
+        final float targetAngle = defaultAngle();
+        final float targetScale = Math.max(fitScale(targetAngle),
+                Math.min(getMaxScale(), ratio * fitScale(targetAngle)));
+        final float c = (float) Math.cos(targetAngle);
+        final float s = (float) Math.sin(targetAngle);
+        final float regionCenterX = viewWidth / 2f;
+        final float regionCenterY = (viewHeight - bottomInset) / 2f;
+        set(targetScale, targetAngle,
+                regionCenterX - targetScale * (centerX * c - centerY * s),
+                regionCenterY - targetScale * (centerX * s + centerY * c));
+        clamp();
+        return true;
+    }
+
+    private static boolean isFinite(float value) {
+        return !Float.isNaN(value) && !Float.isInfinite(value);
     }
 
     /** Đưa góc về khoảng (-pi, pi] để hai góc cách nhau 360 độ được coi là một. */
