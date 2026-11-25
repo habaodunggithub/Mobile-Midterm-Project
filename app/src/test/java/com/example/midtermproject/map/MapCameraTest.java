@@ -422,4 +422,65 @@ public class MapCameraTest {
         camera.rotateBy(1f, 10f, 10f);
         assertEquals(0f, camera.getAngle(), 0f);
     }
+
+    // ---- AC-2.10, AC-2.11: snap và góc mặc định ----
+
+    private static final float EIGHT_DEGREES = (float) Math.toRadians(8);
+
+    private static MapCamera atAngleDegrees(double degrees) {
+        MapCamera camera = portrait();
+        camera.set(camera.getScale(), (float) Math.toRadians(degrees), camera.getTx(), camera.getTy());
+        return camera;
+    }
+
+    @Test
+    public void ac2_10_snapWithinEightDegrees() {
+        assertEquals(HALF_PI, atAngleDegrees(95).nearestRightAngle(EIGHT_DEGREES), 1e-5f);
+        assertEquals(HALF_PI, atAngleDegrees(83).nearestRightAngle(EIGHT_DEGREES), 1e-5f);
+        assertEquals(-HALF_PI, atAngleDegrees(-93).nearestRightAngle(EIGHT_DEGREES), 1e-5f);
+        assertEquals(0f, atAngleDegrees(-7.9).nearestRightAngle(EIGHT_DEGREES), 1e-5f);
+        assertEquals(0f, atAngleDegrees(8).nearestRightAngle(EIGHT_DEGREES), 1e-5f);
+    }
+
+    @Test
+    public void ac2_10_snapHandlesTheHalfTurn() {
+        assertEquals((float) Math.PI, atAngleDegrees(175).nearestRightAngle(EIGHT_DEGREES), 1e-5f);
+        assertEquals((float) Math.PI, atAngleDegrees(-176).nearestRightAngle(EIGHT_DEGREES), 1e-5f);
+    }
+
+    @Test
+    public void ac2_10_noSnapOutsideEightDegrees() {
+        assertTrue(Float.isNaN(atAngleDegrees(37).nearestRightAngle(EIGHT_DEGREES)));
+        assertTrue(Float.isNaN(atAngleDegrees(99).nearestRightAngle(EIGHT_DEGREES)));
+        assertTrue(Float.isNaN(atAngleDegrees(-45).nearestRightAngle(EIGHT_DEGREES)));
+        assertTrue(Float.isNaN(atAngleDegrees(8.5).nearestRightAngle(EIGHT_DEGREES)));
+    }
+
+    @Test
+    public void ac2_11_isAtDefaultAngleTolerance() {
+        // Dọc: góc mặc định là -90 độ.
+        assertTrue(atAngleDegrees(-90).isAtDefaultAngle());
+        assertTrue(atAngleDegrees(-90.4).isAtDefaultAngle());
+        assertTrue(atAngleDegrees(-89.6).isAtDefaultAngle());
+        assertFalse(atAngleDegrees(-90.6).isAtDefaultAngle());
+        assertFalse(atAngleDegrees(-89.4).isAtDefaultAngle());
+        assertFalse(atAngleDegrees(0).isAtDefaultAngle());
+    }
+
+    @Test
+    public void ac2_11_isAtDefaultAngleInLandscapeUsesZero() {
+        MapCamera camera = landscape();
+        assertTrue(camera.isAtDefaultAngle());
+        camera.set(camera.getScale(), 0.2f, camera.getTx(), camera.getTy());
+        assertFalse(camera.isAtDefaultAngle());
+    }
+
+    @Test
+    public void ac2_11_shortestAngleDeltaGoesTheShortWay() {
+        assertEquals(0.5f, MapCamera.shortestAngleDelta(0.2f, 0.7f), 1e-5f);
+        assertEquals(-0.5f, MapCamera.shortestAngleDelta(0.7f, 0.2f), 1e-5f);
+        // Từ 170 độ sang -170 độ chỉ là 20 độ theo chiều dương, không phải -340 độ.
+        float delta = MapCamera.shortestAngleDelta((float) Math.toRadians(170), (float) Math.toRadians(-170));
+        assertEquals((float) Math.toRadians(20), delta, 1e-5f);
+    }
 }
