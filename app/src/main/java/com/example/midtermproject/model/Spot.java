@@ -18,6 +18,11 @@ public final class Spot {
     public final int number;
     /** Nhãn ngắn dùng để vẽ, dạng "C05". Tính sẵn một lần để onDraw không phải tạo chuỗi. */
     public final String label;
+    /**
+     * Khóa dùng để tìm kiếm: mã chỗ viết hoa và bỏ dấu gạch, ví dụ "VIPGC05". Tính sẵn một lần để
+     * việc lọc không phải tạo chuỗi mới cho từng chỗ.
+     */
+    public final String searchKey;
     public final SpotStatus baseStatus;
     /** Giá vé tính bằng đồng. */
     public final long price;
@@ -46,5 +51,28 @@ public final class Spot {
         this.size = size;
         this.label = String.format(Locale.ROOT, "%s%02d", rowLabel, number);
         this.id = sectionId + "-" + label;
+        this.searchKey = id.replace("-", "").toUpperCase(Locale.ROOT);
+    }
+
+    /**
+     * Điểm (wx, wy) trong tọa độ sơ đồ có chạm vào chỗ này không, tính cả dung sai {@code tolerance}
+     * (đơn vị sơ đồ) quanh mép. Ghế là hình tròn nên so khoảng cách tới tâm; ô đứng là hình vuông
+     * nên so độ lệch theo từng trục (AC-3.9).
+     */
+    public boolean hitTest(float wx, float wy, float tolerance) {
+        final float dx = wx - cx;
+        final float dy = wy - cy;
+        final float reach = size + tolerance;
+        if (kind == SpotKind.STANDING_CELL) {
+            return Math.abs(dx) <= reach && Math.abs(dy) <= reach;
+        }
+        return dx * dx + dy * dy <= reach * reach;
+    }
+
+    /** Bình phương khoảng cách từ tâm chỗ tới điểm (wx, wy); dùng để chọn chỗ gần nhất. */
+    public float distanceSqTo(float wx, float wy) {
+        final float dx = wx - cx;
+        final float dy = wy - cy;
+        return dx * dx + dy * dy;
     }
 }
