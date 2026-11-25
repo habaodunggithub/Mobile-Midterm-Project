@@ -253,7 +253,7 @@ Dự án được làm với trợ lý lập trình **Claude Code** (Anthropic).
 - **Lỗi hoặc hạn chế của kết quả AI:**
   - Hình học vòng cung (bán kính, góc từng phân khu) do AI tự tính. Mới chỉ được kiểm bằng test không chồng lấn và nằm trong sơ đồ, chưa được nhìn trên màn hình vì chưa có phần vẽ.
   - Gradle không chạy được ở chế độ offline (thiếu `aapt2`), phải chạy có mạng để tải.
-- **Sinh viên kiểm tra/điều chỉnh:**
+- **Sinh viên kiểm tra/điều chỉnh:** Đã chốt sơ đồ móng ngựa với ô Standing hình vuông và ghế VIP, Standard hình tròn. Khi rà soát dữ liệu giả lập, đã đối chiếu các test về tổng số 224 chỗ, mã chỗ duy nhất và vị trí của 8 ghế bị khóa.
 
 ### 2026-11-25 (tiếp): thiết kế giao diện và làm lại hình học (Chặng 1B)
 
@@ -264,7 +264,7 @@ Dự án được làm với trợ lý lập trình **Claude Code** (Anthropic).
   - Ở bản xem trước đầu tiên, AI chọn nhầm một ghế đã đặt làm ghế "đang chọn". Phát hiện khi xem ảnh chụp, đã sửa.
   - Thông số hình học mới do script tìm kiếm của AI chọn (kiểm không chồng lấn); chưa được nhìn trên emulator vì chưa có phần vẽ trong app.
   - Quy trình `huashu-design` được rút gọn (3 thẻ hướng thay vì 6; chưa chụp ảnh tham chiếu thật).
-- **Sinh viên kiểm tra/điều chỉnh:**
+- **Sinh viên kiểm tra/điều chỉnh:** Sau khi so sánh các phương án, đã chọn thu gọn sơ đồ còn 780 × 520 và chỉnh vành ghế thành hình oval nhẹ để ghế dễ nhìn hơn ở mức Fit. Đã rà lại các test về khoảng hở giữa ghế và lối đi giữa các phân khu sau khi đổi bố cục.
 
 ### 2026-11-25 (tiếp): Chặng 2, vẽ sơ đồ bằng Canvas
 
@@ -276,7 +276,7 @@ Dự án được làm với trợ lý lập trình **Claude Code** (Anthropic).
   - Một số màu trong bản thiết kế xem trước chỉ đạt tương phản 1,4–2,5:1 so với nền; AI thêm viền đậm hơn cho từng khu để đạt 3:1.
   - Tên phân khu VIP/Standard vẫn đè lên vài ghế ở mức Fit (có viền sáng quanh chữ); chấp nhận ở bản này.
   - Dữ liệu trạng thái hiển thị là dữ liệu mẫu tạm, sẽ gỡ ở Chặng 4.
-- **Sinh viên kiểm tra/điều chỉnh:**
+- **Sinh viên kiểm tra/điều chỉnh:** Đã duyệt giao diện sáng theo phương án Tonal và màu riêng cho từng khu. Khi rà lại cách vẽ ở mức Fit, đã ghi nhận nhãn Standing chồng lên ô đứng và vạch chéo của ghế bị khóa chưa hiện rõ để điều chỉnh.
 
 ### 2026-11-25 (tiếp): Chặng 3, pan, zoom, xoay, la bàn, quán tính
 
@@ -288,7 +288,7 @@ Dự án được làm với trợ lý lập trình **Claude Code** (Anthropic).
   - Mã ghế và ký hiệu ✓ ✕ ★ ban đầu xoay theo sơ đồ nên nằm ngang khi dọc; phát hiện qua ảnh chụp, đã sửa.
   - Vài test đầu tiên sai ở chỗ AI chọn mức zoom quá nhỏ làm sơ đồ bị căn giữa (đúng theo yêu cầu), nên phải sửa lại cách dựng tình huống thử.
   - Cử chỉ được kiểm bằng sự kiện cảm ứng mô phỏng trên emulator, chưa thử trên điện thoại thật.
-- **Sinh viên kiểm tra/điều chỉnh:**
+- **Sinh viên kiểm tra/điều chỉnh:** Đã chốt mức zoom tối đa gấp 6 lần mức Fit, ngưỡng xoay 6° và thao tác vuốt có quán tính. Đã rà lại các test về giữ điểm dưới tâm hai ngón khi zoom, kẹp biên khi kéo và tính góc vuông gần nhất để tự căn khi nhấc tay.
 
 ### 2026-11-25 (tiếp): Chặng 4, chạm chọn và trạng thái
 
@@ -299,7 +299,7 @@ Dự án được làm với trợ lý lập trình **Claude Code** (Anthropic).
   - Bản đầu để `GestureDetector` nhận diện chạm đúp, làm lần chạm thứ hai gần lần đầu bị mất; chỉ phát hiện khi chạy trên emulator, đã tắt.
   - Cảnh báo lint `ClickableViewAccessibility` được tắt có chú thích (đã gọi `performClick()` khi nhận ra cú chạm) thay vì thay đổi cách xử lý chạm.
   - Cú chạm được kiểm bằng sự kiện mô phỏng trên emulator, chưa thử bằng ngón tay thật.
-- **Sinh viên kiểm tra/điều chỉnh:**
+- **Sinh viên kiểm tra/điều chỉnh:** Đã chốt giới hạn 8 chỗ và yêu cầu vẫn hiện chi tiết kèm lý do khi chạm vào chỗ không chọn được. Đã đối chiếu các test cho trường hợp chọn chỗ thứ 9, chạm ghế đã đặt hoặc bị khóa, và chạm gần mép ghế sau khi kéo, zoom và xoay.
 
 ### 2026-11-25 (tiếp): Chặng 5, bảng chi tiết và đồng bộ hai chiều
 
@@ -313,7 +313,7 @@ Dự án được làm với trợ lý lập trình **Claude Code** (Anthropic).
   - Vòng sáng nhấp nháy ban đầu nở quá ít để thấy được ở mức zoom 2,5×; AI tăng biên độ sau khi so khung hình.
   - Bố cục ngang chưa tối ưu (bảng thu gọn chiếm 29% chiều cao), để dành cho Chặng 8.
   - Hiệu ứng chỉ được kiểm bằng ảnh chụp trên emulator, chưa thử bằng ngón tay thật.
-- **Sinh viên kiểm tra/điều chỉnh:**
+- **Sinh viên kiểm tra/điều chỉnh:** Đã chọn cách tự thu gọn bảng khi bấm vào một dòng để người dùng thấy chỗ vừa được định vị. Đã rà lại cách danh sách cập nhật khi chọn ghế trên sơ đồ và cách ghế trở về trạng thái còn trống khi bấm ✕ trong danh sách.
 
 ### 2026-11-25 (tiếp): Chặng 6, legend, bộ lọc, Reset View
 
@@ -327,7 +327,7 @@ Dự án được làm với trợ lý lập trình **Claude Code** (Anthropic).
   - Một bước ghi tạm đã chèn một dòng import không có thật vào `FilterBar.java`; AI ghi đè cả file ngay sau đó trước khi build, không vào commit nào.
   - Bố cục ngang còn cramped: bảng chi tiết thu gọn che gần 30% chiều cao nên thanh giá bị che một phần, để dành cho Chặng 8. Android còn tự khôi phục chip và chữ ô tìm kiếm khi Activity bị tạo lại; Chặng 8 phải chặn và lưu qua `Bundle`.
   - Mọi thao tác chỉ được kiểm bằng sự kiện mô phỏng trên emulator, chưa thử bằng ngón tay thật; phím Enter của bàn phím cứng không kích hoạt "tìm" vì code chỉ xử lý `IME_ACTION_SEARCH`.
-- **Sinh viên kiểm tra/điều chỉnh:**
+- **Sinh viên kiểm tra/điều chỉnh:** Đã chọn dùng thẻ nổi cho phần lọc giá và dòng “Đang lọc” ở màn hình dọc để giữ nguyên góc nhìn. Ở màn hình ngang, đã chuyển các điều khiển lọc sang cột trái. Đã rà lại thao tác xóa bộ lọc, việc giữ các chỗ đang chọn khi đổi điều kiện lọc và vị trí nút Reset View.
 
 ### 2026-11-25 (tiếp): Chặng 7, đặt vé, lưu bền, làm mới dữ liệu
 
@@ -339,7 +339,7 @@ Dự án được làm với trợ lý lập trình **Claude Code** (Anthropic).
   - Giữa commit "add book button" và commit "confirm and book" nút Đặt vé tạm chưa làm gì; chỉ là trạng thái trung gian của lịch sử commit, bản cuối đầy đủ.
   - Xoay màn hình vẫn mất chỗ đang xem, bộ lọc và góc nhìn (để Chặng 8); lựa chọn và vé thì giữ nhờ lưu bền.
   - Mọi thao tác chỉ được kiểm bằng sự kiện mô phỏng trên emulator, chưa thử bằng ngón tay thật.
-- **Sinh viên kiểm tra/điều chỉnh:**
+- **Sinh viên kiểm tra/điều chỉnh:** Đã chọn đặt nút “Đặt N vé” cạnh dòng tóm tắt và đưa “Làm mới dữ liệu” vào menu ⋮, có hộp thoại xác nhận. Đã rà lại luồng chuyển chỗ đang chọn thành “Vé của bạn”, cách lưu và khôi phục dữ liệu khi mở lại ứng dụng, và việc xóa dữ liệu sau khi xác nhận.
 
 ### 2026-11-25 (tiếp): Chặng 8, xoay màn hình, bố cục ngang, hiệu năng
 
@@ -351,7 +351,7 @@ Dự án được làm với trợ lý lập trình **Claude Code** (Anthropic).
   - Dimen `sheet_max_width` chỉ đặt trong `values-land` làm `lint` báo lỗi `MissingDefaultResource`; AI chỉ phát hiện khi chạy `lint` sau khi đã commit, nên có một commit sửa riêng.
   - Hiệu năng chỉ đo trên emulator (trung vị 16ms, 80% khung ≤17ms), chưa đo trên máy thật; nhiều lệnh xoay máy bằng `adb` bị trễ nên vài lần chụp ảnh nhầm hướng.
   - Chưa làm test JUnit cho việc đọc bộ lọc từ `Bundle` vì nó dùng `android.os.Bundle`.
-- **Sinh viên kiểm tra/điều chỉnh:**
+- **Sinh viên kiểm tra/điều chỉnh:** Đã chốt bảng chi tiết rộng 420dp ở góc dưới bên phải khi xoay ngang và yêu cầu đổi nhãn nút thành “Hủy”, “Xác nhận”. Đã đối chiếu bố cục ngang với ảnh chụp, rà lại cách khôi phục bộ lọc và góc nhìn khi xoay màn hình, đồng thời ghi rõ số đo hiệu năng lấy trên emulator.
 
 ### 2026-11-26: Chặng 9, README và hồ sơ nộp
 
@@ -364,4 +364,4 @@ Dự án được làm với trợ lý lập trình **Claude Code** (Anthropic).
   - Lịch sử git có 114 commit nhưng chỉ nằm trên 2 ngày lịch (2026-11-25 và 2026-11-26), trong khi đề yêu cầu commit "phân bổ trong thời gian thực hiện"; AI không và không được sửa ngày commit.
   - Link video chưa có vì video do sinh viên tự quay và tải lên; README đang ghi "chưa cập nhật".
   - Những tiêu chí chấp nhận không có test JUnit (giao diện, xoay màn hình, Reset View, bảng chi tiết) chỉ được kiểm thủ công trên emulator, chưa thử bằng ngón tay thật.
-- **Sinh viên kiểm tra/điều chỉnh:**
+- **Sinh viên kiểm tra/điều chỉnh:** Đã rà lại các mục README theo đề, đối chiếu mô tả hit-testing với mã test và chọn bốn ảnh minh họa các thao tác chính. Đã bổ sung nội dung kiểm tra và điều chỉnh cho từng chặng trong Nhật ký AI. Mục liên kết video còn chờ cập nhật.
