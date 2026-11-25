@@ -12,6 +12,13 @@
     <string name="search_hint">Tìm mã chỗ, ví dụ B05</string>
     <string name="filter_zone_all">Tất cả</string>
     <string name="filter_zone_group_description">Lọc theo khu</string>
+    <string name="filter_price_button">Giá</string>
+    <string name="filter_available_only">Chỉ chỗ trống</string>
+    <string name="filter_price_title">Khoảng giá</string>
+    <string name="filter_price_slider_description">Khoảng giá vé</string>
+    <!-- Số tiền tính bằng triệu đồng: "1,9 tr"; và một khoảng: "1,9 – 2,5 tr" -->
+    <string name="price_million">%1$s tr</string>
+    <string name="filter_price_range">%1$s – %2$s tr</string>
 
     <!-- Bảng chú thích -->
     <string name="legend_show_description">Hiện bảng chú thích</string>

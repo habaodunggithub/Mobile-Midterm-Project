@@ -49,8 +49,9 @@ public class MainActivity extends AppCompatActivity
         mapView.bind(venue, new VenueMapStateSource(state));
         mapView.setOnSpotTapListener(this);
 
-        // Thanh lọc tự nghe state, nên không cần giữ tham chiếu.
-        new FilterBar(findViewById(R.id.filter_bar), state);
+        // Các control lọc tự nghe state, nên không cần giữ tham chiếu. Truyền cả khung gốc vì control nằm ở hai chỗ:
+        // thanh lọc phía trên và thẻ giá nổi trên sơ đồ.
+        new FilterBar(findViewById(R.id.root), state);
 
         detailSheet = new DetailSheet(findViewById(R.id.bottom_sheet), venue, state, this);
         legendCard = new LegendCard(findViewById(R.id.card_legend), findViewById(R.id.btn_legend));

@@ -42,51 +42,71 @@
             android:textSize="14sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Bốn chip khu trượt ngang được, để máy hẹp không bị cắt chữ. -->
-    <HorizontalScrollView
+    <!-- Hàng chip: bốn chip khu trượt ngang được (máy hẹp không bị cắt chữ), nút Giá luôn nằm cuối hàng. -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:overScrollMode="never"
-        android:scrollbars="none">
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
-        <com.google.android.material.chip.ChipGroup
-            android:id="@+id/chip_group_zone"
+        <HorizontalScrollView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fadingEdgeLength="16dp"
+            android:overScrollMode="never"
+            android:requiresFadingEdge="horizontal"
+            android:scrollbars="none">
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chip_group_zone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/filter_zone_group_description"
+                app:chipSpacingHorizontal="8dp"
+                app:selectionRequired="true"
+                app:singleLine="true"
+                app:singleSelection="true">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_zone_all"
+                    style="@style/Widget.MidtermProject.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="@string/filter_zone_all" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_zone_standing"
+                    style="@style/Widget.MidtermProject.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/zone_standing" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_zone_vip"
+                    style="@style/Widget.MidtermProject.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/zone_vip" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_zone_standard"
+                    style="@style/Widget.MidtermProject.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/zone_standard" />
+            </com.google.android.material.chip.ChipGroup>
+        </HorizontalScrollView>
+
+        <!-- Mở và đóng thẻ "Chỉ chỗ trống, khoảng giá" nổi trên sơ đồ (Q26, Q37). -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_filter_advanced"
+            style="@style/Widget.MidtermProject.Button.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:contentDescription="@string/filter_zone_group_description"
-            app:chipSpacingHorizontal="8dp"
-            app:selectionRequired="true"
-            app:singleLine="true"
-            app:singleSelection="true">
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_zone_all"
-                style="@style/Widget.MidtermProject.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="@string/filter_zone_all" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_zone_standing"
-                style="@style/Widget.MidtermProject.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/zone_standing" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_zone_vip"
-                style="@style/Widget.MidtermProject.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/zone_vip" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_zone_standard"
-                style="@style/Widget.MidtermProject.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/zone_standard" />
-        </com.google.android.material.chip.ChipGroup>
-    </HorizontalScrollView>
+            android:layout_marginStart="8dp"
+            android:text="@string/filter_price_button"
+            app:icon="@drawable/ic_tune" />
+    </LinearLayout>
 </LinearLayout>
