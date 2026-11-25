@@ -11,6 +11,13 @@
     <!-- Phân khu · hàng · số chỗ · giá; trạng thái hiển thị là chip bên cạnh -->
     <string name="sheet_focus_info">%1$s · Hàng %2$s · %3$s · %4$s đ</string>
     <string name="sheet_selection_summary">Đã chọn %1$d/%2$d · Tổng %3$s đ</string>
+    <string name="sheet_section_selected">Đang chọn (%1$d)</string>
+    <string name="sheet_section_mine">Vé của bạn (%1$d)</string>
+    <string name="sheet_spot_title">%1$s · %2$s</string>
+    <string name="sheet_spot_detail">Hàng %1$s · %2$s đ</string>
+    <!-- Mô tả mặc định của nút ✕; code thay bằng mô tả có mã chỗ cụ thể -->
+    <string name="sheet_remove_generic_description">Bỏ chọn chỗ này</string>
+    <string name="sheet_remove_description">Bỏ chọn %1$s</string>
     <string name="sheet_expand_description">Mở rộng bảng chi tiết</string>
     <string name="sheet_collapse_description">Thu gọn bảng chi tiết</string>
 

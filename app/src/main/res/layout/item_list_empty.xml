@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Danh sách "Đang chọn" rỗng (M8). -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:minHeight="72dp"
+    android:padding="16dp"
+    android:text="@string/msg_nothing_selected"
+    android:textColor="@color/sheet_text_secondary"
+    android:textSize="14sp" />

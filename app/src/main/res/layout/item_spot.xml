@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Một chỗ trong danh sách: bấm cả dòng để định vị trên sơ đồ, bấm ✕ để bỏ chọn. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    tools:ignore="Overdraw"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:minHeight="56dp"
+    android:orientation="horizontal"
+    android:paddingStart="16dp"
+    android:paddingTop="4dp"
+    android:paddingEnd="4dp"
+    android:paddingBottom="4dp">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_spot_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="@color/sheet_text"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_spot_detail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="@color/sheet_text_secondary"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+    <!-- Chỗ đang chọn nhưng nằm ngoài bộ lọc hiện tại (ADR-05: lọc không bỏ lựa chọn). -->
+    <TextView
+        android:id="@+id/tv_spot_filtered"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/bg_state_chip"
+        android:backgroundTint="@color/chip_unavailable_bg"
+        android:paddingStart="8dp"
+        android:paddingTop="2dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="2dp"
+        android:text="@string/state_out_of_filter"
+        android:textColor="@color/chip_unavailable_fg"
+        android:textSize="12sp"
+        android:visibility="gone" />
+
+    <ImageButton
+        android:id="@+id/btn_remove"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/sheet_remove_generic_description"
+        android:padding="12dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_close" />
+</LinearLayout>

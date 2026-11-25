@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tiêu đề một nhóm trong bảng chi tiết: "Đang chọn (N)" hoặc "Vé của bạn (M)". -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tv_list_header"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="16dp"
+    android:paddingTop="8dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="4dp"
+    android:textColor="@color/sheet_text_secondary"
+    android:textSize="13sp"
+    android:textStyle="bold" />
