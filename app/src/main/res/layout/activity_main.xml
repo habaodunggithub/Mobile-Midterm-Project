@@ -47,7 +47,9 @@
                 android:layout_marginStart="12dp"
                 android:layout_marginTop="12dp"
                 android:layout_marginEnd="72dp"
-                android:orientation="vertical">
+                android:divider="@drawable/divider_vertical_8dp"
+                android:orientation="vertical"
+                android:showDividers="middle">
 
                 <!-- Thẻ "Chỉ chỗ trống" và khoảng giá; dùng chung nền thẻ nổi với bảng chú thích. Mặc định ẩn. -->
                 <LinearLayout
@@ -104,6 +106,46 @@
                         android:layout_height="wrap_content"
                         android:contentDescription="@string/filter_price_slider_description"
                         app:tickVisible="false" />
+                </LinearLayout>
+
+                <!--
+                    Dòng "Đang lọc" kèm nút Xóa lọc (AC-4.6). Nằm dưới thẻ giá để khi nó hiện ra lúc nhấc tay khỏi thanh giá
+                    thì thanh giá không bị đẩy đi. Ẩn khi mọi tiêu chí đều mặc định.
+                -->
+                <LinearLayout
+                    android:id="@+id/layout_filter_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_legend_card"
+                    android:clickable="true"
+                    android:elevation="4dp"
+                    android:focusable="false"
+                    android:gravity="center_vertical"
+                    android:minHeight="48dp"
+                    android:orientation="horizontal"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="4dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/tv_filter_status"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:accessibilityLiveRegion="polite"
+                        android:ellipsize="end"
+                        android:maxLines="3"
+                        android:paddingTop="6dp"
+                        android:paddingBottom="6dp"
+                        android:textColor="@color/sheet_text"
+                        android:textSize="13sp" />
+
+                    <Button
+                        android:id="@+id/btn_clear_filter"
+                        style="@style/Widget.MidtermProject.Button.Text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/filter_clear" />
                 </LinearLayout>
             </LinearLayout>
 

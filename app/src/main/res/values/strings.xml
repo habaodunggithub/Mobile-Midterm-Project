@@ -20,6 +20,12 @@
     <string name="price_million">%1$s tr</string>
     <string name="filter_price_range">%1$s – %2$s tr</string>
 
+    <!-- Dòng "Đang lọc": Đang lọc: VIP · "A0" · Chỉ chỗ trống · 1,9–2,5 tr — 12 chỗ -->
+    <string name="filter_status">Đang lọc: %1$s — %2$d chỗ</string>
+    <string name="filter_status_query">“%1$s”</string>
+    <string name="filter_status_price">%1$s–%2$s tr</string>
+    <string name="filter_clear">Xóa lọc</string>
+
     <!-- Bảng chú thích -->
     <string name="legend_show_description">Hiện bảng chú thích</string>
     <string name="legend_hide_description">Ẩn bảng chú thích</string>

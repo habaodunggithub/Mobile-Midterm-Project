@@ -49,6 +49,14 @@
         <item name="cornerRadius">18dp</item>
     </style>
 
+    <!-- Nút chữ trong thẻ nổi ("Xóa lọc"): màu mực theo colorPrimary, chữ thường, vùng chạm cao 48dp. -->
+    <style name="Widget.MidtermProject.Button.Text" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:minWidth">0dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
     <!-- Công tắc màu mực: màu phụ của giao diện là tím VIP, dễ nhầm với khu VIP. -->
     <style name="ThemeOverlay.MidtermProject.InkSwitch" parent="">
         <item name="colorSecondary">@color/spot_selected</item>

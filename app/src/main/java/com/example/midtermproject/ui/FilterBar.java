@@ -9,6 +9,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 
 import androidx.annotation.IdRes;
+import androidx.annotation.StringRes;
 
 import com.example.midtermproject.R;
 import com.example.midtermproject.model.ZoneType;
@@ -32,6 +33,8 @@ final class FilterBar {
     /** Bước của thanh giá: 100.000 đồng. Từ PRICE_MIN tới PRICE_MAX có đúng {@link #PRICE_STEPS} bước. */
     private static final float PRICE_STEP = 100_000f;
     private static final int PRICE_STEPS = Math.round((SpotFilter.PRICE_MAX - SpotFilter.PRICE_MIN) / PRICE_STEP);
+    /** Dấu ngăn các tiêu chí trong dòng "Đang lọc". */
+    private static final String CRITERIA_SEPARATOR = " · ";
 
     private final Context context;
     private final VenueMapState state;
@@ -40,6 +43,8 @@ final class FilterBar {
     private final SwitchMaterial availableOnly;
     private final RangeSlider priceSlider;
     private final TextView priceRange;
+    private final View statusCard;
+    private final TextView statusText;
     /** Đang cập nhật control từ state: bỏ qua sự kiện do chính việc đó gây ra, để không lặp vô hạn. */
     private boolean syncing;
     /** Ngón tay đang kéo thanh giá: chỉ áp dụng khi nhấc tay để không tính lại bộ lọc liên tục. */
@@ -54,12 +59,16 @@ final class FilterBar {
         this.availableOnly = root.findViewById(R.id.switch_available_only);
         this.priceSlider = root.findViewById(R.id.range_price);
         this.priceRange = root.findViewById(R.id.tv_price_range);
+        this.statusCard = root.findViewById(R.id.layout_filter_status);
+        this.statusText = root.findViewById(R.id.tv_filter_status);
 
         bindSearch();
         bindZoneChips();
         bindAvailableOnly();
         bindPriceSlider();
         bindAdvancedToggle(root);
+        // Xóa lọc đưa mọi tiêu chí về mặc định; lựa chọn và vé của bạn không bị đụng tới (AC-4.8).
+        root.findViewById(R.id.btn_clear_filter).setOnClickListener(v -> state.setFilter(SpotFilter.NONE));
 
         state.addListener(this::syncFromState);
         syncFromState();
@@ -178,6 +187,42 @@ final class FilterBar {
         }
         showPriceRange();
         syncing = false;
+        renderStatus();
+    }
+
+    /** Dòng "Đang lọc" chỉ hiện khi có ít nhất một tiêu chí khác mặc định (AC-4.6). */
+    private void renderStatus() {
+        final SpotFilter filter = state.getFilter();
+        statusCard.setVisibility(filter.isActive() ? View.VISIBLE : View.GONE);
+        if (filter.isActive()) {
+            statusText.setText(context.getString(R.string.filter_status, describe(filter), state.getMatchCount()));
+        }
+    }
+
+    /** Liệt kê các tiêu chí khác mặc định, ví dụ: {@code VIP · "A0" · Chỉ chỗ trống · 1,9–2,5 tr}. */
+    private String describe(SpotFilter filter) {
+        final StringBuilder text = new StringBuilder();
+        if (filter.zone != null) {
+            appendCriterion(text, context.getString(zoneNameOf(filter.zone)));
+        }
+        if (!filter.normalizedQuery.isEmpty()) {
+            appendCriterion(text, context.getString(R.string.filter_status_query, filter.rawQuery.trim()));
+        }
+        if (filter.availableOnly) {
+            appendCriterion(text, context.getString(R.string.filter_available_only));
+        }
+        if (filter.minPrice > SpotFilter.PRICE_MIN || filter.maxPrice < SpotFilter.PRICE_MAX) {
+            appendCriterion(text, context.getString(R.string.filter_status_price,
+                    PriceFormatter.formatMillions(filter.minPrice), PriceFormatter.formatMillions(filter.maxPrice)));
+        }
+        return text.toString();
+    }
+
+    private static void appendCriterion(StringBuilder text, String criterion) {
+        if (text.length() > 0) {
+            text.append(CRITERIA_SEPARATOR);
+        }
+        text.append(criterion);
     }
 
     /**
@@ -209,6 +254,18 @@ final class FilterBar {
             return ZoneType.STANDARD;
         }
         return null;
+    }
+
+    @StringRes
+    private static int zoneNameOf(ZoneType zone) {
+        switch (zone) {
+            case STANDING:
+                return R.string.zone_standing;
+            case VIP:
+                return R.string.zone_vip;
+            default:
+                return R.string.zone_standard;
+        }
     }
 
     @IdRes
