@@ -328,4 +328,98 @@ public class MapCameraTest {
         camera.zoomBy(2f, 10f, 10f);
         assertEquals(1f, camera.getScale(), 0f);
     }
+
+    // ---- AC-2.8, AC-2.9: xoay ----
+
+    @Test
+    public void ac2_8_rotateKeepsFocalPointFixed() {
+        for (float angle : TEST_ANGLES) {
+            MapCamera camera = zoomedCamera(angle, 4f);
+            float fx = 390f / 2f - 30f, fy = 528f / 2f + 50f;
+            float wx = camera.screenToWorldX(fx, fy), wy = camera.screenToWorldY(fx, fy);
+            camera.rotateBy(0.35f, fx, fy);
+            assertEquals("x at " + angle, fx, camera.worldToScreenX(wx, wy), 1e-2f);
+            assertEquals("y at " + angle, fy, camera.worldToScreenY(wx, wy), 1e-2f);
+        }
+    }
+
+    @Test
+    public void ac2_8_rotateChangesTheAngleByExactlyTheDelta() {
+        MapCamera camera = zoomedCamera(0.2f, 4f);
+        camera.rotateBy(0.5f, 195f, 264f);
+        assertEquals(0.7f, camera.getAngle(), 1e-5f);
+        camera.rotateBy(-1.2f, 195f, 264f);
+        assertEquals(-0.5f, camera.getAngle(), 1e-5f);
+    }
+
+    @Test
+    public void ac2_8_angleStaysInTheHalfOpenRangeMinusPiToPi() {
+        MapCamera camera = zoomedCamera(3f, 4f);
+        camera.rotateBy(0.5f, 195f, 264f);          // 3,5 rad vượt quá pi
+        assertEquals(3.5f - (float) (2 * Math.PI), camera.getAngle(), 1e-5f);
+        assertTrue(camera.getAngle() > -Math.PI && camera.getAngle() <= Math.PI);
+    }
+
+    @Test
+    public void ac2_8_normalizeAngleHandlesFullTurnsAndTheBoundary() {
+        assertEquals(0f, MapCamera.normalizeAngle(0f), 1e-6f);
+        assertEquals(0.5f, MapCamera.normalizeAngle(0.5f + (float) (2 * Math.PI)), 1e-5f);
+        assertEquals(-0.5f, MapCamera.normalizeAngle(-0.5f - (float) (4 * Math.PI)), 1e-5f);
+        assertEquals((float) Math.PI, MapCamera.normalizeAngle((float) -Math.PI), 1e-5f);
+        assertEquals((float) Math.PI, MapCamera.normalizeAngle((float) Math.PI), 1e-5f);
+    }
+
+    @Test
+    public void ac2_9_panFollowsTheFingerAfterRotating() {
+        MapCamera camera = zoomedCamera(0f, 4f);
+        camera.rotateBy((float) Math.toRadians(37), 195f, 264f);
+        float beforeX = camera.worldToScreenX(300f, 200f);
+        float beforeY = camera.worldToScreenY(300f, 200f);
+        camera.panBy(11f, 7f);
+        assertEquals(beforeX + 11f, camera.worldToScreenX(300f, 200f), 1e-3f);
+        assertEquals(beforeY + 7f, camera.worldToScreenY(300f, 200f), 1e-3f);
+    }
+
+    @Test
+    public void ac2_9_zoomKeepsTheFocalPointFixedAfterRotating() {
+        MapCamera camera = zoomedCamera(0f, 4f);
+        camera.rotateBy((float) Math.toRadians(37), 195f, 264f);
+        float fx = 160f, fy = 300f;
+        float wx = camera.screenToWorldX(fx, fy), wy = camera.screenToWorldY(fx, fy);
+        camera.zoomBy(1.15f, fx, fy);
+        assertEquals(fx, camera.worldToScreenX(wx, wy), 1e-2f);
+        assertEquals(fy, camera.worldToScreenY(wx, wy), 1e-2f);
+    }
+
+    @Test
+    public void ac2_2_boundsStillHoldWhenRotatedAwayFromTheDefault() {
+        MapCamera camera = zoomedCamera(-HALF_PI, 4f);
+        camera.rotateBy((float) Math.toRadians(37), 195f, 264f);
+        camera.panBy(100000f, 100000f);
+        float[] box = boundingBox(camera);
+        assertEquals(PAN_MARGIN, box[0], 1e-2f);
+        assertEquals(PAN_MARGIN, box[1], 1e-2f);
+        camera.panBy(-100000f, -100000f);
+        box = boundingBox(camera);
+        assertEquals(390f - PAN_MARGIN, box[2], 1e-2f);
+        assertEquals(528f - PAN_MARGIN, box[3], 1e-2f);
+    }
+
+    @Test
+    public void rotatingBackToTheDefaultNeverLeavesTheScaleBelowTheNewMinimum() {
+        // Ở góc 37 độ mức vừa khít nhỏ hơn ở góc mặc định; xoay về mặc định phải nâng tỉ lệ lên.
+        MapCamera camera = portrait();
+        float angle = (float) Math.toRadians(37);
+        camera.set(camera.fitScale(angle), angle, 0f, 0f);
+        camera.rotateBy(camera.defaultAngle() - angle, 195f, 264f);
+        assertTrue(camera.getScale() >= camera.getMinScale() - 1e-5f);
+        assertEquals(camera.defaultAngle(), camera.getAngle(), 1e-5f);
+    }
+
+    @Test
+    public void rotateIsIgnoredUntilTheCameraIsReady() {
+        MapCamera camera = new MapCamera(PADDING);
+        camera.rotateBy(1f, 10f, 10f);
+        assertEquals(0f, camera.getAngle(), 0f);
+    }
 }
