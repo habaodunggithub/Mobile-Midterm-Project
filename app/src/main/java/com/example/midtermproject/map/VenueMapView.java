@@ -1,6 +1,7 @@
 package com.example.midtermproject.map;
 
 import android.animation.ValueAnimator;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
@@ -15,6 +16,7 @@ import android.view.animation.LinearInterpolator;
 import androidx.annotation.Nullable;
 
 import com.example.midtermproject.R;
+import com.example.midtermproject.model.Spot;
 import com.example.midtermproject.model.Venue;
 
 /**
@@ -24,7 +26,7 @@ import com.example.midtermproject.model.Venue;
  * {@link SpotStateSource} cho biết trạng thái từng chỗ. Cử chỉ: kéo một ngón để pan; chụm hai ngón
  * để zoom quanh tâm hai ngón; xoay hai ngón để xoay sơ đồ (tự chỉnh thẳng khi nhấc tay gần góc
  * vuông); hai ngón cùng dịch chuyển cũng kéo sơ đồ theo; vuốt nhanh rồi nhấc tay thì sơ đồ trượt
- * tiếp và chậm dần. Chạm chọn được thêm ở chặng sau.
+ * tiếp và chậm dần; chạm một lần thì tìm chỗ dưới ngón tay và báo cho {@link OnSpotTapListener}.
  * <p>
  * Zoom hai ngón được tự đo (khoảng cách hai ngón) thay vì dùng {@code ScaleGestureDetector}, vì
  * detector đó chỉ bắt đầu khi hai ngón cách nhau ít nhất {@code getScaledMinimumScalingSpan()};
@@ -37,6 +39,8 @@ public class VenueMapView extends View {
     private static final float FIT_PADDING_DP = 16f;
     /** Khi kéo, mép sơ đồ được lùi vào trong vùng nhìn tối đa ngần này dp (AC-2.2). */
     private static final float PAN_MARGIN_DP = 48f;
+    /** Dung sai khi chạm: chạm cách mép chỗ không quá ngần này dp vẫn tính là trúng (AC-3.9). */
+    private static final float TAP_TOLERANCE_DP = 8f;
     /** Thời gian hiệu ứng đưa sơ đồ về góc mặc định bằng nút la bàn (AC-2.11). */
     private static final long COMPASS_DURATION_MS = 300L;
     /** Thời gian hiệu ứng Reset View (AC-2.5). */
@@ -58,6 +62,10 @@ public class VenueMapView extends View {
     private ValueAnimator cameraAnimator;
 
     private OnAngleChangedListener angleListener;
+    private OnSpotTapListener tapListener;
+    private float density;
+    /** Lần chạm này vừa dừng một hiệu ứng đang chạy; chạm để dừng sơ đồ không được tính là chọn chỗ. */
+    private boolean tapStoppedAnimation;
     private float notifiedAngle = Float.NaN;
     private boolean notifiedAtDefault;
 
@@ -96,13 +104,31 @@ public class VenueMapView extends View {
     }
 
     private void init(Context context) {
-        final float density = context.getResources().getDisplayMetrics().density;
+        density = context.getResources().getDisplayMetrics().density;
         camera = new MapCamera(FIT_PADDING_DP * density, PAN_MARGIN_DP * density);
         renderer = new VenueRenderer(context);
         setContentDescription(context.getString(R.string.map_content_description));
 
         touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
         gestureDetector = new GestureDetector(context, new PanListener());
+        // Mặc định GestureDetector coi hai lần chạm gần nhau (dưới 300ms, trong 100dp) là "chạm đúp" và
+        // bỏ qua lần chạm thứ hai, nên chọn nhanh hai ghế kề nhau sẽ mất ghế thứ hai. Chạm giữ cũng
+        // huỷ cú chạm. Ở đây mỗi lần chạm là một lần chọn, nên tắt cả hai.
+        gestureDetector.setOnDoubleTapListener(null);
+        gestureDetector.setIsLongpressEnabled(false);
+    }
+
+    /** Được báo khi người dùng chạm một lần vào sơ đồ. */
+    public interface OnSpotTapListener {
+        /** Chạm trúng một chỗ (kể cả chỗ không chọn được). */
+        void onSpotTapped(Spot spot);
+
+        /** Chạm vào chỗ không có ghế nào: lối đi, sân khấu, ngoài sơ đồ (AC-3.8). */
+        void onEmptyTapped();
+    }
+
+    public void setOnSpotTapListener(OnSpotTapListener listener) {
+        this.tapListener = listener;
     }
 
     /** Được báo mỗi khi góc xoay của sơ đồ đổi, để Activity xoay kim và ẩn/hiện nút la bàn. */
@@ -275,13 +301,18 @@ public class VenueMapView extends View {
         renderer.draw(canvas, venue, states, worldToScreen, camera.getScale(), camera.getAngle());
     }
 
+    // Lint chỉ tìm performClick() ngay trong hàm này; ở đây nó được gọi trong handleTap() khi một cú
+    // chạm được nhận ra (GestureDetector.onSingleTapUp), nên dịch vụ trợ năng vẫn biết có thao tác bấm.
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (venue == null || !camera.isReady()) {
             return super.onTouchEvent(event);
         }
         if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-            // Chạm vào màn hình giữa lúc đang có hiệu ứng thì dừng ngay tại góc nhìn hiện tại (AC-2.6).
+            // Chạm vào màn hình giữa lúc đang có hiệu ứng thì dừng ngay tại góc nhìn hiện tại (AC-2.6),
+            // và lần chạm đó chỉ để dừng sơ đồ, không chọn chỗ nào.
+            tapStoppedAnimation = cameraAnimator != null && cameraAnimator.isRunning();
             cancelCameraAnimation();
         }
         trackTwoFingers(event);
@@ -342,6 +373,33 @@ public class VenueMapView extends View {
         onCameraChanged();
     }
 
+    /**
+     * Đổi điểm chạm sang tọa độ sơ đồ rồi tìm chỗ. Dung sai tính bằng {@code dp / scale}: cùng 8dp
+     * trên màn hình thì ở mức zoom nhỏ phủ nhiều đơn vị sơ đồ, ở mức zoom lớn chỉ phủ vài đơn vị
+     * (AC-3.9). Đổi tọa độ phải xét cả tỉ lệ, góc xoay và độ dịch hiện tại.
+     */
+    private void handleTap(float screenX, float screenY) {
+        performClick();
+        if (tapListener == null) {
+            return;
+        }
+        final float worldX = camera.screenToWorldX(screenX, screenY);
+        final float worldY = camera.screenToWorldY(screenX, screenY);
+        final Spot spot = HitTester.findSpotAt(venue.getSpots(), worldX, worldY,
+                TAP_TOLERANCE_DP * density / camera.getScale());
+        if (spot != null) {
+            tapListener.onSpotTapped(spot);
+        } else {
+            tapListener.onEmptyTapped();
+        }
+    }
+
+    /** Cần cho trợ năng: View nhận chạm phải gọi performClick để dịch vụ đọc màn hình biết có thao tác bấm. */
+    @Override
+    public boolean performClick() {
+        return super.performClick();
+    }
+
     /** Khi nhấc ngón: nếu vừa xoay và góc gần một góc vuông thì tự chỉnh thẳng (AC-2.10). */
     private void finishTwoFingerGesture(boolean allowSnap) {
         if (!allowSnap || !rotationTracker.isEngaged()) {
@@ -358,6 +416,15 @@ public class VenueMapView extends View {
         @Override
         public boolean onDown(MotionEvent event) {
             // Phải trả về true, nếu không GestureDetector bỏ qua cả chuỗi cử chỉ.
+            return true;
+        }
+
+        @Override
+        public boolean onSingleTapUp(MotionEvent event) {
+            if (tapStoppedAnimation) {
+                return true;
+            }
+            handleTap(event.getX(), event.getY());
             return true;
         }
 
