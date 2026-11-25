@@ -69,6 +69,9 @@ public class MainActivity extends AppCompatActivity
             return insets;
         });
 
+        // Reset View chỉ đưa góc nhìn về mặc định, không động tới bộ lọc, lựa chọn hay chỗ đang xem (AC-2.5).
+        findViewById(R.id.btn_reset_view).setOnClickListener(v -> mapView.resetView());
+
         // La bàn chỉ hiện khi sơ đồ lệch khỏi góc mặc định; kim xoay cùng sơ đồ nên luôn chỉ về sân khấu.
         ImageButton compass = findViewById(R.id.btn_compass);
         compass.setOnClickListener(v -> mapView.rotateToDefault());

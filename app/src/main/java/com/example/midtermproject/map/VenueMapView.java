@@ -225,6 +225,9 @@ public class VenueMapView extends View {
 
     /** Đưa sơ đồ về góc nhìn mặc định (vị trí, tỉ lệ và góc xoay) bằng hiệu ứng mượt (AC-2.5). */
     public void resetView() {
+        if (!camera.isReady()) {
+            return;     // chưa có kích thước thì chưa tính được góc nhìn mặc định
+        }
         animateCameraTo(camera.fitTarget(), RESET_DURATION_MS, null);
     }
 

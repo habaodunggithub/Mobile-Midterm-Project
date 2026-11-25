@@ -36,6 +36,7 @@
     <color name="surface">#FFFFFFFF</color>
     <color name="compass_needle">#FF1C2230</color>
     <color name="compass_tail">#FF9AA3B5</color>
+    <color name="map_button_icon">#FF1C2230</color>
 
     <!-- Bảng chi tiết (hướng A): nền trắng, chữ mực; mỗi chip trạng thái là một cặp nền/chữ đạt tương phản >= 4,5:1 -->
     <color name="sheet_text">#FF1C2230</color>

@@ -22,20 +22,40 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- Nút la bàn: chỉ hiện khi sơ đồ đang lệch khỏi góc mặc định; kim luôn chỉ về phía sân khấu. -->
-    <ImageButton
-        android:id="@+id/btn_compass"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+    <!-- Cột nút nổi góc trên phải sơ đồ, xếp dọc và cách nhau 8dp: Reset View, rồi la bàn (chỉ hiện khi lệch góc). -->
+    <LinearLayout
+        android:id="@+id/map_button_column"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="top|end"
         android:layout_margin="12dp"
-        android:background="@drawable/bg_map_button"
-        android:contentDescription="@string/compass_content_description"
-        android:elevation="4dp"
-        android:padding="12dp"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_compass"
-        android:visibility="gone" />
+        android:orientation="vertical">
+
+        <ImageButton
+            android:id="@+id/btn_reset_view"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_map_button"
+            android:contentDescription="@string/reset_view_content_description"
+            android:elevation="4dp"
+            android:padding="12dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_reset_view" />
+
+        <!-- Kim la bàn luôn chỉ về phía sân khấu. -->
+        <ImageButton
+            android:id="@+id/btn_compass"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_map_button"
+            android:contentDescription="@string/compass_content_description"
+            android:elevation="4dp"
+            android:padding="12dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_compass"
+            android:visibility="gone" />
+    </LinearLayout>
     </FrameLayout>
 
     <!--
