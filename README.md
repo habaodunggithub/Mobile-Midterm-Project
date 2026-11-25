@@ -240,3 +240,128 @@ Mỗi dữ liệu chỉ có **một nguồn**:
 - **Cắt theo khung:** `onDraw` tự `clipRect` theo khung của View, và chữ tên phân khu vẽ trong tọa độ màn hình nên luôn cùng cỡ.
 - **Phần cứng:** vẽ bằng `View` thường nên được tăng tốc bởi GPU; 224 chỗ không cần `SurfaceView`.
 - **Số đo** (`dumpsys gfxinfo`, emulator Pixel 6 API 35, pinch và pan liên tục 5 vòng, 390 khung hình): trung vị 16 ms, 90% dưới 23 ms, 99% dưới 32 ms; 80% số khung trong 17 ms; thời gian GPU trung vị 11 ms. Đây là số đo trên emulator (GPU giả lập), chưa đo trên máy thật.
+
+## 9. Nhật ký sử dụng AI Agent
+
+Dự án được làm với trợ lý lập trình **Claude Code** (Anthropic). Quy trình: viết yêu cầu và kế hoạch trước (đặc tả, tiêu chí chấp nhận, quyết định kiến trúc), hỏi sinh viên mọi quyết định có nhiều lựa chọn hợp lý, rồi làm từng mảnh nhỏ: viết code, build và test xanh, rồi commit. Mỗi commit làm đúng một việc kỹ thuật. AI không push và không ghi công trong commit; việc dùng AI chỉ được ghi ở đây. Dòng "Sinh viên kiểm tra/điều chỉnh" ở mỗi phiên do sinh viên tự điền.
+
+### 2026-11-25: lập kế hoạch và Chặng 1
+
+- **Agent/model:** Claude Code (Claude Opus 5.5, sau đó Claude Sonnet 5.5).
+- **Nhiệm vụ được giao:** đọc đề và tài liệu môn học, viết `CLAUDE.md`, `REQUIREMENTS.md`, `PLAN.md` (đều nằm ngoài repo); làm Chặng 1: mô hình dữ liệu và sơ đồ giả lập.
+- **Code được sinh:** `model/` (`ZoneType`, `SpotKind`, `SpotStatus`, `Spot`, `Section`, `Venue`), `data/` (`SpotStatusPolicy`, `MockVenueFactory`) và các test `SpotTest`, `VenueTest`, `SpotStatusPolicyTest`, `MockVenueFactoryTest` (12 commit).
+- **Lỗi hoặc hạn chế của kết quả AI:**
+  - Hình học vòng cung (bán kính, góc từng phân khu) do AI tự tính. Mới chỉ được kiểm bằng test không chồng lấn và nằm trong sơ đồ, chưa được nhìn trên màn hình vì chưa có phần vẽ.
+  - Gradle không chạy được ở chế độ offline (thiếu `aapt2`), phải chạy có mạng để tải.
+- **Sinh viên kiểm tra/điều chỉnh:**
+
+### 2026-11-25 (tiếp): thiết kế giao diện và làm lại hình học (Chặng 1B)
+
+- **Agent/model:** Claude Code (Claude Sonnet 5.5), có dùng hai skill `ui-ux-pro-max` và `huashu-design`.
+- **Nhiệm vụ được giao:** đề xuất ba hướng thiết kế giao diện (A Tonal, B Mực in, C Bảng pad) dựa trên dữ liệu thật; so sánh ba phương án hình học để ghế to hơn ở mức Fit; làm lại hình học trong `MockVenueFactory`.
+- **Code được sinh/sửa:** `MockVenueFactory` (hằng số bố cục gom lại, hệ số oval, thông số mới: sơ đồ 780 × 520), `MockVenueFactoryTest` (6 test mới, các test cũ đọc hằng số thay vì số cứng). 4 commit.
+- **Lỗi hoặc hạn chế của kết quả AI:**
+  - Ở bản xem trước đầu tiên, AI chọn nhầm một ghế đã đặt làm ghế "đang chọn". Phát hiện khi xem ảnh chụp, đã sửa.
+  - Thông số hình học mới do script tìm kiếm của AI chọn (kiểm không chồng lấn); chưa được nhìn trên emulator vì chưa có phần vẽ trong app.
+  - Quy trình `huashu-design` được rút gọn (3 thẻ hướng thay vì 6; chưa chụp ảnh tham chiếu thật).
+- **Sinh viên kiểm tra/điều chỉnh:**
+
+### 2026-11-25 (tiếp): Chặng 2, vẽ sơ đồ bằng Canvas
+
+- **Agent/model:** Claude Code (Claude Sonnet 5.5), có dùng hai skill `ui-ux-pro-max` (kiểm tương phản màu, khoảng cách vùng chạm) và `huashu-design` (vòng đánh giá ảnh chụp). AI tự tạo emulator Pixel 6 (Android 35), cài APK và chụp màn hình để kiểm.
+- **Nhiệm vụ được giao:** vẽ toàn bộ sơ đồ trên một Custom View theo hướng thiết kế A, gồm màu và chuỗi tiếng Việt, theme sáng, `SpotRenderer`, `VenueRenderer`, `MapCamera` (fit và góc mặc định), `VenueMapView`, `MainActivity`.
+- **Code được sinh/sửa:** `res/values/{colors,strings,themes}.xml`, `DisplayState`, `SpotRenderer`, `SpotStateSource`, `VenueRenderer`, `MapCamera`, `MapCameraTest`, `VenueMapView`, `MainActivity`, `activity_main.xml`, `AndroidManifest.xml` (10 commit).
+- **Lỗi hoặc hạn chế của kết quả AI:**
+  - Lần chạy đầu, tên bãi Standing (chữ nằm ngang) đè lên ô đứng khi sơ đồ xoay dọc, và ghế bị khóa chỉ là vòng trắng ở mức Fit. Phát hiện khi xem ảnh chụp emulator; đã sửa bằng cách vẽ tên bãi trong tọa độ sơ đồ và hiện gạch chéo sớm hơn.
+  - Một số màu trong bản thiết kế xem trước chỉ đạt tương phản 1,4–2,5:1 so với nền; AI thêm viền đậm hơn cho từng khu để đạt 3:1.
+  - Tên phân khu VIP/Standard vẫn đè lên vài ghế ở mức Fit (có viền sáng quanh chữ); chấp nhận ở bản này.
+  - Dữ liệu trạng thái hiển thị là dữ liệu mẫu tạm, sẽ gỡ ở Chặng 4.
+- **Sinh viên kiểm tra/điều chỉnh:**
+
+### 2026-11-25 (tiếp): Chặng 3, pan, zoom, xoay, la bàn, quán tính
+
+- **Agent/model:** Claude Code (Claude Sonnet 5.5). AI tự viết một bài kiểm thử tạm trong `androidTest` (không commit) để bơm cử chỉ hai ngón vào emulator, đọc số liệu camera và chụp màn hình.
+- **Nhiệm vụ được giao:** camera có pan giới hạn biên, zoom quanh tâm hai ngón, xoay hai ngón có ngưỡng 6°, tự dính góc vuông, nút la bàn, snapshot, quán tính khi vuốt (18 commit).
+- **Code được sinh/sửa:** `MapCamera` (panBy, zoomBy, rotateBy, clamp theo khung bao, nearestRightAngle, snapshot), `RotationTracker`, `FlingDecay`, `VenueMapView` (cử chỉ, animator), `MainActivity` và layout/drawable cho nút la bàn; `MapCameraTest`, `RotationTrackerTest`, `FlingDecayTest` (116 test đơn vị cho cả dự án).
+- **Lỗi hoặc hạn chế của kết quả AI:**
+  - Kế hoạch dùng `ScaleGestureDetector` nhưng nó không bắt đầu zoom nếu hai ngón cách nhau dưới 446px trên emulator; AI phát hiện khi đọc log số liệu và thay bằng cách tự đo khoảng cách hai ngón.
+  - Mã ghế và ký hiệu ✓ ✕ ★ ban đầu xoay theo sơ đồ nên nằm ngang khi dọc; phát hiện qua ảnh chụp, đã sửa.
+  - Vài test đầu tiên sai ở chỗ AI chọn mức zoom quá nhỏ làm sơ đồ bị căn giữa (đúng theo yêu cầu), nên phải sửa lại cách dựng tình huống thử.
+  - Cử chỉ được kiểm bằng sự kiện cảm ứng mô phỏng trên emulator, chưa thử trên điện thoại thật.
+- **Sinh viên kiểm tra/điều chỉnh:**
+
+### 2026-11-25 (tiếp): Chặng 4, chạm chọn và trạng thái
+
+- **Agent/model:** Claude Code (Claude Sonnet 5.5). AI viết bài thử tạm trong `androidTest` (không commit) để bơm cú chạm thật vào emulator.
+- **Nhiệm vụ được giao:** hit-testing đúng sau pan, zoom, xoay; `SpotFilter` bốn tiêu chí; `VenueMapState` là nguồn dữ liệu duy nhất; nối chạm chọn, thông báo lý do và rung nhẹ vào `MainActivity` (14 commit).
+- **Code được sinh/sửa:** `SelectionResult`, `Spot` (hitTest, searchKey), `HitTester`, `SpotFilter`, `VenueMapState`, `VenueMapStateSource`, `VenueMapView` (nhận cú chạm), `MainActivity`; `HitTesterTest`, `SpotFilterTest`, `VenueMapStateTest` (179 test đơn vị cho cả dự án).
+- **Lỗi hoặc hạn chế của kết quả AI:**
+  - Bản đầu để `GestureDetector` nhận diện chạm đúp, làm lần chạm thứ hai gần lần đầu bị mất; chỉ phát hiện khi chạy trên emulator, đã tắt.
+  - Cảnh báo lint `ClickableViewAccessibility` được tắt có chú thích (đã gọi `performClick()` khi nhận ra cú chạm) thay vì thay đổi cách xử lý chạm.
+  - Cú chạm được kiểm bằng sự kiện mô phỏng trên emulator, chưa thử bằng ngón tay thật.
+- **Sinh viên kiểm tra/điều chỉnh:**
+
+### 2026-11-25 (tiếp): Chặng 5, bảng chi tiết và đồng bộ hai chiều
+
+- **Agent/model:** Claude Code (Claude Sonnet 5.5). Dùng hai skill UX/UI (`ui-ux-pro-max`, `huashu-design`) để kiểm vùng chạm 48dp, độ tương phản các chip trạng thái và cách thay thế cho thao tác kéo; kiểm trên emulator bằng `adb input tap`, `uiautomator dump` và ảnh chụp.
+- **Nhiệm vụ được giao:** bảng chi tiết thu gọn/mở rộng (chỗ đang xem, tóm tắt, danh sách đang chọn có ✕), bấm dòng để định vị có vòng sáng nhấp nháy, giữ đồng bộ hai chiều qua `VenueMapState` (8 commit).
+- **Code được sinh/sửa:** `PriceFormatter`, `MapCamera.centerOnTarget`, `VenueMapView.locateSpot` và hiệu ứng nhấp nháy, `SpotRenderer`/`VenueRenderer` (tham số `pulse`), `DetailSheet`, `SpotListAdapter`, `MainActivity`, `activity_main.xml`, `item_spot.xml` và các layout/drawable/chuỗi/màu đi kèm; `PriceFormatterTest`, thêm 8 test vào `MapCameraTest` (193 test đơn vị cho cả dự án).
+- **Lỗi hoặc hạn chế của kết quả AI:**
+  - Bảng biến mất khỏi màn hình ở lần chạy đầu vì AI đặt `layout_gravity="bottom"`, rồi lại lệch đúng 128px vì `CoordinatorLayout` có padding thanh trạng thái; cả hai chỉ thấy khi xem ảnh chụp emulator.
+  - `PriceFormatter` ban đầu dùng `Math.abs` nên sai với `Long.MIN_VALUE`; test biên phát hiện và đã sửa.
+  - Sau khi xoay máy, danh sách bị ẩn khi bảng được khôi phục ở trạng thái mở rộng; AI phát hiện qua ảnh chụp ngang và sửa.
+  - Vòng sáng nhấp nháy ban đầu nở quá ít để thấy được ở mức zoom 2,5×; AI tăng biên độ sau khi so khung hình.
+  - Bố cục ngang chưa tối ưu (bảng thu gọn chiếm 29% chiều cao), để dành cho Chặng 8.
+  - Hiệu ứng chỉ được kiểm bằng ảnh chụp trên emulator, chưa thử bằng ngón tay thật.
+- **Sinh viên kiểm tra/điều chỉnh:**
+
+### 2026-11-25 (tiếp): Chặng 6, legend, bộ lọc, Reset View
+
+- **Agent/model:** Claude Code (Claude Sonnet 5.5). Dùng hai skill UX/UI (`ui-ux-pro-max`, `huashu-design`) để kiểm vùng chạm 48dp, độ tương phản và cách xếp thẻ nổi; bố cục các nút bám bản xem trước đã duyệt ở Chặng 2. Kiểm trên emulator bằng `adb input`, `sendevent` (pinch), `uiautomator dump` và ảnh chụp, cả dọc lẫn ngang.
+- **Nhiệm vụ được giao:** nút Reset View; bảng chú thích mở bằng nút ⓘ; thanh lọc (ô tìm kiếm, chip khu, "Chỉ chỗ trống", thanh khoảng giá); dòng "Đang lọc" kèm Xóa lọc; thông báo không có kết quả (M7); panel lọc ở bố cục ngang (16 commit, gồm 7 commit sửa lỗi hoặc tách bố cục thêm ngoài danh sách đầu chặng).
+- **Code được sinh/sửa:** `PriceFormatter.formatMillions` (+ 4 test), `LegendCard`, `FilterBar`, `VenueMapView` (`resetView`, `onDraw` tự cắt theo khung), `MainActivity`; `activity_main.xml` và `layout-land/` cùng các file include `view_map_layers`, `view_price_controls`, `view_filter_status`, `view_bottom_sheet`, `view_filter_bar`; 11 drawable mẫu cho legend, các icon, `values/dimens`, `integers`, `themes`, `colors`, `strings` (197 test đơn vị cho cả dự án).
+- **Lỗi hoặc hạn chế của kết quả AI:**
+  - Thẻ chú thích không chặn chạm nên chạm lên thẻ chọn nhầm chỗ nằm dưới; phát hiện bằng cách chạm thử trên emulator, đã sửa.
+  - Khi sửa bóng đổ bị cắt bằng `clipChildren=false`, nền sơ đồ (`drawColor`) tô đè lên thanh lọc phía trên và thanh lọc biến mất. AI chỉ phát hiện sau vài commit vì lúc kiểm đã cắt ảnh chụp bỏ mất phần đầu màn hình; sửa bằng `clipRect` trong `VenueMapView.onDraw` (một commit sửa lỗi riêng). Bản thân commit sửa bóng đổ vẫn để lại thanh lọc ẩn nếu chạy riêng.
+  - `clearFocus()` không làm ô tìm kiếm bỏ focus ở panel ngang (ScrollView trả focus về ô đó); phát hiện qua `uiautomator dump`, đã chuyển focus sang khung thanh lọc.
+  - Một bước ghi tạm đã chèn một dòng import không có thật vào `FilterBar.java`; AI ghi đè cả file ngay sau đó trước khi build, không vào commit nào.
+  - Bố cục ngang còn cramped: bảng chi tiết thu gọn che gần 30% chiều cao nên thanh giá bị che một phần, để dành cho Chặng 8. Android còn tự khôi phục chip và chữ ô tìm kiếm khi Activity bị tạo lại; Chặng 8 phải chặn và lưu qua `Bundle`.
+  - Mọi thao tác chỉ được kiểm bằng sự kiện mô phỏng trên emulator, chưa thử bằng ngón tay thật; phím Enter của bàn phím cứng không kích hoạt "tìm" vì code chỉ xử lý `IME_ACTION_SEARCH`.
+- **Sinh viên kiểm tra/điều chỉnh:**
+
+### 2026-11-25 (tiếp): Chặng 7, đặt vé, lưu bền, làm mới dữ liệu
+
+- **Agent/model:** Claude Code (Claude Sonnet 5.5). Dùng hai skill UX/UI (`ui-ux-pro-max`, `huashu-design`) để chọn vị trí hai nút (hành động chính nằm trong tầm tay, hành động phá hủy đặt xa và qua menu); hỏi sinh viên bằng bản xem trước ASCII (Q38, Q39). Kiểm trên emulator bằng `adb input`, `uiautomator dump`, `force-stop`, `pm clear` và ảnh chụp, cả dọc lẫn ngang.
+- **Nhiệm vụ được giao:** nút "Đặt N vé" và hộp thoại xác nhận (M6); lưu lựa chọn và vé bằng SharedPreferences, khôi phục khi mở lại app; "Làm mới dữ liệu" qua menu ⋮ kèm hộp thoại xác nhận (M10) (16 commit đúng danh sách đã duyệt).
+- **Code được sinh/sửa:** `VenueMapState.bookSelection/resetAll`, `SessionCodec`, `SessionData`, `SessionStore`, `PrefsSessionStore`, `BookingConfirmDialog`, `ResetDataDialog`, `DetailSheet`, `MainActivity`, `view_bottom_sheet.xml`, `view_map_layers.xml`, `ic_more_vert.xml`, `menu_map_more.xml`, `themes`/`strings`; `VenueMapStateTest` (thêm 9 test), `SessionCodecTest` (5 test), tổng 211 test đơn vị.
+- **Lỗi hoặc hạn chế của kết quả AI:**
+  - Nút trong hai hộp thoại hiện chữ HOA ("HỦY", "XÁC NHẬN") do style mặc định của Material, lệch với REQUIREMENTS ("Hủy", "Xác nhận"); AI phát hiện qua ảnh chụp nhưng chưa sửa vì sẽ cần thêm một commit ngoài danh sách đã duyệt.
+  - Giữa commit "add book button" và commit "confirm and book" nút Đặt vé tạm chưa làm gì; chỉ là trạng thái trung gian của lịch sử commit, bản cuối đầy đủ.
+  - Xoay màn hình vẫn mất chỗ đang xem, bộ lọc và góc nhìn (để Chặng 8); lựa chọn và vé thì giữ nhờ lưu bền.
+  - Mọi thao tác chỉ được kiểm bằng sự kiện mô phỏng trên emulator, chưa thử bằng ngón tay thật.
+- **Sinh viên kiểm tra/điều chỉnh:**
+
+### 2026-11-25 (tiếp): Chặng 8, xoay màn hình, bố cục ngang, hiệu năng
+
+- **Agent/model:** Claude Code (Claude Sonnet 5.5). Hỏi sinh viên về bố cục bảng chi tiết ở máy ngang (Q40) và chữ nút hộp thoại (Q41); kiểm trên emulator bằng `adb`, `sendevent` (pinch), `uiautomator dump`, `dumpsys gfxinfo`, `logcat` và ảnh chụp, cả dọc lẫn ngang.
+- **Nhiệm vụ được giao:** giữ trạng thái khi xoay máy và khi hệ thống hủy Activity (chỗ đang xem, bộ lọc, góc nhìn, chú thích); bảng chi tiết 420dp ở máy ngang; culling các chỗ ngoài màn hình; đo hiệu năng và lint (10 commit).
+- **Code được sinh/sửa:** `MainActivity` (`onSaveInstanceState`, `readFilter`, khôi phục), `VenueMapView` (`getCameraSnapshot`, `setPendingCameraSnapshot`), `MapCamera.getVisibleWorldBounds`, `VenueRenderer` (culling), `FilterBar`, `layout-land/activity_main.xml`, các layout lọc (`saveEnabled=false`), `themes`/`dimens`; thêm 4 test vào `MapCameraTest` (215 test đơn vị cho cả dự án).
+- **Lỗi hoặc hạn chế của kết quả AI:**
+  - Ghi đè `layout_width` trên `<include>` làm mất `app:layout_behavior` của bảng chi tiết, app crash khi mở ở bất kỳ hướng nào dùng bố cục ngang; AI chỉ thấy khi chạy thử (lần đầu còn tưởng app chưa được mở lại sau khi cài), rồi sửa trước khi commit.
+  - Dimen `sheet_max_width` chỉ đặt trong `values-land` làm `lint` báo lỗi `MissingDefaultResource`; AI chỉ phát hiện khi chạy `lint` sau khi đã commit, nên có một commit sửa riêng.
+  - Hiệu năng chỉ đo trên emulator (trung vị 16ms, 80% khung ≤17ms), chưa đo trên máy thật; nhiều lệnh xoay máy bằng `adb` bị trễ nên vài lần chụp ảnh nhầm hướng.
+  - Chưa làm test JUnit cho việc đọc bộ lọc từ `Bundle` vì nó dùng `android.os.Bundle`.
+- **Sinh viên kiểm tra/điều chỉnh:**
+
+### 2026-11-26: Chặng 9, README và hồ sơ nộp
+
+- **Agent/model:** Claude Code (Claude Sonnet 5.5). Kiểm trên emulator bằng `adb` để chụp 4 ảnh minh họa; clone repo vào thư mục mới rồi chạy `./gradlew assembleDebug test` để kiểm bản nộp.
+- **Nhiệm vụ được giao:** viết `README.md` đủ các mục bắt buộc của đề (mô tả, hướng dẫn chạy, kiến trúc, tổ chức dữ liệu, công thức tọa độ, hit-testing, quản lý trạng thái, hiệu năng, Nhật ký AI, chỗ cho link video), thêm ảnh chụp, và kiểm các điều kiện nộp (README viết thành từng commit theo mục).
+- **Code được sinh/sửa:** không sửa code. Thêm `README.md` và 4 ảnh JPEG nhẹ ở `docs/screenshots/` (tổng khoảng 245KB).
+- **Lỗi hoặc hạn chế của kết quả AI:**
+  - Một câu trong README mô tả test `ac3_9_correctAfterPanAndZoom` ban đầu sai (nói "4 góc xoay" trong khi test dùng 3 góc, và mô tả điểm chạm không đúng); AI đối chiếu lại với mã test rồi sửa trước khi chốt.
+  - Số đo hiệu năng trong README là số đo trên emulator, chưa đo trên máy thật.
+  - Lịch sử git có 114 commit nhưng chỉ nằm trên 2 ngày lịch (2026-11-25 và 2026-11-26), trong khi đề yêu cầu commit "phân bổ trong thời gian thực hiện"; AI không và không được sửa ngày commit.
+  - Link video chưa có vì video do sinh viên tự quay và tải lên; README đang ghi "chưa cập nhật".
+  - Những tiêu chí chấp nhận không có test JUnit (giao diện, xoay màn hình, Reset View, bảng chi tiết) chỉ được kiểm thủ công trên emulator, chưa thử bằng ngón tay thật.
+- **Sinh viên kiểm tra/điều chỉnh:**
