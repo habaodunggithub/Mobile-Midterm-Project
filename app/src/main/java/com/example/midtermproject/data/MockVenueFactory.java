@@ -25,36 +25,46 @@ public final class MockVenueFactory {
     static final float WORLD_WIDTH = 1080f;
     static final float WORLD_HEIGHT = 630f;
 
-    private static final float STAGE_LEFT = 390f;
-    private static final float STAGE_TOP = 30f;
-    private static final float STAGE_RIGHT = 690f;
-    private static final float STAGE_BOTTOM = 90f;
+    static final float STAGE_LEFT = 390f;
+    static final float STAGE_TOP = 30f;
+    static final float STAGE_RIGHT = 690f;
+    static final float STAGE_BOTTOM = 90f;
 
     // Bãi Standing: hai khối 4 hàng x 6 ô đứng, đặt ngay trước sân khấu.
-    private static final float STANDING_HALF = 10f;      // nửa cạnh ô đứng
-    private static final float STANDING_STEP = 26f;      // khoảng cách giữa hai tâm kề nhau
-    private static final float STANDING_GAP = 40f;       // lối đi: giữa hai khối và giữa sân khấu với khối
-    private static final int STANDING_ROWS = 4;
-    private static final int STANDING_COLS = 6;
+    static final float STANDING_HALF = 10f;      // nửa cạnh ô đứng
+    static final float STANDING_STEP = 26f;      // khoảng cách giữa hai tâm kề nhau
+    static final float STANDING_GAP = 40f;       // lối đi: giữa hai khối và giữa sân khấu với khối
+    static final int STANDING_ROWS = 4;
+    static final int STANDING_COLS = 6;
     private static final long STANDING_BASE_PRICE = 1_200_000L;
     private static final long STANDING_PRICE_STEP = 100_000L;
 
+    // Tâm các vành cung: giữa mép dưới sân khấu.
+    static final float ARC_CENTER_X = (STAGE_LEFT + STAGE_RIGHT) / 2f;
+    static final float ARC_CENTER_Y = STAGE_BOTTOM;
+
+    // Hệ số co giãn của vành cung theo từng trục: 1 là vòng tròn, nhỏ hơn 1 thì hẹp lại.
+    //   x = ARC_CENTER_X + RING_SCALE_X * r * cos(theta)
+    //   y = ARC_CENTER_Y + RING_SCALE_Y * r * sin(theta)
+    static final float RING_SCALE_X = 1f;
+    static final float RING_SCALE_Y = 1f;
+
     // Ghế trên các vành cung: hình tròn, bán kính chung.
-    private static final float SEAT_RADIUS = 10f;
+    static final float SEAT_RADIUS = 10f;
 
     // VIP: 3 phân khu x 3 hàng x 8 ghế, vành cung gần sân khấu.
-    private static final float[] VIP_ROW_RADII = {260f, 286f, 312f};
-    private static final int[] VIP_SEATS_PER_ROW = {8, 8, 8};
+    static final float[] VIP_ROW_RADII = {260f, 286f, 312f};
+    static final int[] VIP_SEATS_PER_ROW = {8, 8, 8};
     private static final long VIP_BASE_PRICE = 2_500_000L;
     private static final long VIP_PRICE_STEP = 300_000L;
-    private static final float VIP_LABEL_RADIUS = 344f;     // lối đi giữa vành VIP và vành Standard
+    static final float VIP_LABEL_RADIUS = 344f;     // lối đi giữa vành VIP và vành Standard
 
     // Standard: 4 phân khu x 4 hàng (6, 6, 7, 7 ghế), vành cung xa sân khấu.
-    private static final float[] STANDARD_ROW_RADII = {376f, 402f, 428f, 454f};
-    private static final int[] STANDARD_SEATS_PER_ROW = {6, 6, 7, 7};
+    static final float[] STANDARD_ROW_RADII = {376f, 402f, 428f, 454f};
+    static final int[] STANDARD_SEATS_PER_ROW = {6, 6, 7, 7};
     private static final long STANDARD_BASE_PRICE = 700_000L;
     private static final long STANDARD_PRICE_STEP = 100_000L;
-    private static final float STANDARD_LABEL_RADIUS = 490f;   // ngoài hàng D, nằm dưới sơ đồ
+    static final float STANDARD_LABEL_RADIUS = 490f;   // ngoài hàng D, nằm dưới sơ đồ
 
     private MockVenueFactory() {
     }
@@ -69,9 +79,8 @@ public final class MockVenueFactory {
 
     private static void addStandingBlocks(Builder builder) {
         float blockWidth = (STANDING_COLS - 1) * STANDING_STEP + 2 * STANDING_HALF;
-        float centerX = (STAGE_LEFT + STAGE_RIGHT) / 2f;
-        float leftA = centerX - blockWidth - STANDING_GAP / 2f;
-        float leftB = centerX + STANDING_GAP / 2f;
+        float leftA = ARC_CENTER_X - blockWidth - STANDING_GAP / 2f;
+        float leftB = ARC_CENTER_X + STANDING_GAP / 2f;
         float top = STAGE_BOTTOM + STANDING_GAP;
         addGridSection(builder, "STA-A", "Standing A", leftA, top, blockWidth);
         addGridSection(builder, "STA-B", "Standing B", leftB, top, blockWidth);
@@ -109,20 +118,18 @@ public final class MockVenueFactory {
      * Hàng A nằm gần sân khấu nhất. Trong mỗi hàng, ghế số 1 nằm bên trái trên màn hình:
      * <pre>
      *   theta(k) = endDeg - (k - 1) * (endDeg - startDeg) / (n - 1)
-     *   cx = arcCenterX + r * cos(theta)      cy = arcCenterY + r * sin(theta)
+     *   cx = ARC_CENTER_X + RING_SCALE_X * r * cos(theta)
+     *   cy = ARC_CENTER_Y + RING_SCALE_Y * r * sin(theta)
      * </pre>
      */
     private static void addArcSection(Builder builder, String sectionId, String name, ZoneType zone,
                                       float[] rowRadii, int[] seatsPerRow,
                                       float startDeg, float endDeg,
                                       long basePrice, long priceStep, float labelRadius) {
-        float centerX = (STAGE_LEFT + STAGE_RIGHT) / 2f;
-        float centerY = STAGE_BOTTOM;
-
         double midRad = Math.toRadians((startDeg + endDeg) / 2.0);
         builder.addSection(new Section(sectionId, name, zone,
-                (float) (centerX + labelRadius * Math.cos(midRad)),
-                (float) (centerY + labelRadius * Math.sin(midRad))));
+                (float) (ARC_CENTER_X + RING_SCALE_X * labelRadius * Math.cos(midRad)),
+                (float) (ARC_CENTER_Y + RING_SCALE_Y * labelRadius * Math.sin(midRad))));
 
         for (int row = 0; row < rowRadii.length; row++) {
             int seats = seatsPerRow[row];
@@ -130,8 +137,8 @@ public final class MockVenueFactory {
             for (int k = 1; k <= seats; k++) {
                 double step = seats > 1 ? (endDeg - startDeg) / (seats - 1) : 0.0;
                 double theta = Math.toRadians(endDeg - (k - 1) * step);
-                float cx = (float) (centerX + rowRadii[row] * Math.cos(theta));
-                float cy = (float) (centerY + rowRadii[row] * Math.sin(theta));
+                float cx = (float) (ARC_CENTER_X + RING_SCALE_X * rowRadii[row] * Math.cos(theta));
+                float cy = (float) (ARC_CENTER_Y + RING_SCALE_Y * rowRadii[row] * Math.sin(theta));
                 builder.addSpot(sectionId, zone, SpotKind.SEAT, row, k, price, cx, cy, SEAT_RADIUS);
             }
         }
