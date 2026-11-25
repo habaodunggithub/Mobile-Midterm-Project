@@ -36,7 +36,8 @@ import java.util.List;
  * Sơ đồ vẽ lại mỗi khi state đổi (dữ liệu đi một chiều: chạm, rồi state, rồi vẽ).
  */
 public class MainActivity extends AppCompatActivity
-        implements VenueMapView.OnSpotTapListener, DetailSheet.Callbacks, BookingConfirmDialog.Callback {
+        implements VenueMapView.OnSpotTapListener, DetailSheet.Callbacks, BookingConfirmDialog.Callback,
+                   ResetDataDialog.Callback {
     private VenueMapState state;
     private SessionStore store;
     /** Bản đã ghi lần trước, để chỉ ghi khi lựa chọn hoặc vé của bạn thật sự đổi (đổi bộ lọc hay chỗ đang xem thì không ghi). */
@@ -103,11 +104,18 @@ public class MainActivity extends AppCompatActivity
         // Reset View chỉ đưa góc nhìn về mặc định, không động tới bộ lọc, lựa chọn hay chỗ đang xem (AC-2.5).
         findViewById(R.id.btn_reset_view).setOnClickListener(v -> mapView.resetView());
 
-        // Nút ⋮ mở menu nhỏ (Q39). Mục "Làm mới dữ liệu" được nối với hộp thoại xác nhận ở commit sau.
+        // Nút ⋮ mở menu nhỏ (Q39); chọn "Làm mới dữ liệu" thì hỏi xác nhận trước (AC-8.1).
         final ImageButton moreButton = findViewById(R.id.btn_more);
         moreButton.setOnClickListener(v -> {
             final PopupMenu menu = new PopupMenu(this, moreButton);
             menu.inflate(R.menu.menu_map_more);
+            menu.setOnMenuItemClickListener(item -> {
+                if (item.getItemId() == R.id.action_reset_data) {
+                    showResetDialog();
+                    return true;
+                }
+                return false;
+            });
             menu.show();
         });
 
@@ -162,6 +170,26 @@ public class MainActivity extends AppCompatActivity
         if (booked > 0) {
             showMessage(getString(R.string.msg_booking_done, booked));
         }
+    }
+
+    private void showResetDialog() {
+        if (getSupportFragmentManager().findFragmentByTag(ResetDataDialog.TAG) != null) {
+            return;
+        }
+        ResetDataDialog.newInstance(state.getSelectedCount(), state.getMySpots().size())
+                .show(getSupportFragmentManager(), ResetDataDialog.TAG);
+    }
+
+    /**
+     * Bấm "Xác nhận": xóa lựa chọn, vé và chỗ đang xem qua state, xóa luôn dữ liệu đã lưu rồi báo M10.
+     * Bộ lọc và góc nhìn không đổi (AC-8.2).
+     */
+    @Override
+    public void onResetConfirmed() {
+        // resetAll báo state, listener ghi bản rỗng; clear() sau đó xóa hẳn tệp lưu để mở lại app vẫn rỗng.
+        state.resetAll();
+        store.clear();
+        showMessage(R.string.msg_data_reset);
     }
 
     /**
