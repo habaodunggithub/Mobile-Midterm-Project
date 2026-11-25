@@ -467,4 +467,72 @@ public class VenueMapStateTest {
             }
         }
     }
+
+    // ---- AC-6.2: đặt vé ----
+
+    @Test
+    public void ac6_2_bookMovesSelectionToMine() {
+        List<Spot> available = spotsWith(SpotStatus.AVAILABLE, null);
+        for (int i = 0; i < 3; i++) {
+            state.toggleSelection(available.get(i).id);
+        }
+        notifications = 0;
+        assertEquals(3, state.bookSelection());
+        assertEquals(0, state.getSelectedCount());
+        assertEquals(0L, state.getSelectedTotal());
+        assertEquals(ids(available, 0, 3), state.snapshotMyTicketIds());
+        assertEquals(DisplayState.MINE, state.getDisplayState(available.get(0)));
+        assertEquals(1, notifications);
+    }
+
+    @Test
+    public void ac6_2_bookIncludesFilteredOut() {
+        Spot spot = spotsWith(SpotStatus.AVAILABLE, ZoneType.VIP).get(0);
+        state.toggleSelection(spot.id);
+        state.setFilter(SpotFilter.NONE.withZone(ZoneType.STANDARD));
+        assertFalse(state.matchesFilter(spot));
+        assertEquals(1, state.bookSelection());
+        assertTrue(state.isMine(spot.id));
+    }
+
+    @Test
+    public void ac6_2_mineNotSelectable() {
+        Spot spot = anAvailableSpot();
+        state.toggleSelection(spot.id);
+        state.bookSelection();
+        assertEquals(SelectionResult.REJECTED_MINE, state.toggleSelection(spot.id));
+        assertFalse(state.isSelected(spot.id));
+        assertEquals(0, state.getSelectedCount());
+    }
+
+    @Test
+    public void ac6_2_bookDropsTheFocusOnlyWhenItWasJustBooked() {
+        List<Spot> available = spotsWith(SpotStatus.AVAILABLE, null);
+        state.toggleSelection(available.get(0).id);
+        state.bookSelection();
+        assertNull(state.getFocusedId());
+
+        state.toggleSelection(available.get(1).id);
+        state.setFocused(available.get(2).id);
+        state.bookSelection();
+        assertEquals(available.get(2).id, state.getFocusedId());
+    }
+
+    @Test
+    public void ac6_2_bookWithEmptySelectionDoesNothing() {
+        assertEquals(0, state.bookSelection());
+        assertEquals(0, notifications);
+        assertTrue(state.getMySpots().isEmpty());
+    }
+
+    @Test
+    public void ac6_2_bookRecomputesMatchesForAvailableOnly() {
+        Spot spot = anAvailableSpot();
+        state.setFilter(SpotFilter.NONE.withAvailableOnly(true));
+        int before = state.getMatchCount();
+        state.toggleSelection(spot.id);
+        state.bookSelection();
+        assertEquals(before - 1, state.getMatchCount());
+        assertFalse(state.matchesFilter(spot));
+    }
 }
