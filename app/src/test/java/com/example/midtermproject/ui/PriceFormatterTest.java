@@ -44,4 +44,37 @@ public class PriceFormatterTest {
         assertEquals("9.223.372.036.854.775.807", PriceFormatter.format(Long.MAX_VALUE));
         assertEquals("-9.223.372.036.854.775.808", PriceFormatter.format(Long.MIN_VALUE));
     }
+
+    // ---- formatMillions: nhãn thanh giá và dòng "Đang lọc" (AC-4.6) ----
+
+    @Test
+    public void ac4_6_millionsShowOneDecimalWithAVietnameseComma() {
+        assertEquals("0,4", PriceFormatter.formatMillions(400_000L));
+        assertEquals("1,9", PriceFormatter.formatMillions(1_900_000L));
+        assertEquals("2,2", PriceFormatter.formatMillions(2_200_000L));
+        assertEquals("2,5", PriceFormatter.formatMillions(2_500_000L));
+    }
+
+    @Test
+    public void ac4_6_wholeMillionsHaveNoDecimalPart() {
+        assertEquals("1", PriceFormatter.formatMillions(1_000_000L));
+        assertEquals("2", PriceFormatter.formatMillions(2_000_000L));
+        assertEquals("0", PriceFormatter.formatMillions(0L));
+    }
+
+    @Test
+    public void millionsRoundToTheNearestTenthWithHalfRoundedUp() {
+        assertEquals("1,9", PriceFormatter.formatMillions(1_949_999L));
+        assertEquals("2", PriceFormatter.formatMillions(1_950_000L));
+        assertEquals("0", PriceFormatter.formatMillions(49_999L));
+        assertEquals("0,1", PriceFormatter.formatMillions(50_000L));
+    }
+
+    @Test
+    public void millionsTreatNegativeAmountsAsZeroAndDoNotOverflow() {
+        assertEquals("0", PriceFormatter.formatMillions(-1_500_000L));
+        assertEquals("0", PriceFormatter.formatMillions(Long.MIN_VALUE));
+        // Long.MAX_VALUE = 9.223.372.036.854.775.807 đồng = 9.223.372.036.854,8 triệu.
+        assertEquals("9223372036854,8", PriceFormatter.formatMillions(Long.MAX_VALUE));
+    }
 }
