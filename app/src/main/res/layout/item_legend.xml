@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Một mục của bảng chú thích: mẫu vẽ bên trái, chữ bên phải. Thuộc tính layout_* áp cho GridLayout cha. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_columnWeight="1"
+    android:gravity="center_vertical"
+    android:minHeight="28dp"
+    android:orientation="horizontal"
+    android:paddingEnd="4dp">
+
+    <!-- Mẫu chỉ là hình minh họa; chữ bên cạnh đã nói đủ nghĩa nên bỏ qua với trình đọc màn hình. -->
+    <ImageView
+        android:id="@+id/legend_swatch"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:importantForAccessibility="no" />
+
+    <TextView
+        android:id="@+id/legend_label"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:layout_weight="1"
+        android:textColor="@color/label_text"
+        android:textSize="12sp" />
+</LinearLayout>

@@ -8,6 +8,13 @@
     <string name="compass_content_description">Xoay sơ đồ về hướng mặc định</string>
     <string name="reset_view_content_description">Đưa sơ đồ về góc nhìn mặc định</string>
 
+    <!-- Bảng chú thích -->
+    <string name="legend_show_description">Hiện bảng chú thích</string>
+    <string name="legend_hide_description">Ẩn bảng chú thích</string>
+    <string name="legend_focus">Chỗ đang xem</string>
+    <string name="legend_seat">Ghế (tròn)</string>
+    <string name="legend_standing_cell">Ô đứng (vuông)</string>
+
     <!-- Bảng chi tiết -->
     <!-- Phân khu · hàng · số chỗ · giá; trạng thái hiển thị là chip bên cạnh -->
     <string name="sheet_focus_info">%1$s · Hàng %2$s · %3$s · %4$s đ</string>

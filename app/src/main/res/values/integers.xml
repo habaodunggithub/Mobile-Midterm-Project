@@ -1,0 +1,4 @@
+<resources>
+    <!-- Số cột của bảng chú thích: 11 mục xếp 4 hàng khi dọc (xem values-land cho máy ngang), để che không quá 25% vùng sơ đồ (AC-1.4). -->
+    <integer name="legend_columns">3</integer>
+</resources>

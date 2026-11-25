@@ -22,7 +22,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- Cột nút nổi góc trên phải sơ đồ, xếp dọc và cách nhau 8dp: Reset View, rồi la bàn (chỉ hiện khi lệch góc). -->
+    <!-- Cột nút nổi góc trên phải sơ đồ, xếp dọc và cách nhau 8dp: bảng chú thích, Reset View, rồi la bàn (chỉ hiện khi lệch góc). -->
     <LinearLayout
         android:id="@+id/map_button_column"
         android:layout_width="wrap_content"
@@ -32,9 +32,21 @@
         android:orientation="vertical">
 
         <ImageButton
+            android:id="@+id/btn_legend"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_map_button"
+            android:contentDescription="@string/legend_show_description"
+            android:elevation="4dp"
+            android:padding="12dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_info" />
+
+        <ImageButton
             android:id="@+id/btn_reset_view"
             android:layout_width="48dp"
             android:layout_height="48dp"
+            android:layout_marginTop="8dp"
             android:background="@drawable/bg_map_button"
             android:contentDescription="@string/reset_view_content_description"
             android:elevation="4dp"
@@ -56,6 +68,22 @@
             android:src="@drawable/ic_compass"
             android:visibility="gone" />
     </LinearLayout>
+
+    <!--
+        Bảng chú thích: các mục được thêm bằng code (LegendCard). Mặc định ẩn. Lề dưới được code cộng thêm
+        chiều cao bảng chi tiết đang thu gọn, vì khung chứa sơ đồ kéo dài xuống dưới bảng.
+    -->
+    <GridLayout
+        android:id="@+id/card_legend"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_margin="12dp"
+        android:background="@drawable/bg_legend_card"
+        android:columnCount="@integer/legend_columns"
+        android:elevation="4dp"
+        android:padding="8dp"
+        android:visibility="gone" />
     </FrameLayout>
 
     <!--

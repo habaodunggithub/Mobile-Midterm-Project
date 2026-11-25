@@ -33,6 +33,7 @@ public class MainActivity extends AppCompatActivity
     private VenueMapState state;
     private VenueMapView mapView;
     private DetailSheet detailSheet;
+    private LegendCard legendCard;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +50,12 @@ public class MainActivity extends AppCompatActivity
         mapView.setOnSpotTapListener(this);
 
         detailSheet = new DetailSheet(findViewById(R.id.bottom_sheet), venue, state, this);
-        detailSheet.setPeekHeightListener(mapView::setBottomInset);
+        legendCard = new LegendCard(findViewById(R.id.card_legend), findViewById(R.id.btn_legend));
+        // Bảng chi tiết thu gọn che bao nhiêu thì cả sơ đồ lẫn bảng chú thích phải chừa bấy nhiêu.
+        detailSheet.setPeekHeightListener(peekHeightPx -> {
+            mapView.setBottomInset(peekHeightPx);
+            legendCard.setBottomInset(peekHeightPx);
+        });
         // Mọi thay đổi đều đi qua state; state báo thì cả sơ đồ lẫn bảng chi tiết cùng vẽ lại.
         state.addListener(() -> {
             mapView.invalidate();

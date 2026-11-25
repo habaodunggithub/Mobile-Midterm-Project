@@ -1,0 +1,4 @@
+<resources>
+    <!-- Máy ngang rộng và thấp: 11 mục xếp 2 hàng để thẻ thấp, che ít sơ đồ nhất. -->
+    <integer name="legend_columns">6</integer>
+</resources>

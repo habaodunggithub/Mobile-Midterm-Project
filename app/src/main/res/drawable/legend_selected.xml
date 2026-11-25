@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mẫu Đang chọn: quầng mảnh, nền mực, dấu ✓ (giống SpotRenderer.drawSelected). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="22dp"
+    android:height="22dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:strokeColor="@color/spot_selected"
+        android:strokeWidth="1.2"
+        android:strokeAlpha="0.55"
+        android:pathData="M1.44,12 a10.56,10.56 0 1,0 21.12,0 a10.56,10.56 0 1,0 -21.12,0 Z" />
+    <path
+        android:fillColor="@color/spot_selected"
+        android:pathData="M4,12 a8,8 0 1,0 16,0 a8,8 0 1,0 -16,0 Z" />
+    <path
+        android:strokeColor="@color/on_spot_selected"
+        android:strokeWidth="1.6"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M8.64,12.16 L11.36,14.88 L15.68,9.44" />
+</vector>
