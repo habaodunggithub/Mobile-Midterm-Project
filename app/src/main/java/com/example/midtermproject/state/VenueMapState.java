@@ -121,6 +121,28 @@ public final class VenueMapState {
     }
 
     /**
+     * Đặt vé: mọi chỗ đang chọn (kể cả chỗ ngoài bộ lọc) thành vé của bạn, lựa chọn về rỗng (AC-6.2).
+     * Chỗ đang xem mà vừa được đặt thì bỏ khỏi chỗ đang xem (UC-10). Chọn rỗng thì không làm gì.
+     *
+     * @return số vé vừa đặt
+     */
+    public int bookSelection() {
+        final int booked = selectedIds.size();
+        if (booked == 0) {
+            return 0;
+        }
+        if (selectedIds.contains(focusedId)) {
+            focusedId = null;
+        }
+        myTicketIds.addAll(selectedIds);
+        selectedIds.clear();
+        // Chỗ thành vé của bạn thì tiêu chí "chỉ chỗ trống" không còn khớp nữa, nên phải tính lại.
+        recomputeMatches();
+        notifyListeners();
+        return booked;
+    }
+
+    /**
      * Khôi phục toàn bộ trạng thái từ dữ liệu đã lưu (REQUIREMENTS UC-11). Dữ liệu đọc lên có thể
      * cũ hoặc hỏng, nên mọi thứ đều được kiểm lại để các bất biến luôn đúng (AC-7.6):
      * <ul>
