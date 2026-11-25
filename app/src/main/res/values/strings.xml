@@ -56,6 +56,8 @@
     <string name="dialog_cancel">Hủy</string>
     <string name="dialog_confirm">Xác nhận</string>
     <string name="dialog_book_title">Đặt %1$d vé?</string>
+    <string name="dialog_reset_title">Làm mới dữ liệu?</string>
+    <string name="dialog_reset_message">Sẽ xóa %1$d chỗ đang chọn và %2$d vé của bạn. Không thể hoàn tác.</string>
     <string name="dialog_book_message">Các chỗ: %1$s\n\nTổng tiền: %2$s đ</string>
 
     <!-- Tên khu và trạng thái hiển thị (dùng cho chú thích và bảng chi tiết) -->
