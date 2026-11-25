@@ -8,7 +8,8 @@
     tools:context=".ui.MainActivity">
 
     <!--
-        Cột nội dung: thanh lọc rồi khung chứa sơ đồ. Lề thanh trạng thái được áp vào đây chứ không phải vào
+        Cột nội dung: thanh lọc rồi khung chứa sơ đồ. clipChildren=false ở đây và ở khung chứa sơ đồ để bóng đổ
+        (elevation) của các nút và thẻ nổi không bị cắt phẳng ở mép khung. Lề thanh trạng thái được áp vào đây chứ không phải vào
         CoordinatorLayout: CoordinatorLayout có padding thì BottomSheetBehavior đặt bảng thấp hơn tính toán
         đúng bằng padding đó. Khung chứa sơ đồ kéo dài xuống dưới bảng chi tiết.
     -->
@@ -16,6 +17,7 @@
         android:id="@+id/content_column"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:clipChildren="false"
         android:orientation="vertical">
 
         <include
@@ -26,7 +28,8 @@
             android:id="@+id/map_container"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:clipChildren="false">
 
             <!-- Toàn bộ sơ đồ được vẽ trên đúng một View này (yêu cầu bắt buộc của đề). -->
             <com.example.midtermproject.map.VenueMapView
