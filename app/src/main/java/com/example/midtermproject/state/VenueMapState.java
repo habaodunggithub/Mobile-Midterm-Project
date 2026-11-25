@@ -120,6 +120,48 @@ public final class VenueMapState {
         }
     }
 
+    /**
+     * Khôi phục toàn bộ trạng thái từ dữ liệu đã lưu (REQUIREMENTS UC-11). Dữ liệu đọc lên có thể
+     * cũ hoặc hỏng, nên mọi thứ đều được kiểm lại để các bất biến luôn đúng (AC-7.6):
+     * <ul>
+     *   <li>mã không tồn tại hoặc trùng thì bỏ;</li>
+     *   <li>chỗ không còn trạng thái gốc AVAILABLE thì bỏ (vé và lựa chọn chỉ có ở chỗ từng trống);</li>
+     *   <li>chỗ vừa chọn vừa là vé thì vé thắng, chỗ đó không còn trong lựa chọn;</li>
+     *   <li>lựa chọn dài quá {@link #MAX_SELECTION} thì giữ những chỗ đứng đầu.</li>
+     * </ul>
+     * Báo người nghe đúng một lần.
+     */
+    public void restore(List<String> selected, List<String> mine, String focused, SpotFilter newFilter) {
+        selectedIds.clear();
+        myTicketIds.clear();
+        if (mine != null) {
+            for (String id : mine) {
+                if (isAvailableSpot(id)) {
+                    myTicketIds.add(id);
+                }
+            }
+        }
+        if (selected != null) {
+            for (String id : selected) {
+                if (selectedIds.size() >= MAX_SELECTION) {
+                    break;
+                }
+                if (isAvailableSpot(id) && !myTicketIds.contains(id)) {
+                    selectedIds.add(id);
+                }
+            }
+        }
+        focusedId = (focused != null && venue.findSpot(focused) != null) ? focused : null;
+        filter = newFilter == null ? SpotFilter.NONE : newFilter;
+        recomputeMatches();
+        notifyListeners();
+    }
+
+    private boolean isAvailableSpot(String spotId) {
+        final Spot spot = venue.findSpot(spotId);
+        return spot != null && spot.baseStatus == SpotStatus.AVAILABLE;
+    }
+
     // ---- Truy vấn ----
 
     /** Trạng thái dùng để vẽ, theo thứ tự ưu tiên ở REQUIREMENTS 6.3. */
