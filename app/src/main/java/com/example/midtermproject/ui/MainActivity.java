@@ -22,6 +22,7 @@ import com.example.midtermproject.map.VenueMapView;
 import com.example.midtermproject.model.SelectionResult;
 import com.example.midtermproject.model.Spot;
 import com.example.midtermproject.model.Venue;
+import com.example.midtermproject.model.ZoneType;
 import com.example.midtermproject.state.SessionData;
 import com.example.midtermproject.state.SessionStore;
 import com.example.midtermproject.state.SpotFilter;
@@ -73,7 +74,10 @@ public class MainActivity extends AppCompatActivity
         // dữ liệu rỗng (AC-7.7); mã sai hoặc hỏng được state tự loại (AC-7.6). Làm trước khi có người nghe state.
         store = new PrefsSessionStore(this);
         final SessionData saved = store.load();
-        state.restore(saved.selected, saved.mine, null, SpotFilter.NONE);
+        // Có gói tạm (xoay màn hình, hệ thống thu hồi process) thì lấy thêm chỗ đang xem và bộ lọc từ đó; không
+        // thì dùng mặc định (AC-7.5). restore chỉ được gọi đúng một lần.
+        final String focusedId = savedInstanceState == null ? null : savedInstanceState.getString(KEY_FOCUSED_ID);
+        state.restore(saved.selected, saved.mine, focusedId, readFilter(savedInstanceState));
         savedSelected = state.snapshotSelectedIds();
         savedMine = state.snapshotMyTicketIds();
         mapView = findViewById(R.id.map_view);
@@ -86,6 +90,11 @@ public class MainActivity extends AppCompatActivity
 
         detailSheet = new DetailSheet(findViewById(R.id.bottom_sheet), venue, state, this);
         legendCard = new LegendCard(findViewById(R.id.card_legend), findViewById(R.id.btn_legend));
+        if (savedInstanceState != null) {
+            legendCard.setShown(savedInstanceState.getBoolean(KEY_LEGEND_VISIBLE, false));
+            // View chưa có kích thước, nên ảnh chụp góc nhìn được áp khi View đo xong; ảnh hỏng thì dùng vừa khít.
+            mapView.setPendingCameraSnapshot(savedInstanceState.getFloatArray(KEY_CAMERA_SNAPSHOT));
+        }
         // Bảng chi tiết thu gọn che bao nhiêu thì sơ đồ, bảng chú thích và thông báo M7 phải chừa bấy nhiêu.
         detailSheet.setPeekHeightListener(peekHeightPx -> {
             mapView.setBottomInset(peekHeightPx);
@@ -137,6 +146,35 @@ public class MainActivity extends AppCompatActivity
             compass.setRotation((float) Math.toDegrees(angleRad));
             compass.setVisibility(atDefault ? View.GONE : View.VISIBLE);
         });
+    }
+
+    /** Dựng lại bộ lọc từ gói tạm; gói thiếu hoặc khóa hỏng thì dùng giá trị mặc định (UC-11, error course). */
+    private static SpotFilter readFilter(Bundle saved) {
+        if (saved == null) {
+            return SpotFilter.NONE;
+        }
+        ZoneType zone = null;
+        final String zoneName = saved.getString(KEY_FILTER_ZONE);
+        if (zoneName != null) {
+            try {
+                zone = ZoneType.valueOf(zoneName);
+            } catch (IllegalArgumentException e) {
+                zone = null;
+            }
+        }
+        long minPrice = SpotFilter.PRICE_MIN;
+        long maxPrice = SpotFilter.PRICE_MAX;
+        final long[] range = saved.getLongArray(KEY_FILTER_PRICE_RANGE);
+        if (range != null && range.length == 2) {
+            minPrice = range[0];
+            maxPrice = range[1];
+        }
+        final String query = saved.getString(KEY_FILTER_QUERY);
+        return SpotFilter.NONE
+                .withZone(zone)
+                .withQuery(query == null ? "" : query)
+                .withAvailableOnly(saved.getBoolean(KEY_FILTER_AVAILABLE_ONLY, false))
+                .withPriceRange(minPrice, maxPrice);
     }
 
     /**
