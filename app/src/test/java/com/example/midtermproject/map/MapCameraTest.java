@@ -483,4 +483,85 @@ public class MapCameraTest {
         float delta = MapCamera.shortestAngleDelta((float) Math.toRadians(170), (float) Math.toRadians(-170));
         assertEquals((float) Math.toRadians(20), delta, 1e-5f);
     }
+
+    // ---- AC-2.13: snapshot ----
+
+    @Test
+    public void ac2_13_snapshotOfTheFitViewIsTheWorldCenterAtRatioOne() {
+        float[] snapshot = portrait().snapshot();
+        assertEquals(WORLD_WIDTH / 2f, snapshot[0], 1e-2f);
+        assertEquals(WORLD_HEIGHT / 2f, snapshot[1], 1e-2f);
+        assertEquals(1f, snapshot[2], 1e-4f);
+    }
+
+    @Test
+    public void ac2_13_snapshotRestoresCenterAndScaleAcrossOrientation() {
+        // Phóng đủ lớn để khung bao lớn hơn vùng nhìn ở hướng ngang, nếu không sơ đồ bị căn giữa
+        // và tâm vùng nhìn không còn là điểm đã lưu (đúng theo AC-2.2).
+        MapCamera portrait = zoomedCamera((float) Math.toRadians(37), 5f);
+        portrait.panBy(30f, -20f);
+        float[] snapshot = portrait.snapshot();
+
+        MapCamera landscape = landscape();
+        landscape.set(landscape.getScale() * 1.7f, 0.9f, 50f, 20f);   // trạng thái bất kỳ trước khi khôi phục
+        assertTrue(landscape.restoreSnapshot(snapshot));
+
+        assertEquals("angle is the default of the new orientation", 0f, landscape.getAngle(), 1e-6f);
+        float regionCenterX = 631f / 2f, regionCenterY = 277f / 2f;
+        assertEquals(snapshot[0], landscape.screenToWorldX(regionCenterX, regionCenterY), 0.5f);
+        assertEquals(snapshot[1], landscape.screenToWorldY(regionCenterX, regionCenterY), 0.5f);
+        assertEquals(snapshot[2], landscape.getScale() / landscape.fitScale(0f), 1e-3f);
+    }
+
+    @Test
+    public void ac2_13_restoreFromLandscapeBackToPortraitUsesTheDefaultPortraitAngle() {
+        MapCamera landscape = landscape();
+        landscape.zoomBy(1.6f, 300f, 140f);
+        float[] snapshot = landscape.snapshot();
+
+        MapCamera portrait = portrait();
+        assertTrue(portrait.restoreSnapshot(snapshot));
+        assertEquals(-HALF_PI, portrait.getAngle(), 1e-6f);
+        assertEquals(snapshot[2], portrait.getScale() / portrait.fitScale(-HALF_PI), 1e-3f);
+    }
+
+    @Test
+    public void ac2_13_restoreClampsTheRatioToTheScaleLimits() {
+        MapCamera camera = portrait();
+        assertTrue(camera.restoreSnapshot(new float[]{390f, 260f, 0.4f}));
+        assertEquals(camera.getMinScale(), camera.getScale(), 1e-5f);
+        assertTrue(camera.restoreSnapshot(new float[]{390f, 260f, 1000f}));
+        assertEquals(camera.getMaxScale(), camera.getScale(), 1e-5f);
+    }
+
+    @Test
+    public void ac2_13_invalidSnapshotsAreRejectedAndLeaveTheCameraUntouched() {
+        float[][] invalid = {
+                null,
+                {1f, 2f},
+                {1f, 2f, 3f, 4f},
+                {Float.NaN, 100f, 2f},
+                {100f, Float.POSITIVE_INFINITY, 2f},
+                {100f, 100f, Float.NaN},
+                {100f, 100f, 0f},
+                {100f, 100f, -1f},
+                {-5f, 100f, 2f},
+                {100f, 9999f, 2f},
+        };
+        for (float[] snapshot : invalid) {
+            MapCamera camera = zoomedCamera(0.3f, 3f);
+            float scale = camera.getScale(), angle = camera.getAngle(), tx = camera.getTx(), ty = camera.getTy();
+            assertFalse("rejects " + java.util.Arrays.toString(snapshot), camera.restoreSnapshot(snapshot));
+            assertEquals(scale, camera.getScale(), 0f);
+            assertEquals(angle, camera.getAngle(), 0f);
+            assertEquals(tx, camera.getTx(), 0f);
+            assertEquals(ty, camera.getTy(), 0f);
+        }
+    }
+
+    @Test
+    public void ac2_13_restoreNeedsAReadyCamera() {
+        MapCamera camera = new MapCamera(PADDING);
+        assertFalse(camera.restoreSnapshot(new float[]{100f, 100f, 1f}));
+    }
 }
