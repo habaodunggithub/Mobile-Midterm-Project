@@ -49,8 +49,6 @@ final class FilterBar {
     private final View statusCard;
     private final TextView statusText;
     private final View noResultBanner;
-    /** Panel lọc cuộn được ở bố cục ngang; {@code null} ở bố cục dọc. */
-    private final View filterPanel;
     /** Lề dưới ban đầu của thông báo M7, để cộng thêm chiều cao bảng chi tiết thay vì thay thế nó. */
     private final int bannerEdgeMarginPx;
     /** Đang cập nhật control từ state: bỏ qua sự kiện do chính việc đó gây ra, để không lặp vô hạn. */
@@ -71,7 +69,6 @@ final class FilterBar {
         this.statusCard = root.findViewById(R.id.layout_filter_status);
         this.statusText = root.findViewById(R.id.tv_filter_status);
         this.noResultBanner = root.findViewById(R.id.layout_no_result);
-        this.filterPanel = root.findViewById(R.id.filter_panel);
         this.bannerEdgeMarginPx = ((ViewGroup.MarginLayoutParams) noResultBanner.getLayoutParams()).bottomMargin;
 
         bindSearch();
@@ -211,16 +208,12 @@ final class FilterBar {
 
     /**
      * Chừa chỗ cho bảng chi tiết đang thu gọn (cao {@code peekHeightPx}): đặt thông báo M7 giữa phần sơ đồ nằm trên
-     * bảng, và (bố cục ngang) đệm đáy panel lọc để dòng cuối của panel cuộn lên được trên bảng.
+     * bảng. Panel lọc ở bố cục ngang không bị bảng che nên không cần đệm thêm (Q40).
      */
     void setBottomInset(int peekHeightPx) {
         final ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) noResultBanner.getLayoutParams();
         params.bottomMargin = peekHeightPx + bannerEdgeMarginPx;
         noResultBanner.setLayoutParams(params);
-        if (filterPanel != null) {
-            filterPanel.setPadding(filterPanel.getPaddingLeft(), filterPanel.getPaddingTop(),
-                    filterPanel.getPaddingRight(), peekHeightPx);
-        }
     }
 
     /** Dòng "Đang lọc" chỉ hiện khi có ít nhất một tiêu chí khác mặc định (AC-4.6). */

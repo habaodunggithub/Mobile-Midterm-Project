@@ -1,4 +1,6 @@
 <resources>
     <dimen name="legend_item_min_height">24dp</dimen>
     <dimen name="legend_card_padding">6dp</dimen>
+    <!-- Bảng chi tiết ở máy ngang rộng tối đa 420dp (Q40). -->
+    <dimen name="sheet_max_width">420dp</dimen>
 </resources>

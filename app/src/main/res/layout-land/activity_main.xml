@@ -5,6 +5,7 @@
     với bản dọc qua include; id giống hệt nên MainActivity và FilterBar không cần biết hướng màn hình.
 -->
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/root"
     android:layout_width="match_parent"
@@ -20,15 +21,14 @@
         android:orientation="horizontal">
 
         <!--
-            Panel lọc: nền trắng, cuộn được vì không đủ chỗ trong phần nhìn thấy trên bảng chi tiết. clipToPadding=false
-            và lề dưới do code đặt (FilterBar.setBottomInset) để dòng cuối cuộn lên được trên bảng chi tiết.
+            Panel lọc: nền trắng, cuộn được vì máy ngang ít chiều cao. Bảng chi tiết chỉ rộng 420dp ở góc dưới phải nên
+            không che panel này.
         -->
         <ScrollView
             android:id="@+id/filter_panel"
             android:layout_width="260dp"
             android:layout_height="match_parent"
             android:background="@color/surface"
-            android:clipToPadding="false"
             android:fillViewport="true"
             android:overScrollMode="ifContentScrolls"
             android:paddingStart="12dp"
@@ -88,6 +88,17 @@
         </FrameLayout>
     </LinearLayout>
 
-    <include layout="@layout/view_bottom_sheet" />
+    <!--
+        Bảng chi tiết ở máy ngang: rộng tối đa 420dp, nằm sát đáy bên phải (Q40, AC-7.2). Nhờ vậy panel lọc bên trái
+        thấy trọn chiều cao và không bị bảng che. Ghi đè chiều rộng và gravity ngay trên include; id giữ nguyên.
+        Khi include ghi đè layout_*, LayoutParams được dựng lại chỉ từ các thuộc tính trên include, nên layout_behavior
+        của bảng phải được khai báo lại ở đây, không thì BottomSheetBehavior.from báo lỗi.
+    -->
+    <include
+        layout="@layout/view_bottom_sheet"
+        android:layout_width="@dimen/sheet_max_width"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
