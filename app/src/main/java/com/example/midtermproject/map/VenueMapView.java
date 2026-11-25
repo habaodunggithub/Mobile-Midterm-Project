@@ -1,10 +1,12 @@
 package com.example.midtermproject.map;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.animation.DecelerateInterpolator;
 
 import androidx.annotation.Nullable;
 
@@ -23,6 +25,10 @@ import com.example.midtermproject.model.Venue;
 public class VenueMapView extends View {
     /** Lề giữa sơ đồ và mép vùng nhìn khi tính fit, tính bằng dp. */
     private static final float FIT_PADDING_DP = 16f;
+    /** Khi kéo, mép sơ đồ được lùi vào trong vùng nhìn tối đa ngần này dp (AC-2.2). */
+    private static final float PAN_MARGIN_DP = 48f;
+    /** Thời gian hiệu ứng Reset View (AC-2.5). */
+    private static final long RESET_DURATION_MS = 300L;
 
     private MapCamera camera;
     private VenueRenderer renderer;
@@ -31,6 +37,8 @@ public class VenueMapView extends View {
     private Venue venue;
     private SpotStateSource states;
     private int bottomInsetPx;
+    /** Hiệu ứng camera đang chạy (Reset View, tự chỉnh thẳng, la bàn); chạm vào màn hình sẽ hủy nó. */
+    private ValueAnimator cameraAnimator;
 
     public VenueMapView(Context context) {
         super(context);
@@ -54,7 +62,7 @@ public class VenueMapView extends View {
 
     private void init(Context context) {
         final float density = context.getResources().getDisplayMetrics().density;
-        camera = new MapCamera(FIT_PADDING_DP * density);
+        camera = new MapCamera(FIT_PADDING_DP * density, PAN_MARGIN_DP * density);
         renderer = new VenueRenderer(context);
         setContentDescription(context.getString(R.string.map_content_description));
     }
@@ -68,6 +76,44 @@ public class VenueMapView extends View {
         invalidate();
     }
 
+    /** Đưa sơ đồ về góc nhìn mặc định (vị trí, tỉ lệ và góc xoay) bằng hiệu ứng mượt (AC-2.5). */
+    public void resetView() {
+        animateCameraTo(camera.fitTarget(), RESET_DURATION_MS);
+    }
+
+    /**
+     * Nội suy camera từ trạng thái hiện tại tới {tỉ lệ, góc, tx, ty} của {@code target}. Góc đi theo
+     * chiều ngắn nhất. Một hiệu ứng mới thay thế hiệu ứng đang chạy.
+     */
+    private void animateCameraTo(float[] target, long durationMs) {
+        cancelCameraAnimation();
+        final float startScale = camera.getScale();
+        final float startAngle = camera.getAngle();
+        final float startTx = camera.getTx();
+        final float startTy = camera.getTy();
+        final float angleDelta = MapCamera.shortestAngleDelta(startAngle, target[1]);
+
+        cameraAnimator = ValueAnimator.ofFloat(0f, 1f);
+        cameraAnimator.setDuration(durationMs);
+        cameraAnimator.setInterpolator(new DecelerateInterpolator());
+        cameraAnimator.addUpdateListener(animation -> {
+            final float f = (float) animation.getAnimatedValue();
+            camera.set(startScale + (target[0] - startScale) * f,
+                    MapCamera.normalizeAngle(startAngle + angleDelta * f),
+                    startTx + (target[2] - startTx) * f,
+                    startTy + (target[3] - startTy) * f);
+            invalidate();
+        });
+        cameraAnimator.start();
+    }
+
+    private void cancelCameraAnimation() {
+        if (cameraAnimator != null) {
+            cameraAnimator.cancel();
+            cameraAnimator = null;
+        }
+    }
+
     /** Chiều cao phần dưới bị bảng chi tiết (thu gọn) che; sơ đồ được căn giữa phía trên phần đó. */
     public void setBottomInset(int px) {
         bottomInsetPx = px;
@@ -79,6 +125,7 @@ public class VenueMapView extends View {
     @Override
     protected void onSizeChanged(int width, int height, int oldWidth, int oldHeight) {
         super.onSizeChanged(width, height, oldWidth, oldHeight);
+        cancelCameraAnimation();
         camera.setViewport(width, height, bottomInsetPx);
         camera.resetToFit();
     }
