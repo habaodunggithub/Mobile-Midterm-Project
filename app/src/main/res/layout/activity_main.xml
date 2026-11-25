@@ -31,11 +31,8 @@
             android:layout_weight="1"
             android:clipChildren="false">
 
-            <!-- Toàn bộ sơ đồ được vẽ trên đúng một View này (yêu cầu bắt buộc của đề). -->
-            <com.example.midtermproject.map.VenueMapView
-                android:id="@+id/map_view"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+            <!-- Sơ đồ, thông báo không có kết quả, cột nút nổi và bảng chú thích (dùng chung với bố cục ngang). -->
+            <include layout="@layout/view_map_layers" />
 
             <!--
                 Các thẻ nổi ở phía trên sơ đồ, chừa 72dp bên phải cho cột nút. Thẻ nổi đè lên sơ đồ chứ không đẩy
@@ -70,45 +67,7 @@
                     android:paddingBottom="8dp"
                     android:visibility="gone">
 
-                    <com.google.android.material.switchmaterial.SwitchMaterial
-                        android:id="@+id/switch_available_only"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:minHeight="48dp"
-                        android:text="@string/filter_available_only"
-                        android:textColor="@color/sheet_text"
-                        android:textSize="14sp"
-                        android:theme="@style/ThemeOverlay.MidtermProject.InkSwitch" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/filter_price_title"
-                            android:textColor="@color/sheet_text"
-                            android:textSize="14sp" />
-
-                        <TextView
-                            android:id="@+id/tv_price_range"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/sheet_text"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <!-- Hai đầu, bước và giá trị ban đầu được code đặt từ SpotFilter.PRICE_MIN/PRICE_MAX để chỉ có một nguồn. -->
-                    <com.google.android.material.slider.RangeSlider
-                        android:id="@+id/range_price"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:contentDescription="@string/filter_price_slider_description"
-                        app:tickVisible="false" />
+                    <include layout="@layout/view_price_controls" />
                 </LinearLayout>
 
                 <!--
@@ -130,224 +89,13 @@
                     android:paddingEnd="4dp"
                     android:visibility="gone">
 
-                    <TextView
-                        android:id="@+id/tv_filter_status"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:accessibilityLiveRegion="polite"
-                        android:ellipsize="end"
-                        android:maxLines="3"
-                        android:paddingTop="6dp"
-                        android:paddingBottom="6dp"
-                        android:textColor="@color/sheet_text"
-                        android:textSize="13sp" />
-
-                    <Button
-                        android:id="@+id/btn_clear_filter"
-                        style="@style/Widget.MidtermProject.Button.Text"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/filter_clear" />
+                    <include layout="@layout/view_filter_status" />
                 </LinearLayout>
             </LinearLayout>
-
-            <!--
-                Thông báo M7 khi bộ lọc không khớp chỗ nào (AC-4.7): thẻ ở giữa vùng sơ đồ, kèm nút Xóa lọc. Lề dưới được
-                code cộng thêm chiều cao bảng chi tiết đang thu gọn để thẻ nằm giữa phần sơ đồ nhìn thấy được.
-            -->
-            <LinearLayout
-                android:id="@+id/layout_no_result"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_margin="24dp"
-                android:accessibilityLiveRegion="polite"
-                android:background="@drawable/bg_floating_card"
-                android:clickable="true"
-                android:elevation="4dp"
-                android:focusable="false"
-                android:gravity="center_horizontal"
-                android:orientation="vertical"
-                android:paddingStart="24dp"
-                android:paddingTop="16dp"
-                android:paddingEnd="24dp"
-                android:paddingBottom="4dp"
-                android:visibility="gone">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/msg_no_match"
-                    android:textColor="@color/sheet_text"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <Button
-                    android:id="@+id/btn_clear_filter_no_result"
-                    style="@style/Widget.MidtermProject.Button.Text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/filter_clear" />
-            </LinearLayout>
-
-            <!-- Cột nút nổi góc trên phải sơ đồ, xếp dọc và cách nhau 8dp: bảng chú thích, Reset View, rồi la bàn (chỉ hiện khi lệch góc). -->
-            <LinearLayout
-                android:id="@+id/map_button_column"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="top|end"
-                android:layout_margin="12dp"
-                android:orientation="vertical">
-
-                <ImageButton
-                    android:id="@+id/btn_legend"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:background="@drawable/bg_map_button"
-                    android:contentDescription="@string/legend_show_description"
-                    android:elevation="4dp"
-                    android:padding="12dp"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/ic_info" />
-
-                <ImageButton
-                    android:id="@+id/btn_reset_view"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_map_button"
-                    android:contentDescription="@string/reset_view_content_description"
-                    android:elevation="4dp"
-                    android:padding="12dp"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/ic_reset_view" />
-
-                <!-- Kim la bàn luôn chỉ về phía sân khấu. -->
-                <ImageButton
-                    android:id="@+id/btn_compass"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_map_button"
-                    android:contentDescription="@string/compass_content_description"
-                    android:elevation="4dp"
-                    android:padding="12dp"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/ic_compass"
-                    android:visibility="gone" />
-            </LinearLayout>
-
-            <!--
-                Bảng chú thích: các mục được thêm bằng code (LegendCard). Mặc định ẩn. Lề dưới được code cộng thêm
-                chiều cao bảng chi tiết đang thu gọn, vì khung chứa sơ đồ kéo dài xuống dưới bảng.
-                clickable để thẻ nhận chạm: không thì chạm lên thẻ lọt xuống sơ đồ và chọn nhầm chỗ nằm bên dưới.
-            -->
-            <GridLayout
-                android:id="@+id/card_legend"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:layout_margin="12dp"
-                android:background="@drawable/bg_floating_card"
-                android:clickable="true"
-                android:columnCount="@integer/legend_columns"
-                android:elevation="4dp"
-                android:focusable="false"
-                android:padding="8dp"
-                android:visibility="gone" />
         </FrameLayout>
     </LinearLayout>
 
-    <!--
-        Bảng chi tiết: luôn hiện ở dạng thu gọn (không ẩn được), kéo lên hoặc bấm phần đầu để mở rộng.
-        Không đặt layout_gravity: BottomSheetBehavior tự dịch bảng xuống đáy, thêm gravity sẽ đẩy bảng ra ngoài màn hình.
-        Phần đầu có chiều cao cố định (mỗi dòng chỉ một dòng chữ) nên peekHeight không đổi theo nội dung.
-    -->
-    <LinearLayout
-        android:id="@+id/bottom_sheet"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bg_bottom_sheet"
-        android:elevation="8dp"
-        android:orientation="vertical"
-        app:behavior_fitToContents="true"
-        app:behavior_hideable="false"
-        app:behavior_peekHeight="96dp"
-        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
-
-        <LinearLayout
-            android:id="@+id/sheet_header"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:orientation="vertical"
-            android:paddingStart="16dp"
-            android:paddingTop="8dp"
-            android:paddingEnd="16dp"
-            android:paddingBottom="12dp">
-
-            <View
-                android:layout_width="36dp"
-                android:layout_height="4dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="12dp"
-                android:background="@drawable/bg_sheet_handle"
-                android:importantForAccessibility="no" />
-
-            <!-- Cao tối thiểu cố định: chip hiện hay ẩn cũng không làm đổi chiều cao phần đầu (peekHeight). -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:minHeight="32dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/tv_focus_info"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:textColor="@color/sheet_text"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/tv_focus_state"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:background="@drawable/bg_state_chip"
-                    android:maxLines="1"
-                    android:paddingStart="10dp"
-                    android:paddingTop="3dp"
-                    android:paddingEnd="10dp"
-                    android:paddingBottom="3dp"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:visibility="gone" />
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/tv_selection_summary"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:textColor="@color/sheet_text_secondary"
-                android:textSize="14sp" />
-        </LinearLayout>
-
-        <!-- Danh sách chỗ đang chọn và vé của bạn; cuộn được khi dài hơn phần bảng cho phép (AC-5.2). -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_spots"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:overScrollMode="ifContentScrolls" />
-    </LinearLayout>
+    <!-- Bảng chi tiết: xem view_bottom_sheet.xml. -->
+    <include layout="@layout/view_bottom_sheet" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

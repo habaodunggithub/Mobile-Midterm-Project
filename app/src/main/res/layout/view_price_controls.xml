@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Các control lọc theo trạng thái và giá: công tắc "Chỉ chỗ trống", dòng khoảng giá và thanh giá. Dùng chung cho thẻ nổi
+    trên sơ đồ (bố cục dọc) và panel bên trái (bố cục ngang); nơi include có LinearLayout dọc id card_price_filter.
+-->
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/switch_available_only"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:text="@string/filter_available_only"
+        android:textColor="@color/sheet_text"
+        android:textSize="14sp"
+        android:theme="@style/ThemeOverlay.MidtermProject.InkSwitch" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/filter_price_title"
+            android:textColor="@color/sheet_text"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tv_price_range"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/sheet_text"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Hai đầu, bước và giá trị ban đầu được code đặt từ SpotFilter.PRICE_MIN/PRICE_MAX để chỉ có một nguồn. -->
+    <com.google.android.material.slider.RangeSlider
+        android:id="@+id/range_price"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/filter_price_slider_description"
+        app:tickVisible="false" />
+</merge>

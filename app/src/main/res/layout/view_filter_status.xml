@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Nội dung dòng "Đang lọc": chữ mô tả các tiêu chí kèm số chỗ khớp, và nút Xóa lọc. Nơi include có LinearLayout ngang
+    id layout_filter_status.
+-->
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <TextView
+        android:id="@+id/tv_filter_status"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:accessibilityLiveRegion="polite"
+        android:ellipsize="end"
+        android:maxLines="3"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
+        android:textColor="@color/sheet_text"
+        android:textSize="13sp" />
+
+    <Button
+        android:id="@+id/btn_clear_filter"
+        style="@style/Widget.MidtermProject.Button.Text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/filter_clear" />
+</merge>
