@@ -34,6 +34,18 @@ Mỗi chỗ có một trong năm trạng thái hiển thị: **Còn trống**, *
 | Lưu dữ liệu | Lựa chọn và vé của bạn được lưu bằng `SharedPreferences` và còn lại sau khi tắt hẳn app; nút ⋮ → "Làm mới dữ liệu" để xóa |
 | Xoay màn hình | Giữ nguyên chỗ đang xem, bộ lọc, góc nhìn, bảng chú thích, hộp thoại; bố cục riêng cho máy ngang (panel lọc bên trái, bảng chi tiết 420dp) |
 
+### Ảnh chụp màn hình
+
+Chụp trên emulator Pixel 6 (Android 15).
+
+| Dọc, mặc định | Dọc, đã zoom, bảng chi tiết mở rộng | Hộp thoại đặt vé |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/portrait-default.jpg" width="240" alt="Màn hình dọc ở góc nhìn mặc định"> | <img src="docs/screenshots/portrait-selected-sheet.jpg" width="240" alt="Đã zoom vào sơ đồ, chọn 3 chỗ, bảng chi tiết mở rộng"> | <img src="docs/screenshots/booking-dialog.jpg" width="240" alt="Hộp thoại xác nhận đặt 3 vé"> |
+
+Ngang: panel lọc bên trái, bảng chi tiết rộng 420dp ở góc dưới phải, bảng chú thích đang mở, bộ lọc VIP đang bật.
+
+<img src="docs/screenshots/landscape-filter-legend.jpg" width="640" alt="Màn hình ngang có bộ lọc VIP và bảng chú thích">
+
 ## 2. Hướng dẫn chạy
 
 **Yêu cầu:** Android Studio bản mới (kèm JDK 17 và Android SDK 37), hoặc JDK 17 và Android SDK cài sẵn nếu chạy bằng dòng lệnh. Mã nguồn được biên dịch ở mức Java 11.
