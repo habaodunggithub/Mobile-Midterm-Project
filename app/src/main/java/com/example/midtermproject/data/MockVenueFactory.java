@@ -14,7 +14,8 @@ import java.util.List;
  * Sinh sơ đồ concert hình móng ngựa bằng dữ liệu giả lập, luôn giống nhau với cùng {@link #SEED}.
  * <p>
  * Tọa độ là "world units", trục y hướng xuống. Sân khấu nằm ở đầu trên; bãi Standing nằm ngay
- * trước sân khấu; các ghế VIP và Standard xếp theo vành cung quanh tâm (giữa mép dưới sân khấu).
+ * trước sân khấu; các ghế VIP và Standard xếp theo vành cung hơi oval quanh tâm (giữa mép dưới
+ * sân khấu). Sơ đồ được siết sát nội dung để ghế to hơn ở mức Fit.
  * <p>
  * Thứ tự dựng cũng là thứ tự bốc số ngẫu nhiên cho trạng thái, nên không được đảo thứ tự:
  * Standing A, Standing B, VIP Trái, VIP Giữa, VIP Phải, Standard 1 đến 4 (từ trái sang phải).
@@ -22,18 +23,18 @@ import java.util.List;
 public final class MockVenueFactory {
     public static final long SEED = 2026L;
 
-    static final float WORLD_WIDTH = 1080f;
-    static final float WORLD_HEIGHT = 630f;
+    static final float WORLD_WIDTH = 780f;
+    static final float WORLD_HEIGHT = 520f;
 
-    static final float STAGE_LEFT = 390f;
-    static final float STAGE_TOP = 30f;
-    static final float STAGE_RIGHT = 690f;
-    static final float STAGE_BOTTOM = 90f;
+    static final float STAGE_LEFT = 260f;
+    static final float STAGE_TOP = 20f;
+    static final float STAGE_RIGHT = 520f;
+    static final float STAGE_BOTTOM = 70f;
 
     // Bãi Standing: hai khối 4 hàng x 6 ô đứng, đặt ngay trước sân khấu.
     static final float STANDING_HALF = 10f;      // nửa cạnh ô đứng
-    static final float STANDING_STEP = 26f;      // khoảng cách giữa hai tâm kề nhau
-    static final float STANDING_GAP = 40f;       // lối đi: giữa hai khối và giữa sân khấu với khối
+    static final float STANDING_STEP = 24f;      // khoảng cách giữa hai tâm kề nhau
+    static final float STANDING_GAP = 30f;       // lối đi: giữa hai khối và giữa sân khấu với khối
     static final int STANDING_ROWS = 4;
     static final int STANDING_COLS = 6;
     private static final long STANDING_BASE_PRICE = 1_200_000L;
@@ -46,25 +47,25 @@ public final class MockVenueFactory {
     // Hệ số co giãn của vành cung theo từng trục: 1 là vòng tròn, nhỏ hơn 1 thì hẹp lại.
     //   x = ARC_CENTER_X + RING_SCALE_X * r * cos(theta)
     //   y = ARC_CENTER_Y + RING_SCALE_Y * r * sin(theta)
-    static final float RING_SCALE_X = 1f;
-    static final float RING_SCALE_Y = 1f;
+    static final float RING_SCALE_X = 0.9f;
+    static final float RING_SCALE_Y = 1.04f;
 
     // Ghế trên các vành cung: hình tròn, bán kính chung.
     static final float SEAT_RADIUS = 10f;
 
     // VIP: 3 phân khu x 3 hàng x 8 ghế, vành cung gần sân khấu.
-    static final float[] VIP_ROW_RADII = {260f, 286f, 312f};
+    static final float[] VIP_ROW_RADII = {230f, 256f, 282f};
     static final int[] VIP_SEATS_PER_ROW = {8, 8, 8};
     private static final long VIP_BASE_PRICE = 2_500_000L;
     private static final long VIP_PRICE_STEP = 300_000L;
-    static final float VIP_LABEL_RADIUS = 344f;     // lối đi giữa vành VIP và vành Standard
+    static final float VIP_LABEL_RADIUS = 302f;     // lối đi giữa vành VIP và vành Standard
 
     // Standard: 4 phân khu x 4 hàng (6, 6, 7, 7 ghế), vành cung xa sân khấu.
-    static final float[] STANDARD_ROW_RADII = {376f, 402f, 428f, 454f};
+    static final float[] STANDARD_ROW_RADII = {322f, 348f, 374f, 400f};
     static final int[] STANDARD_SEATS_PER_ROW = {6, 6, 7, 7};
     private static final long STANDARD_BASE_PRICE = 700_000L;
     private static final long STANDARD_PRICE_STEP = 100_000L;
-    static final float STANDARD_LABEL_RADIUS = 490f;   // ngoài hàng D, nằm dưới sơ đồ
+    static final float STANDARD_LABEL_RADIUS = 434f;   // ngoài hàng D, nằm dưới sơ đồ
 
     private MockVenueFactory() {
     }
