@@ -9,14 +9,16 @@ package com.example.midtermproject.map;
  *   screen = s * R(theta) * world + t        R(theta) = [[cos, -sin], [sin, cos]]
  *   world  = R(-theta) * (screen - t) / s
  * </pre>
- * Lớp này mới có phần "vừa khít" (fit), góc mặc định và đổi tọa độ; pan, zoom, xoay, kẹp biên
- * được thêm ở Chặng 3.
+ * Lớp này lo phần "vừa khít" (fit), góc mặc định, đổi tọa độ và pan có giới hạn biên; zoom, xoay,
+ * snapshot được thêm ở các commit sau của Chặng 3.
  */
 public final class MapCamera {
     private static final float HALF_PI = (float) (Math.PI / 2.0);
 
     /** Lề giữa sơ đồ và mép vùng nhìn khi tính fit, tính bằng px. */
     private final float paddingPx;
+    /** Khi kéo, mép khung bao của sơ đồ được lùi vào trong vùng nhìn tối đa bằng khoảng này (48dp). */
+    private final float panMarginPx;
 
     private float worldWidth;
     private float worldHeight;
@@ -30,8 +32,14 @@ public final class MapCamera {
     private float tx;
     private float ty;
 
+    /** Lề kéo mặc định bằng 3 lần lề fit (48dp khi lề fit là 16dp). */
     public MapCamera(float paddingPx) {
+        this(paddingPx, 3f * paddingPx);
+    }
+
+    public MapCamera(float paddingPx, float panMarginPx) {
         this.paddingPx = paddingPx;
+        this.panMarginPx = panMarginPx;
     }
 
     public void setWorldSize(float width, float height) {
@@ -118,6 +126,54 @@ public final class MapCamera {
 
     public float getTy() {
         return ty;
+    }
+
+    /**
+     * Dịch sơ đồ theo ngón tay một đoạn (dx, dy) tính bằng px màn hình, rồi kẹp lại trong giới hạn.
+     * Độ dịch nằm trong tọa độ màn hình nên không phụ thuộc góc xoay.
+     */
+    public void panBy(float dx, float dy) {
+        if (!isReady()) {
+            return;
+        }
+        tx += dx;
+        ty += dy;
+        clamp();
+    }
+
+    /**
+     * Kẹp độ dịch theo khung bao của sơ đồ đã phóng và xoay (hình chữ nhật nhỏ nhất theo trục màn
+     * hình chứa nó). Với mỗi trục: khung bao nhỏ hơn vùng nhìn thì căn giữa; ngược lại mép khung bao
+     * chỉ được lùi vào trong mép vùng nhìn tối đa {@code panMarginPx}, nên sơ đồ không bao giờ bị
+     * kéo hoàn toàn ra khỏi màn hình (AC-2.2).
+     */
+    private void clamp() {
+        final float c = (float) Math.cos(angle);
+        final float s = (float) Math.sin(angle);
+        // Ba góc còn lại của sơ đồ sau khi phóng và xoay (góc (0, 0) nằm ở gốc), chưa dịch.
+        final float x1 = scale * worldWidth * c;
+        final float y1 = scale * worldWidth * s;
+        final float x2 = -scale * worldHeight * s;
+        final float y2 = scale * worldHeight * c;
+        final float x3 = x1 + x2;
+        final float y3 = y1 + y2;
+        final float minX = Math.min(Math.min(0f, x1), Math.min(x2, x3));
+        final float maxX = Math.max(Math.max(0f, x1), Math.max(x2, x3));
+        final float minY = Math.min(Math.min(0f, y1), Math.min(y2, y3));
+        final float maxY = Math.max(Math.max(0f, y1), Math.max(y2, y3));
+        tx = clampAxis(tx, minX, maxX, viewWidth);
+        ty = clampAxis(ty, minY, maxY, viewHeight - bottomInset);
+    }
+
+    private float clampAxis(float translation, float min, float max, float viewSize) {
+        final float size = max - min;
+        if (size <= viewSize) {
+            return (viewSize - size) / 2f - min;
+        }
+        // Mép trái của khung bao là translation + min, phải nằm trong [viewSize - size - margin, margin].
+        final float lowest = viewSize - size - panMarginPx - min;
+        final float highest = panMarginPx - min;
+        return Math.max(lowest, Math.min(highest, translation));
     }
 
     public float worldToScreenX(float wx, float wy) {
