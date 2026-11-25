@@ -26,6 +26,7 @@
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/et_search"
+            android:saveEnabled="false"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/search_hint"
@@ -42,6 +43,7 @@
     <!-- Panel hẹp nên chip xuống dòng (singleLine=false) thay vì trượt ngang. -->
     <com.google.android.material.chip.ChipGroup
         android:id="@+id/chip_group_zone"
+        android:saveEnabled="false"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:contentDescription="@string/filter_zone_group_description"
@@ -53,6 +55,7 @@
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_zone_all"
+            android:saveEnabled="false"
             style="@style/Widget.MidtermProject.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -61,6 +64,7 @@
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_zone_standing"
+            android:saveEnabled="false"
             style="@style/Widget.MidtermProject.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -68,6 +72,7 @@
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_zone_vip"
+            android:saveEnabled="false"
             style="@style/Widget.MidtermProject.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -75,6 +80,7 @@
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_zone_standard"
+            android:saveEnabled="false"
             style="@style/Widget.MidtermProject.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

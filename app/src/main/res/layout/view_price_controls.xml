@@ -7,6 +7,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/switch_available_only"
+        android:saveEnabled="false"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="48dp"
@@ -40,6 +41,7 @@
     <!-- Hai đầu, bước và giá trị ban đầu được code đặt từ SpotFilter.PRICE_MIN/PRICE_MAX để chỉ có một nguồn. -->
     <com.google.android.material.slider.RangeSlider
         android:id="@+id/range_price"
+        android:saveEnabled="false"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:contentDescription="@string/filter_price_slider_description"
