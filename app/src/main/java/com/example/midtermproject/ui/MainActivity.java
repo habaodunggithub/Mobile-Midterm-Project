@@ -29,7 +29,7 @@ import com.google.android.material.snackbar.Snackbar;
  * Sơ đồ vẽ lại mỗi khi state đổi (dữ liệu đi một chiều: chạm, rồi state, rồi vẽ).
  */
 public class MainActivity extends AppCompatActivity
-        implements VenueMapView.OnSpotTapListener, DetailSheet.Callbacks {
+        implements VenueMapView.OnSpotTapListener, DetailSheet.Callbacks, BookingConfirmDialog.Callback {
     private VenueMapState state;
     private VenueMapView mapView;
     private DetailSheet detailSheet;
@@ -104,6 +104,27 @@ public class MainActivity extends AppCompatActivity
         state.removeSelection(spot.id);
     }
 
+    /** Bấm "Đặt N vé": hỏi xác nhận trước (AC-6.1). Dữ liệu hộp thoại lấy từ state ngay lúc bấm. */
+    @Override
+    public void onBookRequested() {
+        // Bấm hai lần liên tiếp không được mở hai hộp thoại chồng nhau.
+        if (state.getSelectedCount() == 0
+                || getSupportFragmentManager().findFragmentByTag(BookingConfirmDialog.TAG) != null) {
+            return;
+        }
+        BookingConfirmDialog.newInstance(state.snapshotSelectedIds(), state.getSelectedTotal())
+                .show(getSupportFragmentManager(), BookingConfirmDialog.TAG);
+    }
+
+    /** Bấm "Xác nhận": đặt mọi chỗ đang chọn qua state rồi báo M6 (AC-6.2). */
+    @Override
+    public void onBookingConfirmed() {
+        final int booked = state.bookSelection();
+        if (booked > 0) {
+            showMessage(getString(R.string.msg_booking_done, booked));
+        }
+    }
+
     /**
      * Bấm một dòng: thu bảng về dạng thu gọn để thấy sơ đồ (Q34), đặt chỗ làm chỗ đang xem rồi chạy
      * hiệu ứng đưa chỗ về giữa sơ đồ (UC-08, AC-5.4).
@@ -149,6 +170,10 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void showMessage(@StringRes int message) {
+        showMessage(getString(message));
+    }
+
+    private void showMessage(String message) {
         // Neo vào bảng chi tiết để thông báo nằm ngay trên bảng, không bị bảng hay thanh điều hướng che.
         Snackbar.make(findViewById(R.id.root), message, Snackbar.LENGTH_SHORT)
                 .setAnchorView(R.id.bottom_sheet)

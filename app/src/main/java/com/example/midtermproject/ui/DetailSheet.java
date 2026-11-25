@@ -46,6 +46,9 @@ final class DetailSheet {
 
         /** Bấm ✕: bỏ chỗ khỏi lựa chọn. */
         void onRemoveRequested(Spot spot);
+
+        /** Bấm "Đặt N vé": Activity hỏi xác nhận rồi đặt. */
+        void onBookRequested();
     }
 
     private final Context context;
@@ -98,6 +101,7 @@ final class DetailSheet {
         list.setAdapter(adapter);
         behavior.setMaxHeight((int) (context.getResources().getDisplayMetrics().heightPixels * MAX_HEIGHT_FRACTION));
         header.setOnClickListener(v -> toggle());
+        bookButton.setOnClickListener(v -> callbacks.onBookRequested());
         // Chiều cao phần đầu đổi (ví dụ cỡ chữ hệ thống) thì peekHeight phải đổi theo.
         header.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
             if (bottom - top != oldBottom - oldTop) {
