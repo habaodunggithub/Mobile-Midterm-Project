@@ -1,9 +1,11 @@
 package com.example.midtermproject.ui;
 
 import android.os.Bundle;
+import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.widget.ImageButton;
 
+import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -12,18 +14,22 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.midtermproject.R;
 import com.example.midtermproject.data.MockVenueFactory;
-import com.example.midtermproject.map.SpotStateSource;
+import com.example.midtermproject.map.VenueMapStateSource;
 import com.example.midtermproject.map.VenueMapView;
-import com.example.midtermproject.model.DisplayState;
+import com.example.midtermproject.model.SelectionResult;
 import com.example.midtermproject.model.Spot;
-import com.example.midtermproject.model.SpotStatus;
 import com.example.midtermproject.model.Venue;
+import com.example.midtermproject.state.VenueMapState;
+import com.google.android.material.snackbar.Snackbar;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
-public class MainActivity extends AppCompatActivity {
+/**
+ * Màn hình duy nhất. Activity chỉ ghép các mảnh: tạo sơ đồ và {@link VenueMapState}, nghe cú chạm từ
+ * {@link VenueMapView}, đưa mọi thay đổi qua state, và báo lý do khi chạm vào chỗ không chọn được.
+ * Sơ đồ vẽ lại mỗi khi state đổi (dữ liệu đi một chiều: chạm, rồi state, rồi vẽ).
+ */
+public class MainActivity extends AppCompatActivity implements VenueMapView.OnSpotTapListener {
+    private VenueMapState state;
+    private VenueMapView mapView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,8 +48,11 @@ public class MainActivity extends AppCompatActivity {
         });
 
         Venue venue = MockVenueFactory.create();
-        VenueMapView mapView = findViewById(R.id.map_view);
-        mapView.bind(venue, new PreviewStateSource());
+        state = new VenueMapState(venue);
+        mapView = findViewById(R.id.map_view);
+        mapView.bind(venue, new VenueMapStateSource(state));
+        mapView.setOnSpotTapListener(this);
+        state.addListener(() -> mapView.invalidate());
 
         // La bàn chỉ hiện khi sơ đồ lệch khỏi góc mặc định; kim xoay cùng sơ đồ nên luôn chỉ về sân khấu.
         ImageButton compass = findViewById(R.id.btn_compass);
@@ -54,41 +63,45 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * TẠM THỜI (gỡ ở Chặng 4, khi đã có VenueMapState): dữ liệu mẫu để xem đủ 5 trạng thái hiển thị và
-     * vòng đánh dấu chỗ đang xem. Thứ tự ưu tiên giống REQUIREMENTS 6.3: vé của bạn, đã đặt, bị khóa,
-     * đang chọn, còn trống.
-     */
-    private static final class PreviewStateSource implements SpotStateSource {
-        private final Set<String> selected = new HashSet<>(Arrays.asList("VIP-G-B02", "VIP-G-B03", "STD-3-A03"));
-        private final Set<String> mine = new HashSet<>(Arrays.asList("VIP-G-A05", "STA-A-A02", "STA-A-A03"));
-        private final String focused = "VIP-G-B03";
+    @Override
+    public void onSpotTapped(Spot spot) {
+        showResult(state.toggleSelection(spot.id));
+    }
 
-        @Override
-        public DisplayState displayStateOf(Spot spot) {
-            if (mine.contains(spot.id)) {
-                return DisplayState.MINE;
-            }
-            if (spot.baseStatus == SpotStatus.BOOKED) {
-                return DisplayState.BOOKED;
-            }
-            if (spot.baseStatus == SpotStatus.LOCKED) {
-                return DisplayState.LOCKED;
-            }
-            if (selected.contains(spot.id)) {
-                return DisplayState.SELECTED;
-            }
-            return DisplayState.AVAILABLE;
-        }
+    /** Chạm vào lối đi, sân khấu hoặc ngoài sơ đồ: bỏ chỗ đang xem, giữ nguyên lựa chọn (AC-3.8). */
+    @Override
+    public void onEmptyTapped() {
+        state.setFocused(null);
+    }
 
-        @Override
-        public boolean isDimmed(Spot spot) {
-            return false;
+    /** Chọn hoặc bỏ chọn thành công thì rung nhẹ (Q33); bị từ chối thì báo lý do (M1 đến M5). */
+    private void showResult(SelectionResult result) {
+        switch (result) {
+            case SELECTED:
+            case DESELECTED:
+                mapView.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK);
+                break;
+            case REJECTED_MINE:
+                showMessage(R.string.msg_mine);
+                break;
+            case REJECTED_BOOKED:
+                showMessage(R.string.msg_booked);
+                break;
+            case REJECTED_LOCKED:
+                showMessage(R.string.msg_locked);
+                break;
+            case REJECTED_FILTERED:
+                showMessage(R.string.msg_out_of_filter);
+                break;
+            case REJECTED_LIMIT:
+                showMessage(R.string.msg_limit_reached);
+                break;
+            default:
+                break;
         }
+    }
 
-        @Override
-        public boolean isFocused(Spot spot) {
-            return spot.id.equals(focused);
-        }
+    private void showMessage(@StringRes int message) {
+        Snackbar.make(findViewById(R.id.root), message, Snackbar.LENGTH_SHORT).show();
     }
 }
