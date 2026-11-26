@@ -37,6 +37,8 @@ public final class VenueRenderer {
      * xem, quầng và nét viền vẽ rộng ra ngoài hình của chỗ.
      */
     private static final float CULL_MARGIN_DP = 24f;
+    /** Biên độ rung ngang của chỗ không chọn được, tính bằng dp trên màn hình. */
+    private static final float SHAKE_AMPLITUDE_DP = 4f;
     /** Biên độ gợn của mép sân khấu, tính bằng đơn vị sơ đồ: đủ để trông như miếng dán cắt tay. */
     private static final float STAGE_WOBBLE = 1.6f;
     /** Số điểm lấy mẫu trên mép sân khấu. */
@@ -204,6 +206,11 @@ public final class VenueRenderer {
         final float top = visibleBounds[1] - margin;
         final float right = visibleBounds[2] + margin;
         final float bottom = visibleBounds[3] + margin;
+        // Hướng "ngang trên màn hình" đổi sang tọa độ sơ đồ: screen = s·R(θ)·world nên world = R(−θ)·screen / s,
+        // và vector (1, 0) của màn hình thành (cos θ, −sin θ) / s. Nhờ vậy chỗ luôn rung ngang dù sơ đồ đang xoay.
+        final float shakeUnit = SHAKE_AMPLITUDE_DP * density / scale;
+        final float shakeX = (float) Math.cos(angleRad) * shakeUnit;
+        final float shakeY = (float) -Math.sin(angleRad) * shakeUnit;
         final List<Spot> spots = venue.getSpots();
         for (int i = 0; i < spots.size(); i++) {
             final Spot spot = spots.get(i);
@@ -216,9 +223,11 @@ public final class VenueRenderer {
             if (grow <= 0f) {
                 continue;
             }
-            final boolean transformed = grow != 1f;
+            final float shake = effects.shakeOf(spot, now);
+            final boolean transformed = grow != 1f || shake != 0f;
             if (transformed) {
                 canvas.save();
+                canvas.translate(shake * shakeX, shake * shakeY);
                 canvas.scale(grow, grow, spot.cx, spot.cy);
             }
             final DisplayState state = states.displayStateOf(spot);

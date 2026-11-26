@@ -226,6 +226,14 @@ public class VenueMapView extends View {
         }
     }
 
+    /** Chỗ không chọn được (đã đặt, bị khóa, vé của bạn, ngoài bộ lọc, quá 8 chỗ): lắc ngang nhỏ dần (Q43). */
+    public void playShake(Spot spot) {
+        if (effects != null) {
+            effects.shake(spot, SystemClock.uptimeMillis());
+            invalidate();
+        }
+    }
+
     /** Chỗ vừa được chọn hoặc bỏ chọn: nảy lên kèm một vòng lan (Q43). */
     public void playPop(Spot spot) {
         if (effects != null) {
