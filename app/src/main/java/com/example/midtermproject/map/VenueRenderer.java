@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 
 import com.example.midtermproject.R;
+import com.example.midtermproject.model.DisplayState;
 import com.example.midtermproject.model.Section;
 import com.example.midtermproject.model.Spot;
 import com.example.midtermproject.model.Venue;
@@ -115,16 +116,18 @@ public final class VenueRenderer {
      * @param pulse         độ nhấp nháy của vòng chỗ đang xem (0 đến 1)
      * @param visibleBounds {trái, trên, phải, dưới} của vùng nhìn thấy theo tọa độ sơ đồ
      *                      ({@link MapCamera#getVisibleWorldBounds}); chỗ nằm ngoài khung này không được vẽ
+     * @param effects       hiệu ứng đang chạy trên từng chỗ (nảy, vòng lan…), hỏi theo thời điểm {@code now}
      */
     public void draw(Canvas canvas, Venue venue, SpotStateSource states, Matrix worldToScreen,
-                     float scale, float angleRad, float pulse, float[] visibleBounds) {
+                     float scale, float angleRad, float pulse, float[] visibleBounds,
+                     SpotEffects effects, long now) {
         canvas.drawColor(background);
 
         canvas.save();
         canvas.concat(worldToScreen);
         drawStage(canvas, venue, scale);
         drawStandingLabels(canvas, venue);
-        drawSpots(canvas, venue, states, scale, angleRad, pulse, visibleBounds);
+        drawSpots(canvas, venue, states, scale, angleRad, pulse, visibleBounds, effects, now);
         canvas.restore();
 
         drawSectionLabels(canvas, venue, worldToScreen);
@@ -192,7 +195,7 @@ public final class VenueRenderer {
     }
 
     private void drawSpots(Canvas canvas, Venue venue, SpotStateSource states, float scale, float angleRad,
-                           float pulse, float[] visibleBounds) {
+                           float pulse, float[] visibleBounds, SpotEffects effects, long now) {
         spotRenderer.beginFrame(scale, (float) Math.toDegrees(angleRad), pulse);
         // Culling: bỏ qua chỗ nằm hẳn ngoài vùng nhìn (kể cả phần vòng sáng và viền vẽ rộng ra), nên khi
         // phóng to chỉ vẽ vài chục chỗ thay vì cả 224 chỗ.
@@ -208,8 +211,25 @@ public final class VenueRenderer {
                     || spot.cy + spot.size < top || spot.cy - spot.size > bottom) {
                 continue;
             }
-            spotRenderer.draw(canvas, spot, states.displayStateOf(spot),
-                    states.isDimmed(spot), states.isFocused(spot));
+            // Hiệu ứng: phóng chỗ quanh tâm của nó (1 là bình thường, 0 là chưa hiện trong lúc mở màn).
+            final float grow = effects.scaleOf(spot, now);
+            if (grow <= 0f) {
+                continue;
+            }
+            final boolean transformed = grow != 1f;
+            if (transformed) {
+                canvas.save();
+                canvas.scale(grow, grow, spot.cx, spot.cy);
+            }
+            final DisplayState state = states.displayStateOf(spot);
+            spotRenderer.draw(canvas, spot, state, states.isDimmed(spot), states.isFocused(spot));
+            if (transformed) {
+                canvas.restore();
+            }
+            final float ring = effects.ringOf(spot, now);
+            if (ring >= 0f) {
+                spotRenderer.drawRing(canvas, spot, state, ring);
+            }
         }
     }
 

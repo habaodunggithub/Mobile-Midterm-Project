@@ -7,6 +7,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -66,6 +67,8 @@ public class VenueMapView extends View {
 
     private Venue venue;
     private SpotStateSource states;
+    /** Hiệu ứng trên từng chỗ (Q43); tạo khi gắn sơ đồ vì gốc các làn sóng là tâm sân khấu. */
+    private SpotEffects effects;
     private int bottomInsetPx;
     /** Hiệu ứng camera đang chạy (Reset View, tự chỉnh thẳng, la bàn); chạm vào màn hình sẽ hủy nó. */
     private ValueAnimator cameraAnimator;
@@ -187,9 +190,18 @@ public class VenueMapView extends View {
     public void bind(Venue venue, SpotStateSource states) {
         this.venue = venue;
         this.states = states;
+        effects = new SpotEffects((venue.stageLeft + venue.stageRight) / 2f, (venue.stageTop + venue.stageBottom) / 2f);
         camera.setWorldSize(venue.worldWidth, venue.worldHeight);
         camera.resetToFit();
         onCameraChanged();
+    }
+
+    /** Chỗ vừa được chọn hoặc bỏ chọn: nảy lên kèm một vòng lan (Q43). */
+    public void playPop(Spot spot) {
+        if (effects != null) {
+            effects.pop(spot, SystemClock.uptimeMillis());
+            invalidate();
+        }
     }
 
     /**
@@ -408,8 +420,13 @@ public class VenueMapView extends View {
         worldToScreen.postRotate((float) Math.toDegrees(camera.getAngle()));
         worldToScreen.postTranslate(camera.getTx(), camera.getTy());
         camera.getVisibleWorldBounds(visibleBounds);
+        final long now = SystemClock.uptimeMillis();
         renderer.draw(canvas, venue, states, worldToScreen, camera.getScale(), camera.getAngle(), focusPulse,
-                visibleBounds);
+                visibleBounds, effects, now);
+        // Còn hiệu ứng chạy thì hẹn vẽ khung tiếp theo; hết thì thôi, sơ đồ đứng yên không tốn pin.
+        if (effects.isRunning(now)) {
+            postInvalidateOnAnimation();
+        }
     }
 
     // Lint chỉ tìm performClick() ngay trong hàm này; ở đây nó được gọi trong handleTap() khi một cú

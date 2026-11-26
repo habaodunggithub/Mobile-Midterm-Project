@@ -215,7 +215,12 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onSpotTapped(Spot spot) {
-        showResult(state.toggleSelection(spot.id));
+        final SelectionResult result = state.toggleSelection(spot.id);
+        // Hiệu ứng trên chính chỗ vừa chạm (Q43): chọn hoặc bỏ chọn được thì chỗ nảy lên.
+        if (result == SelectionResult.SELECTED || result == SelectionResult.DESELECTED) {
+            mapView.playPop(spot);
+        }
+        showResult(result);
     }
 
     /** Bấm ✕ ở một dòng: bỏ chỗ khỏi lựa chọn; sơ đồ và bảng cùng vẽ lại nhờ state báo (UC-07). */

@@ -301,6 +301,17 @@ public final class SpotRenderer {
         return glyph;
     }
 
+    /**
+     * Vòng lan quanh chỗ khi vừa chọn, bỏ chọn hoặc vừa thành vé của bạn (Q43). Vòng nở từ mép chỗ ra tới
+     * 3,2 lần bán kính và mờ dần: bán kính = r·(1 + 2,2p), độ đậm = 1 − p, với p là tiến độ từ 0 đến 1.
+     */
+    public void drawRing(Canvas canvas, Spot spot, DisplayState state, float progress) {
+        dimmed = false;
+        final int color = state == DisplayState.MINE ? mine : selected;
+        final float radius = spot.size * (1f + 2.2f * progress);
+        shape(canvas, spot, radius, strokePaint(color, 2.5f * density, (int) (255 * (1f - progress))));
+    }
+
     /** Ngôi sao 5 cánh bán kính 1 (cánh ngoài 0,75, cánh trong 0,33), dựng một lần rồi phóng theo chỗ. */
     private void buildUnitStar() {
         for (int i = 0; i < 10; i++) {
