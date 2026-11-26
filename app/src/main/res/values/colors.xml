@@ -22,15 +22,12 @@
     <color name="label_text">#FF2A0A5E</color>
     <color name="label_halo">#FFFFF3E4</color>
 
-    <!-- Ba khu: màu nền chỗ, màu chữ trên chỗ và màu viền (viền giúp chỗ đạt 3:1 trên nền kem) -->
+    <!-- Ba khu: màu nền chỗ và màu chữ trên chỗ. Không viền (mẫu G): cam 3,3:1, tím 9,6:1, hồng 4,2:1 trên nền kem -->
     <color name="zone_standing">#FFFF6A00</color>
-    <color name="zone_standing_stroke">#FFC24E00</color>
     <color name="on_zone_standing">#FF2A0A5E</color>
     <color name="zone_vip">#FF5B1BFF</color>
-    <color name="zone_vip_stroke">#FF4310CC</color>
     <color name="on_zone_vip">#FFFFFFFF</color>
     <color name="zone_standard">#FFE0137A</color>
-    <color name="zone_standard_stroke">#FFAD0D5E</color>
     <color name="on_zone_standard">#FFFFFFFF</color>
 
     <!-- Các trạng thái hiển thị còn lại -->
@@ -39,8 +36,7 @@
     <color name="spot_mine">#FF0B7A2A</color>
     <color name="on_spot_mine">#FFFFF3E4</color>
     <color name="spot_booked">#FFF1D9C8</color>
-    <color name="spot_booked_stroke">#FF9C7464</color>
-    <color name="on_spot_booked">#FF6E4A3C</color>
+    <color name="on_spot_booked">#FF8A5A55</color>
     <color name="spot_locked_fill">#FFFFF3E4</color>
     <color name="spot_locked_stroke">#FF5A3A50</color>
 

@@ -22,17 +22,15 @@ import com.example.midtermproject.model.ZoneType;
  * cấp phát gì (yêu cầu hiệu năng của đề). Bề dày nét và cỡ vòng đánh dấu được tính theo pixel màn
  * hình: gọi {@link #beginFrame} một lần mỗi khung hình để báo tỉ lệ hiện tại.
  * <p>
- * Mỗi trạng thái khác nhau bằng nhiều kênh, không chỉ bằng màu: đang chọn có quầng và dấu ✓, vé của
- * bạn có quầng và dấu ★, đã đặt là ô xám có ✕, bị khóa là vòng rỗng có gạch chéo. Ký hiệu chỉ hiện
- * khi chỗ đủ to trên màn hình. Mã chỗ và các ký hiệu luôn đứng thẳng trên màn hình dù sơ đồ xoay
+ * Mỗi trạng thái khác nhau bằng nhiều kênh, không chỉ bằng màu (vẽ theo mẫu G, Q48): ghế trống là hình đặc màu
+ * khu; đang chọn có vòng mực đậm và dấu ✓; vé của bạn màu xanh lá có ★; đã đặt màu be có ✕; bị khóa là nền kem
+ * viền mực có gạch chéo. Mã chỗ và các ký hiệu luôn đứng thẳng trên màn hình dù sơ đồ xoay
  * (vẽ ngược chiều góc xoay quanh tâm chỗ), nếu không khi dọc chữ sẽ nằm ngang sang một bên.
  */
 public final class SpotRenderer {
     /** Độ trong suốt (0-255) của chỗ ngoài bộ lọc: khoảng 22%. */
     private static final int DIMMED_ALPHA = 56;
-    /** Độ trong suốt của quầng quanh chỗ đang chọn và vé của bạn: khoảng 55%. */
-    private static final int HALO_ALPHA = 140;
-    /** Chỗ có đường kính trên màn hình từ ngưỡng này trở lên mới vẽ mã chỗ và ký hiệu. */
+        /** Chỗ có đường kính trên màn hình từ ngưỡng này trở lên mới vẽ mã chỗ và ký hiệu. */
     private static final float DETAIL_MIN_DIAMETER_DP = 22f;
     /**
      * Gạch chéo của chỗ bị khóa hiện từ ngưỡng nhỏ hơn: chỉ có 8 chỗ khóa, và nếu thiếu gạch chéo
@@ -55,10 +53,9 @@ public final class SpotRenderer {
 
     // Màu theo khu, đánh chỉ số bằng ZoneType.ordinal().
     private final int[] zoneFill = new int[3];
-    private final int[] zoneStroke = new int[3];
     private final int[] onZone = new int[3];
     private final int selected, onSelected, mine, onMine;
-    private final int booked, bookedStroke, onBooked;
+    private final int booked, onBooked;
     private final int lockedFill, lockedStroke;
     private final int focusHalo, focusInk;
 
@@ -77,13 +74,10 @@ public final class SpotRenderer {
         lockSlashMinDiameterPx = LOCK_SLASH_MIN_DIAMETER_DP * density;
 
         zoneFill[ZoneType.STANDING.ordinal()] = color(context, R.color.zone_standing);
-        zoneStroke[ZoneType.STANDING.ordinal()] = color(context, R.color.zone_standing_stroke);
         onZone[ZoneType.STANDING.ordinal()] = color(context, R.color.on_zone_standing);
         zoneFill[ZoneType.VIP.ordinal()] = color(context, R.color.zone_vip);
-        zoneStroke[ZoneType.VIP.ordinal()] = color(context, R.color.zone_vip_stroke);
         onZone[ZoneType.VIP.ordinal()] = color(context, R.color.on_zone_vip);
         zoneFill[ZoneType.STANDARD.ordinal()] = color(context, R.color.zone_standard);
-        zoneStroke[ZoneType.STANDARD.ordinal()] = color(context, R.color.zone_standard_stroke);
         onZone[ZoneType.STANDARD.ordinal()] = color(context, R.color.on_zone_standard);
 
         selected = color(context, R.color.spot_selected);
@@ -91,7 +85,6 @@ public final class SpotRenderer {
         mine = color(context, R.color.spot_mine);
         onMine = color(context, R.color.on_spot_mine);
         booked = color(context, R.color.spot_booked);
-        bookedStroke = color(context, R.color.spot_booked_stroke);
         onBooked = color(context, R.color.on_spot_booked);
         lockedFill = color(context, R.color.spot_locked_fill);
         lockedStroke = color(context, R.color.spot_locked_stroke);
@@ -157,15 +150,15 @@ public final class SpotRenderer {
 
     private void drawAvailable(Canvas canvas, Spot spot, boolean detail) {
         final int zone = spot.zone.ordinal();
+        // Mẫu G: ghế trống chỉ là hình đặc màu khu, không viền.
         shape(canvas, spot, spot.size, fillPaint(zoneFill[zone]));
-        shape(canvas, spot, spot.size, strokePaint(zoneStroke[zone], 0.8f * density, 255));
         if (detail) {
             drawLabel(canvas, spot, onZone[zone]);
         }
     }
 
     private void drawSelected(Canvas canvas, Spot spot, boolean detail) {
-        drawHalo(canvas, spot, selected);
+        drawRingAround(canvas, spot, selected);
         shape(canvas, spot, spot.size, fillPaint(selected));
         if (detail) {
             drawCheck(canvas, spot, onSelected);
@@ -173,7 +166,6 @@ public final class SpotRenderer {
     }
 
     private void drawMine(Canvas canvas, Spot spot, boolean detail) {
-        drawHalo(canvas, spot, mine);
         shape(canvas, spot, spot.size, fillPaint(mine));
         if (detail) {
             drawStar(canvas, spot, onMine);
@@ -182,24 +174,28 @@ public final class SpotRenderer {
 
     private void drawBooked(Canvas canvas, Spot spot, boolean detail) {
         shape(canvas, spot, spot.size, fillPaint(booked));
-        shape(canvas, spot, spot.size, strokePaint(bookedStroke, 0.8f * density, 255));
         if (detail) {
             drawCross(canvas, spot, onBooked);
         }
     }
 
     private void drawLocked(Canvas canvas, Spot spot, boolean detail, boolean slash) {
-        shape(canvas, spot, spot.size, fillPaint(lockedFill));
-        shape(canvas, spot, spot.size, strokePaint(lockedStroke, (detail ? 1.6f : 1f) * density, 255));
+        // Mẫu G: nền kem, viền mực tím dày 16% bán kính (theo sơ đồ, nên dày lên khi zoom như các phần khác của chỗ).
+        final float strokeWorld = spot.size * 0.16f;
+        shape(canvas, spot, spot.size - strokeWorld / 2f, fillPaint(lockedFill));
+        shape(canvas, spot, spot.size - strokeWorld / 2f, strokePaint(lockedStroke, strokeWorld * scale, 255));
         if (slash) {
             drawSlash(canvas, spot, lockedStroke);
         }
     }
 
-    /** Quầng mảnh quanh chỗ đang chọn / vé của bạn, để nhìn thấy từ xa ở mức Fit. */
-    private void drawHalo(Canvas canvas, Spot spot, int color) {
-        final float radius = spot.size + Math.max(1.3f * density * pixel, spot.size * 0.32f);
-        shape(canvas, spot, radius, strokePaint(color, 1.2f * density, HALO_ALPHA));
+    /**
+     * Vòng mực quanh chỗ đang chọn (mẫu G): cách mép chỗ 40% bán kính, dày 24% bán kính, đậm hẳn. Tính theo đơn vị
+     * sơ đồ nên vòng to ra cùng chỗ khi zoom, và vẫn thấy rõ từ xa ở mức Fit.
+     */
+    private void drawRingAround(Canvas canvas, Spot spot, int color) {
+        final float widthWorld = spot.size * 0.24f;
+        shape(canvas, spot, spot.size * 1.4f, strokePaint(color, widthWorld * scale, 255));
     }
 
     /**
@@ -312,11 +308,11 @@ public final class SpotRenderer {
         shape(canvas, spot, radius, strokePaint(color, 2.5f * density, (int) (255 * (1f - progress))));
     }
 
-    /** Ngôi sao 5 cánh bán kính 1 (cánh ngoài 0,75, cánh trong 0,33), dựng một lần rồi phóng theo chỗ. */
+    /** Ngôi sao 5 cánh bán kính 1 (cánh ngoài 0,6, cánh trong 0,26 như mẫu G), dựng một lần rồi phóng theo chỗ. */
     private void buildUnitStar() {
         for (int i = 0; i < 10; i++) {
             final double angle = -Math.PI / 2 + i * Math.PI / 5;
-            final float radius = (i % 2 == 0) ? 0.75f : 0.33f;
+            final float radius = (i % 2 == 0) ? 0.6f : 0.26f;
             final float px = (float) (radius * Math.cos(angle));
             final float py = (float) (radius * Math.sin(angle));
             if (i == 0) {

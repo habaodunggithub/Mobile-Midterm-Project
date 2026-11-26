@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Mẫu khu Standing: ô đứng vuông bo góc, màu và viền giống SpotRenderer.drawAvailable. -->
+<!-- Mẫu khu Standing: ô đứng vuông bo góc màu cam, không viền (giống SpotRenderer.drawAvailable, mẫu G). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="22dp"
     android:height="22dp"
@@ -7,9 +7,5 @@
     android:viewportHeight="24">
     <path
         android:fillColor="@color/zone_standing"
-        android:pathData="M5.76,4 H18.24 a1.76,1.76 0 0 1 1.76,1.76 V18.24 a1.76,1.76 0 0 1 -1.76,1.76 H5.76 a1.76,1.76 0 0 1 -1.76,-1.76 V5.76 a1.76,1.76 0 0 1 1.76,-1.76 Z" />
-    <path
-        android:strokeColor="@color/zone_standing_stroke"
-        android:strokeWidth="0.9"
         android:pathData="M5.76,4 H18.24 a1.76,1.76 0 0 1 1.76,1.76 V18.24 a1.76,1.76 0 0 1 -1.76,1.76 H5.76 a1.76,1.76 0 0 1 -1.76,-1.76 V5.76 a1.76,1.76 0 0 1 1.76,-1.76 Z" />
 </vector>

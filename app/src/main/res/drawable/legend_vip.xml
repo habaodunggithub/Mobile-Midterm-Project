@@ -8,8 +8,4 @@
     <path
         android:fillColor="@color/zone_vip"
         android:pathData="M4,12 a8,8 0 1,0 16,0 a8,8 0 1,0 -16,0 Z" />
-    <path
-        android:strokeColor="@color/zone_vip_stroke"
-        android:strokeWidth="0.9"
-        android:pathData="M4,12 a8,8 0 1,0 16,0 a8,8 0 1,0 -16,0 Z" />
 </vector>

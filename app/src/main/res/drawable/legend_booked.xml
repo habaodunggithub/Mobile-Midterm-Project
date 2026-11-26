@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Mẫu Đã đặt: nền xám, viền xám đậm, dấu ✕ (giống SpotRenderer.drawBooked). -->
+<!-- Mẫu Đã đặt: nền be, không viền, dấu ✕ nâu (giống SpotRenderer.drawBooked, mẫu G). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="22dp"
     android:height="22dp"
@@ -7,10 +7,6 @@
     android:viewportHeight="24">
     <path
         android:fillColor="@color/spot_booked"
-        android:pathData="M4,12 a8,8 0 1,0 16,0 a8,8 0 1,0 -16,0 Z" />
-    <path
-        android:strokeColor="@color/spot_booked_stroke"
-        android:strokeWidth="0.9"
         android:pathData="M4,12 a8,8 0 1,0 16,0 a8,8 0 1,0 -16,0 Z" />
     <path
         android:strokeColor="@color/on_spot_booked"
