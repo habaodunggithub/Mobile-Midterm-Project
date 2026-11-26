@@ -4,10 +4,12 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 
 import com.example.midtermproject.R;
 import com.example.midtermproject.model.Section;
@@ -34,18 +36,27 @@ public final class VenueRenderer {
      * xem, quầng và nét viền vẽ rộng ra ngoài hình của chỗ.
      */
     private static final float CULL_MARGIN_DP = 24f;
+    /** Biên độ gợn của mép sân khấu, tính bằng đơn vị sơ đồ: đủ để trông như miếng dán cắt tay. */
+    private static final float STAGE_WOBBLE = 1.6f;
+    /** Số điểm lấy mẫu trên mép sân khấu. */
+    private static final int STAGE_POINTS = 96;
 
     private final SpotRenderer spotRenderer;
     private final float density;
 
     private final int background;
     private final int stageFill;
+    private final int stageStroke;
     private final int stageText;
     private final int labelText;
     private final int labelHalo;
     private final String stageLabel;
 
     private final Paint stagePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint stageStrokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    /** Hình sân khấu có mép lượn; dựng một lần cho mỗi sơ đồ (xem {@link #buildStagePath}). */
+    private final Path stagePath = new Path();
+    private Venue stagePathVenue;
     private final Paint stageTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint standingLabelPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint labelPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -59,29 +70,42 @@ public final class VenueRenderer {
         density = context.getResources().getDisplayMetrics().density;
         background = ContextCompat.getColor(context, R.color.map_background);
         stageFill = ContextCompat.getColor(context, R.color.stage_fill);
+        stageStroke = ContextCompat.getColor(context, R.color.stage_stroke);
         stageText = ContextCompat.getColor(context, R.color.stage_text);
         labelText = ContextCompat.getColor(context, R.color.label_text);
         labelHalo = ContextCompat.getColor(context, R.color.label_halo);
         stageLabel = context.getString(R.string.stage_label);
 
+        // Chữ lượn Kablammo chỉ dùng cho chữ to "SÂN KHẤU"; nhãn khu dùng Space Mono đậm (Q44).
+        final Typeface display = fontOrDefault(context, R.font.kablammo);
+        final Typeface mono = fontOrDefault(context, R.font.space_mono_bold);
+
         stagePaint.setStyle(Paint.Style.FILL);
         stagePaint.setColor(stageFill);
+        stageStrokePaint.setStyle(Paint.Style.STROKE);
+        stageStrokePaint.setStrokeJoin(Paint.Join.ROUND);
+        stageStrokePaint.setColor(stageStroke);
         stageTextPaint.setColor(stageText);
         stageTextPaint.setTextAlign(Paint.Align.CENTER);
-        stageTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
-        stageTextPaint.setLetterSpacing(0.08f);
+        stageTextPaint.setTypeface(display);
         standingLabelPaint.setColor(labelText);
         standingLabelPaint.setTextAlign(Paint.Align.CENTER);
-        standingLabelPaint.setTypeface(Typeface.DEFAULT_BOLD);
+        standingLabelPaint.setTypeface(mono);
         labelPaint.setColor(labelText);
         labelPaint.setTextAlign(Paint.Align.CENTER);
-        labelPaint.setTypeface(Typeface.DEFAULT_BOLD);
+        labelPaint.setTypeface(mono);
         labelHaloPaint.setColor(labelHalo);
         labelHaloPaint.setStyle(Paint.Style.STROKE);
         labelHaloPaint.setStrokeJoin(Paint.Join.ROUND);
         labelHaloPaint.setStrokeWidth(3f * density);
         labelHaloPaint.setTextAlign(Paint.Align.CENTER);
-        labelHaloPaint.setTypeface(Typeface.DEFAULT_BOLD);
+        labelHaloPaint.setTypeface(mono);
+    }
+
+    /** Lấy font trong res/font; nếu không đọc được (máy lỗi tài nguyên) thì dùng chữ đậm hệ thống. */
+    private static Typeface fontOrDefault(Context context, int fontRes) {
+        final Typeface font = ResourcesCompat.getFont(context, fontRes);
+        return font != null ? font : Typeface.DEFAULT_BOLD;
     }
 
     /**
@@ -98,7 +122,7 @@ public final class VenueRenderer {
 
         canvas.save();
         canvas.concat(worldToScreen);
-        drawStage(canvas, venue);
+        drawStage(canvas, venue, scale);
         drawStandingLabels(canvas, venue);
         drawSpots(canvas, venue, states, scale, angleRad, pulse, visibleBounds);
         canvas.restore();
@@ -106,16 +130,50 @@ public final class VenueRenderer {
         drawSectionLabels(canvas, venue, worldToScreen);
     }
 
-    private void drawStage(Canvas canvas, Venue venue) {
+    private void drawStage(Canvas canvas, Venue venue, float scale) {
+        if (stagePathVenue != venue) {
+            buildStagePath(venue);
+            stagePathVenue = venue;
+        }
         final float height = venue.stageBottom - venue.stageTop;
         rect.set(venue.stageLeft, venue.stageTop, venue.stageRight, venue.stageBottom);
-        final float corner = Math.min(height / 2f, 10f);
-        canvas.drawRoundRect(rect, corner, corner, stagePaint);
+        canvas.drawPath(stagePath, stagePaint);
+        // Viền cam dày 3dp trên màn hình ở mọi mức zoom (đổi dp ra đơn vị sơ đồ bằng cách chia cho scale).
+        stageStrokePaint.setStrokeWidth(3f * density / scale);
+        canvas.drawPath(stagePath, stageStrokePaint);
 
-        stageTextPaint.setTextSize(height * 0.42f);
+        stageTextPaint.setTextSize(height * 0.5f);
         stageTextPaint.getFontMetrics(fontMetrics);
         final float baseline = rect.centerY() - (fontMetrics.ascent + fontMetrics.descent) / 2f;
         canvas.drawText(stageLabel, rect.centerX(), baseline, stageTextPaint);
+    }
+
+    /**
+     * Dựng mép sân khấu: một "siêu ellipse" (hình chữ nhật bo góc tròn trịa) cộng thêm gợn sóng nhỏ,
+     * như miếng dán cắt bằng tay. Điểm thứ i ở góc t = 2πi/n:
+     * x = cx + (hw + w(t))·sgn(cos t)·|cos t|^(2/k),  y = cy + (hh + w(t))·sgn(sin t)·|sin t|^(2/k),
+     * với k = 10 (k càng lớn càng vuông) và w(t) = A·sin 7t + 0,6A·sin 13t.
+     */
+    private void buildStagePath(Venue venue) {
+        final float cx = (venue.stageLeft + venue.stageRight) / 2f;
+        final float cy = (venue.stageTop + venue.stageBottom) / 2f;
+        final float hw = (venue.stageRight - venue.stageLeft) / 2f;
+        final float hh = (venue.stageBottom - venue.stageTop) / 2f;
+        final double power = 2.0 / 10.0;
+        stagePath.reset();
+        for (int i = 0; i < STAGE_POINTS; i++) {
+            final double t = 2 * Math.PI * i / STAGE_POINTS;
+            final double c = Math.cos(t), s = Math.sin(t);
+            final double wobble = STAGE_WOBBLE * (Math.sin(7 * t) + 0.6 * Math.sin(13 * t));
+            final float x = (float) (cx + (hw + wobble) * Math.signum(c) * Math.pow(Math.abs(c), power));
+            final float y = (float) (cy + (hh + wobble) * Math.signum(s) * Math.pow(Math.abs(s), power));
+            if (i == 0) {
+                stagePath.moveTo(x, y);
+            } else {
+                stagePath.lineTo(x, y);
+            }
+        }
+        stagePath.close();
     }
 
     /** Tên hai bãi Standing, nằm trong hành lang giữa sân khấu và bãi. */
