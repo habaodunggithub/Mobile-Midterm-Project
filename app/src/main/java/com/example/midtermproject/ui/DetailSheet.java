@@ -1,8 +1,10 @@
 package com.example.midtermproject.ui;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.view.View;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -33,6 +35,8 @@ import java.util.Map;
 final class DetailSheet {
     /** Bảng mở rộng tối đa 60% chiều cao màn hình (AC-5.2). */
     private static final float MAX_HEIGHT_FRACTION = 0.6f;
+    /** Thời gian tổng tiền chạy số từ giá trị cũ tới giá trị mới (Q43). */
+    private static final long TOTAL_COUNT_MS = 380L;
 
     /** Báo cho sơ đồ biết bảng thu gọn đang che bao nhiêu pixel phía dưới. */
     interface PeekHeightListener {
@@ -66,6 +70,9 @@ final class DetailSheet {
     /** Tên phân khu theo mã, dựng một lần để hiển thị không phải duyệt danh sách mỗi lần. */
     private final Map<String, String> sectionNames = new HashMap<>();
 
+    /** Tổng tiền đang hiện trên dòng tóm tắt; −1 là chưa hiện lần nào (lần đầu hiện thẳng, không chạy số). */
+    private long shownTotal = -1L;
+    private ValueAnimator totalAnimator;
     private int navigationInset;
     private PeekHeightListener peekHeightListener;
 
@@ -173,13 +180,44 @@ final class DetailSheet {
     void render() {
         renderFocus();
         final int count = state.getSelectedCount();
-        summary.setText(context.getString(R.string.sheet_selection_summary,
-                count, VenueMapState.MAX_SELECTION, PriceFormatter.format(state.getSelectedTotal())));
+        renderSummary(count, state.getSelectedTotal());
         // Nút chỉ bật khi đã chọn ít nhất một chỗ (UC-10: lựa chọn rỗng thì không có hộp thoại).
         bookButton.setEnabled(count >= 1);
         bookButton.setText(count >= 1 ? context.getString(R.string.book_button, count)
                 : context.getString(R.string.book_button_empty));
         adapter.refresh(context);
+    }
+
+    /**
+     * Dòng "Đã chọn N/8 · Tổng T đ". Khi tổng đổi, số tiền chạy từ giá trị cũ tới giá trị mới trong 380ms, chậm dần ở
+     * cuối, để mắt thấy được tổng vừa tăng hay giảm. Đổi tiếp giữa chừng thì chạy tiếp từ số đang hiện.
+     */
+    private void renderSummary(int count, long total) {
+        if (totalAnimator != null) {
+            totalAnimator.cancel();
+            totalAnimator = null;
+        }
+        if (shownTotal < 0 || shownTotal == total) {
+            showSummary(count, total);
+            return;
+        }
+        final long from = shownTotal;
+        totalAnimator = ValueAnimator.ofFloat(0f, 1f);
+        totalAnimator.setDuration(TOTAL_COUNT_MS);
+        totalAnimator.setInterpolator(new DecelerateInterpolator());
+        totalAnimator.addUpdateListener(animation -> {
+            final float f = (float) animation.getAnimatedValue();
+            // Làm tròn tới nghìn đồng để các số trung gian trông như giá tiền thật.
+            final long value = Math.round((from + (total - from) * f) / 1000.0) * 1000L;
+            showSummary(count, f >= 1f ? total : value);
+        });
+        totalAnimator.start();
+    }
+
+    private void showSummary(int count, long total) {
+        shownTotal = total;
+        summary.setText(context.getString(R.string.sheet_selection_summary,
+                count, VenueMapState.MAX_SELECTION, PriceFormatter.format(total)));
     }
 
     private void renderFocus() {
