@@ -76,6 +76,7 @@
 
         <ImageButton
             android:id="@+id/btn_legend"
+            android:stateListAnimator="@animator/press_bounce"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="@drawable/bg_map_button"
@@ -87,6 +88,7 @@
 
         <ImageButton
             android:id="@+id/btn_reset_view"
+            android:stateListAnimator="@animator/press_bounce"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginTop="8dp"
@@ -100,6 +102,7 @@
         <!-- Kim la bàn luôn chỉ về phía sân khấu. -->
         <ImageButton
             android:id="@+id/btn_compass"
+            android:stateListAnimator="@animator/press_bounce"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginTop="8dp"
@@ -114,6 +117,7 @@
         <!-- Menu ⋮ (Q39): hiện chỉ có "Làm mới dữ liệu". Đứng cuối cột để xa các nút dùng thường xuyên. -->
         <ImageButton
             android:id="@+id/btn_more"
+            android:stateListAnimator="@animator/press_bounce"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginTop="8dp"

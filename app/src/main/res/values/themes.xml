@@ -37,6 +37,7 @@
         <item name="chipStrokeColor">@color/sticker_outline</item>
         <item name="textStartPadding">4dp</item>
         <item name="textEndPadding">4dp</item>
+        <item name="android:stateListAnimator">@animator/press_bounce</item>
     </style>
 
     <!-- Ô tìm kiếm dạng sticker viên thuốc: nền kem, viền tím dày 3dp, đổi sang mực khi đang gõ. Gợi ý nằm trong ô. -->
@@ -66,6 +67,7 @@
         <item name="strokeWidth">3dp</item>
         <item name="android:textStyle">bold</item>
         <item name="cornerRadius">18dp</item>
+        <item name="android:stateListAnimator">@animator/press_bounce</item>
     </style>
 
     <!-- Chữ đậm trên chip và nút kiểu sticker. -->
@@ -92,6 +94,7 @@
         <item name="android:textSize">17sp</item>
         <item name="android:fontFamily">@font/kablammo</item>
         <item name="cornerRadius">20dp</item>
+        <item name="android:stateListAnimator">@animator/press_bounce</item>
     </style>
 
     <!-- Công tắc màu mực: màu phụ của giao diện là tím VIP, dễ nhầm với khu VIP. -->
