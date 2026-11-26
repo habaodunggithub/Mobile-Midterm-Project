@@ -79,8 +79,6 @@ final class DetailSheet {
     private ValueAnimator totalAnimator;
     /** Tắt khi người dùng tắt hiệu ứng động của hệ thống: tổng tiền hiện thẳng, không chạy số. */
     private boolean animated = true;
-    /** Phần chừa dưới thẻ: thanh điều hướng + khe nổi. Nằm trong peekHeight nhưng trong suốt. */
-    private int navigationInset;
     private final int floatGapPx;
     private PeekHeightListener peekHeightListener;
 
@@ -152,14 +150,9 @@ final class DetailSheet {
         this.peekHeightListener = listener;
     }
 
-    /**
-     * Lề hệ thống: bảng đệm thêm hai bên (vết khuyết màn hình khi xoay ngang) và phía dưới (thanh điều
-     * hướng) để nội dung không bị che, còn nền bảng vẫn kéo dài tới mép màn hình.
-     */
+    /** Chừa vết khuyết hai bên, thanh điều hướng và khe 10dp dưới thẻ. */
     void setInsets(int leftPx, int rightPx, int bottomPx) {
-        // Chừa thêm một khe dưới thẻ bằng lề hai bên (10dp), để thẻ nổi cách đáy như mẫu G (Q48).
-        navigationInset = bottomPx + floatGapPx;
-        sheet.setPadding(leftPx, sheet.getPaddingTop(), rightPx, navigationInset);
+        sheet.setPadding(leftPx, sheet.getPaddingTop(), rightPx, bottomPx + floatGapPx);
         updatePeekHeight();
     }
 
@@ -168,7 +161,7 @@ final class DetailSheet {
         if (header.getHeight() == 0) {
             return;
         }
-        final int peek = header.getHeight() + navigationInset;
+        final int peek = header.getHeight() + sheet.getPaddingBottom();
         if (peek != behavior.getPeekHeight()) {
             behavior.setPeekHeight(peek);
             if (peekHeightListener != null) {
@@ -297,9 +290,8 @@ final class DetailSheet {
     }
 
     /**
-     * Dạng thu gọn chỉ hiện phần đầu. Thanh điều hướng kiểu cử chỉ trong suốt nên vùng dưới phần đầu
-     * vẫn nhìn thấy được; ẩn danh sách để dòng đầu của nó không lấp ló ở đó (INVISIBLE vẫn giữ chỗ nên
-     * chiều cao của bảng không đổi, và trình đọc màn hình bỏ qua danh sách đang ẩn).
+     * Dạng thu gọn chỉ hiện phần đầu. INVISIBLE giữ chiều cao của danh sách để kéo lên được
+     * và để trình đọc màn hình bỏ qua các dòng đang ẩn.
      */
     private void updateListVisibility(int sheetState) {
         if (sheetState == BottomSheetBehavior.STATE_COLLAPSED) {

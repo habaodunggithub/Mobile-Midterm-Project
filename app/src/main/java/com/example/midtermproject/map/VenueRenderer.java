@@ -44,6 +44,7 @@ public final class VenueRenderer {
     private static final int STAGE_POINTS = 96;
 
     private final SpotRenderer spotRenderer;
+    private final MapLightShow lightShow;
     private final float density;
 
     private final int background;
@@ -72,6 +73,9 @@ public final class VenueRenderer {
     public VenueRenderer(Context context) {
         spotRenderer = new SpotRenderer(context);
         density = context.getResources().getDisplayMetrics().density;
+        lightShow = new MapLightShow(density, context.getColor(R.color.liquid_orange),
+                context.getColor(R.color.liquid_violet), context.getColor(R.color.zone_standard),
+                context.getColor(R.color.liquid_green));
         background = ContextCompat.getColor(context, R.color.map_background);
         stageFill = ContextCompat.getColor(context, R.color.stage_fill);
         stageStroke = ContextCompat.getColor(context, R.color.stage_stroke);
@@ -120,7 +124,7 @@ public final class VenueRenderer {
      */
     public void draw(Canvas canvas, Venue venue, SpotStateSource states, Matrix worldToScreen,
                      float scale, float angleRad, float pulse, float[] visibleBounds,
-                     SpotEffects effects, long now) {
+                     SpotEffects effects, int width, int visibleHeight, long now) {
         canvas.drawColor(background);
 
         canvas.save();
@@ -129,7 +133,29 @@ public final class VenueRenderer {
         drawSpots(canvas, venue, states, scale, angleRad, pulse, visibleBounds, effects, now);
         canvas.restore();
 
+        if (lightShow.isRunning(now)) {
+            point[0] = (venue.stageLeft + venue.stageRight) / 2f;
+            point[1] = (venue.stageTop + venue.stageBottom) / 2f;
+            worldToScreen.mapPoints(point);
+            lightShow.draw(canvas, point[0], point[1], width, visibleHeight, now);
+        }
         drawSectionLabels(canvas, venue, worldToScreen);
+    }
+
+    void playIntro(long now) {
+        lightShow.startIntro(now);
+    }
+
+    void playBooking(long now) {
+        lightShow.startBooking(now);
+    }
+
+    void clearLightShow() {
+        lightShow.clear();
+    }
+
+    boolean hasActiveLightShow(long now) {
+        return lightShow.isRunning(now);
     }
 
     private void drawStage(Canvas canvas, Venue venue, float scale) {

@@ -71,6 +71,7 @@ public class MainActivity extends AppCompatActivity
         // gọi thêm ở đây để các máy cũ hơn có cùng hành vi.
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         setContentView(R.layout.activity_main);
+        StickerChrome.apply(findViewById(R.id.root));
 
         Venue venue = MockVenueFactory.create();
         state = new VenueMapState(venue);
@@ -127,8 +128,7 @@ public class MainActivity extends AppCompatActivity
             saveSessionIfChanged();
         });
 
-        // Chừa lề cho thanh trạng thái và vết khuyết màn hình bằng lề của cột nội dung. Phía dưới thì
-        // bảng chi tiết tự chừa chỗ cho thanh điều hướng (nền bảng kéo dài xuống tận đáy màn hình).
+        // Cột nội dung chừa thanh trạng thái và vết khuyết. Bảng chi tiết chừa khe trên thanh điều hướng.
         final View contentColumn = findViewById(R.id.content_column);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.root), (view, insets) -> {
             Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars()

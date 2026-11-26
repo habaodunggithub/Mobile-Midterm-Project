@@ -8,7 +8,6 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 
 import com.example.midtermproject.R;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 
@@ -49,7 +48,7 @@ public class BookingConfirmDialog extends DialogFragment {
         final ArrayList<String> spotIds = ids == null ? new ArrayList<String>() : ids;
         final String message = getString(R.string.dialog_book_message,
                 TextUtils.join(", ", spotIds), PriceFormatter.format(args.getLong(ARG_TOTAL)));
-        return new MaterialAlertDialogBuilder(requireContext())
+        return StickerChrome.dialog(requireContext())
                 .setTitle(getString(R.string.dialog_book_title, spotIds.size()))
                 .setMessage(message)
                 .setNegativeButton(R.string.dialog_cancel, null)

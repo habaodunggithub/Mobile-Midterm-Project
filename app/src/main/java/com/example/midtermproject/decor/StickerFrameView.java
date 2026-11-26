@@ -30,7 +30,7 @@ import java.util.List;
  * chạy vòng quanh (REQUIREMENTS Q42). Nằm đè lên mép của {@code VenueMapView}; phần giữa để trống nên
  * sơ đồ lộ ra bên trong.
  * <p>
- * Dải là phần nằm giữa hai đường: mép ngoài lượn ({@link #outline}) và mép trong là hình chữ nhật bo góc.
+ * Dải là phần nằm giữa hai mép lượn sóng của {@link StickerOutline}.
  * Vẽ bằng một Path có luật tô EVEN_ODD: điểm nằm trong cả hai đường thì không tô, nên chỉ có dải được tô.
  * <p>
  * Chữ chạy: vẽ bằng {@code drawTextOnPath} dọc theo đường giữa dải, dịch dần theo thời gian. Khi chữ
@@ -38,9 +38,6 @@ import java.util.List;
  * {@link #onDraw} không cấp phát gì; mọi Path được dựng lại trong {@link #onSizeChanged}.
  */
 public class StickerFrameView extends View {
-    /** Biên độ gợn của mép ngoài và mép trong, tính bằng dp (giống mẫu G). */
-    private static final float OUTER_WOBBLE_DP = 2.5f;
-    private static final float INNER_WOBBLE_DP = 1.5f;
     /** Bán kính bo góc của mép trong và của đường chữ chạy, tính bằng dp. */
     private static final float CORNER_DP = 14f;
     /**
@@ -53,8 +50,6 @@ public class StickerFrameView extends View {
     /** Tốc độ chữ chạy, dp mỗi giây. */
     private static final float TICKER_SPEED_DP = 40f;
     private static final float TICKER_TEXT_SP = 9.5f;
-    /** Số điểm lấy mẫu trên mép ngoài lượn. */
-    private static final int OUTLINE_POINTS = 240;
 
     private final Paint bandPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint tickerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -197,10 +192,10 @@ public class StickerFrameView extends View {
         final float bottom = h - bottomInset;
         band.reset();
         rect.set(margin, margin, w - margin, bottom - margin);
-        outline(band, rect, OUTER_WOBBLE_DP * density, 1);
+        StickerOutline.addOuter(band, rect, density);
         // Mép trong cũng lượn như mép ngoài (mẫu G), gợn nhỏ hơn và lệch pha để hai mép không song song.
         rect.inset(bandWidth, bandWidth);
-        outline(band, rect, INNER_WOBBLE_DP * density, 2);
+        StickerOutline.addInner(band, rect, density);
 
         // Đường chữ chạy nằm giữa dải, theo chiều kim đồng hồ, đi hai vòng liền nhau (xem onDraw).
         tickerPath.reset();
@@ -251,29 +246,6 @@ public class StickerFrameView extends View {
         final int columns = (int) (lapLength / advance);
         ticker = TickerText.fitToColumns(tickerItems, columns);
         tickerWidth = tickerPaint.measureText(ticker);
-    }
-
-    /**
-     * Mép lượn: "siêu ellipse" (chữ nhật bo góc tròn trịa) cộng gợn sóng nhỏ, đúng công thức của mẫu G:
-     * x = cx + (hw + w)·sgn(cos t)·|cos t|^(2/k), tương tự với y, với k = 10 và
-     * w(t) = A·sin(7t + φ) + 0,6A·sin(13t − 2φ), φ là pha riêng của mỗi mép.
-     */
-    private static void outline(Path path, RectF r, float wobble, int phase) {
-        final double power = 2.0 / 10.0;
-        final float cx = r.centerX(), cy = r.centerY(), hw = r.width() / 2f, hh = r.height() / 2f;
-        for (int i = 0; i < OUTLINE_POINTS; i++) {
-            final double t = 2 * Math.PI * i / OUTLINE_POINTS;
-            final double c = Math.cos(t), s = Math.sin(t);
-            final double w = wobble * (Math.sin(7 * t + phase) + 0.6 * Math.sin(13 * t - 2 * phase));
-            final float x = (float) (cx + (hw + w) * Math.signum(c) * Math.pow(Math.abs(c), power));
-            final float y = (float) (cy + (hh + w) * Math.signum(s) * Math.pow(Math.abs(s), power));
-            if (i == 0) {
-                path.moveTo(x, y);
-            } else {
-                path.lineTo(x, y);
-            }
-        }
-        path.close();
     }
 
     @Override

@@ -294,6 +294,15 @@ public final class SpotRenderer {
         final int color = state == DisplayState.MINE ? mine : selected;
         final float radius = spot.size * (1f + 2.2f * progress);
         shape(canvas, spot, radius, strokePaint(color, 2.5f * density, (int) (255 * (1f - progress))));
+        final float sparkRadius = radius + 3f * density * pixel;
+        final float length = 5f * density * pixel * (1f - progress);
+        final Paint spark = strokePaint(color, 1.6f * density, Math.round(210f * (1f - progress)));
+        for (int direction = 0; direction < 4; direction++) {
+            final float x = (direction < 2 ? 0.7071f : -0.7071f);
+            final float y = (direction % 2 == 0 ? 0.7071f : -0.7071f);
+            canvas.drawLine(spot.cx + x * sparkRadius, spot.cy + y * sparkRadius,
+                    spot.cx + x * (sparkRadius + length), spot.cy + y * (sparkRadius + length), spark);
+        }
     }
 
     /** Ngôi sao 5 cánh bán kính 1 (cánh ngoài 0,6, cánh trong 0,26 như mẫu G), dựng một lần rồi phóng theo chỗ. */

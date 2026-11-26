@@ -7,7 +7,6 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 
 import com.example.midtermproject.R;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 /**
  * Hộp thoại xác nhận làm mới dữ liệu (AC-8.1): nêu số chỗ đang chọn và số vé của bạn sẽ bị xóa.
@@ -38,7 +37,7 @@ public class ResetDataDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         final Bundle args = requireArguments();
-        return new MaterialAlertDialogBuilder(requireContext())
+        return StickerChrome.dialog(requireContext())
                 .setTitle(R.string.dialog_reset_title)
                 .setMessage(getString(R.string.dialog_reset_message,
                         args.getInt(ARG_SELECTED), args.getInt(ARG_TICKETS)))

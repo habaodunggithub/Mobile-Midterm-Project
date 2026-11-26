@@ -204,6 +204,10 @@ public class VenueMapView extends View {
     public void setEffectsEnabled(boolean enabled) {
         if (effects != null) {
             effects.setEnabled(enabled);
+            if (!enabled) {
+                renderer.clearLightShow();
+                pendingIntroReach = 0f;
+            }
             invalidate();
         }
     }
@@ -228,8 +232,10 @@ public class VenueMapView extends View {
 
     /** Các chỗ vừa đặt xong: lần lượt lật sang "vé của bạn", chỗ gần sân khấu trước, mỗi chỗ kèm một vòng lan (Q43). */
     public void playBookingWave(List<Spot> spots) {
-        if (effects != null && !spots.isEmpty()) {
-            effects.flipInWave(spots, SystemClock.uptimeMillis());
+        if (effects != null && effects.isEnabled() && !spots.isEmpty()) {
+            final long now = SystemClock.uptimeMillis();
+            effects.flipInWave(spots, now);
+            renderer.playBooking(now);
             invalidate();
         }
     }
@@ -468,14 +474,16 @@ public class VenueMapView extends View {
         camera.getVisibleWorldBounds(visibleBounds);
         final long now = SystemClock.uptimeMillis();
         if (pendingIntroReach > 0f) {
-            // Hiệu ứng đang tắt thì startIntro không làm gì, sơ đồ hiện đủ ngay.
-            effects.startIntro(now, pendingIntroReach);
+            if (effects.isEnabled()) {
+                effects.startIntro(now, pendingIntroReach);
+                renderer.playIntro(now);
+            }
             pendingIntroReach = 0f;
         }
         renderer.draw(canvas, venue, states, worldToScreen, camera.getScale(), camera.getAngle(), focusPulse,
-                visibleBounds, effects, now);
+                visibleBounds, effects, getWidth(), getHeight() - bottomInsetPx, now);
         // Còn hiệu ứng chạy thì hẹn vẽ khung tiếp theo; hết thì thôi, sơ đồ đứng yên không tốn pin.
-        if (effects.isRunning(now)) {
+        if (effects.isRunning(now) || renderer.hasActiveLightShow(now)) {
             postInvalidateOnAnimation();
         }
     }

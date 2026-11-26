@@ -3,10 +3,9 @@
     Bảng chi tiết: luôn hiện ở dạng thu gọn (không ẩn được), kéo lên hoặc bấm phần đầu để mở rộng.
     Không đặt layout_gravity: BottomSheetBehavior tự dịch bảng xuống đáy, thêm gravity sẽ đẩy bảng ra ngoài màn hình.
     Phần đầu có chiều cao cố định (mỗi dòng chỉ một dòng chữ) nên peekHeight không đổi theo nội dung.
-    Bảng nổi như mẫu G (Q48): khung ngoài trong suốt, chừa dưới bằng thanh điều hướng + 10dp (DetailSheet.setInsets);
-    nền kem và viền cam nằm ở khung con sheet_card, nên thẻ cách đáy 10dp như hai bên, cả khi thu gọn lẫn mở rộng.
+    FloatingSheetLayout vẽ viền bao quanh phần thẻ đang hiện và chừa khe 10dp phía trên thanh điều hướng (mẫu G).
 -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.example.midtermproject.ui.FloatingSheetLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/bottom_sheet"
     android:layout_width="match_parent"
@@ -21,105 +20,98 @@
     app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
     <LinearLayout
-        android:id="@+id/sheet_card"
+        android:id="@+id/sheet_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/bg_bottom_sheet"
-        android:orientation="vertical">
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:orientation="vertical"
+        android:paddingStart="16dp"
+        android:paddingTop="@dimen/sheet_content_inset"
+        android:paddingEnd="16dp"
+        android:paddingBottom="@dimen/sheet_content_inset">
 
+        <View
+            android:layout_width="36dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_sheet_handle"
+            android:importantForAccessibility="no" />
+
+        <!-- Cao tối thiểu cố định: chip hiện hay ẩn cũng không làm đổi chiều cao phần đầu (peekHeight). -->
         <LinearLayout
-            android:id="@+id/sheet_header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:orientation="vertical"
-            android:paddingStart="16dp"
-            android:paddingTop="8dp"
-            android:paddingEnd="16dp"
-            android:paddingBottom="12dp">
+            android:gravity="center_vertical"
+            android:minHeight="32dp"
+            android:orientation="horizontal">
 
-            <View
-                android:layout_width="36dp"
-                android:layout_height="4dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="12dp"
-                android:background="@drawable/bg_sheet_handle"
-                android:importantForAccessibility="no" />
-
-            <!-- Cao tối thiểu cố định: chip hiện hay ẩn cũng không làm đổi chiều cao phần đầu (peekHeight). -->
-            <LinearLayout
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/tv_focus_info"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:minHeight="32dp"
-                android:orientation="horizontal">
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/sheet_text"
+                android:textSize="14sp" />
 
-                <TextView
-                    android:id="@+id/tv_focus_info"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:textColor="@color/sheet_text"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/tv_focus_state"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:background="@drawable/bg_state_chip"
-                    android:maxLines="1"
-                    android:paddingStart="10dp"
-                    android:paddingTop="3dp"
-                    android:paddingEnd="10dp"
-                    android:paddingBottom="3dp"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:visibility="gone" />
-            </LinearLayout>
-
-            <!--
-                Tóm tắt lựa chọn và nút đặt vé (Q38) cùng một hàng. Hàng cao tối thiểu 48dp (vùng chạm của nút) nên chiều cao
-                phần đầu cố định, không đổi theo việc nút bật hay tắt.
-            -->
-            <LinearLayout
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/tv_focus_state"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:gravity="center_vertical"
-                android:minHeight="48dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/tv_selection_summary"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:textColor="@color/sheet_text"
-                    android:textSize="14sp" />
-
-                <!-- Chữ và trạng thái bật/tắt do DetailSheet đặt từ state: "Đặt N vé" khi N >= 1, ngược lại "Đặt vé" và mờ. -->
-                <Button
-                    android:id="@+id/btn_book"
-                    style="@style/Widget.MidtermProject.Button.Book"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:text="@string/book_button_empty" />
-            </LinearLayout>
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_state_chip"
+                android:maxLines="1"
+                android:paddingStart="10dp"
+                android:paddingTop="3dp"
+                android:paddingEnd="10dp"
+                android:paddingBottom="3dp"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
         </LinearLayout>
 
-        <!-- Danh sách chỗ đang chọn và vé của bạn; cuộn được khi dài hơn phần bảng cho phép (AC-5.2). -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_spots"
+        <!--
+            Tóm tắt lựa chọn và nút đặt vé (Q38) cùng một hàng. Hàng cao tối thiểu 48dp (vùng chạm của nút) nên chiều cao
+            phần đầu cố định, không đổi theo việc nút bật hay tắt.
+        -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:overScrollMode="ifContentScrolls" />
+            android:layout_marginTop="2dp"
+            android:gravity="center_vertical"
+            android:minHeight="48dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tv_selection_summary"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/sheet_text"
+                android:textSize="14sp" />
+
+            <!-- Chữ và trạng thái bật/tắt do DetailSheet đặt từ state: "Đặt N vé" khi N >= 1, ngược lại "Đặt vé" và mờ. -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_book"
+                style="@style/Widget.MidtermProject.Button.Book"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="@string/book_button_empty" />
+        </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+
+    <!-- Danh sách chỗ đang chọn và vé của bạn; cuộn được khi dài hơn phần bảng cho phép (AC-5.2). -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_spots"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/sheet_content_inset"
+        android:overScrollMode="ifContentScrolls" />
+</com.example.midtermproject.ui.FloatingSheetLayout>
