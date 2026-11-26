@@ -22,6 +22,8 @@ import com.example.midtermproject.R;
 import com.example.midtermproject.model.Spot;
 import com.example.midtermproject.model.Venue;
 
+import java.util.List;
+
 /**
  * Custom View vẽ toàn bộ sơ đồ trên một Canvas duy nhất (yêu cầu bắt buộc của đề).
  * <p>
@@ -214,6 +216,14 @@ public class VenueMapView extends View {
         }
         pendingIntroReach = farthest;
         invalidate();
+    }
+
+    /** Các chỗ vừa đặt xong: lần lượt lật sang "vé của bạn", chỗ gần sân khấu trước, mỗi chỗ kèm một vòng lan (Q43). */
+    public void playBookingWave(List<Spot> spots) {
+        if (effects != null && !spots.isEmpty()) {
+            effects.flipInWave(spots, SystemClock.uptimeMillis());
+            invalidate();
+        }
     }
 
     /** Chỗ vừa được chọn hoặc bỏ chọn: nảy lên kèm một vòng lan (Q43). */

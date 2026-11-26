@@ -248,8 +248,11 @@ public class MainActivity extends AppCompatActivity
     /** Bấm "Xác nhận": đặt mọi chỗ đang chọn qua state rồi báo M6 (AC-6.2). */
     @Override
     public void onBookingConfirmed() {
+        // Lấy danh sách chỗ trước khi đặt, vì đặt xong lựa chọn bị xóa; dùng để chạy làn sóng lật (Q43).
+        final List<Spot> justBooked = state.getSelectedSpots();
         final int booked = state.bookSelection();
         if (booked > 0) {
+            mapView.playBookingWave(justBooked);
             showMessage(getString(R.string.msg_booking_done, booked));
         }
     }
