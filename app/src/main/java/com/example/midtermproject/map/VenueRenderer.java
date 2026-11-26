@@ -16,18 +16,17 @@ import com.example.midtermproject.model.DisplayState;
 import com.example.midtermproject.model.Section;
 import com.example.midtermproject.model.Spot;
 import com.example.midtermproject.model.Venue;
-import com.example.midtermproject.model.ZoneType;
 
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Vẽ toàn bộ sơ đồ lên một Canvas: nền, sân khấu, các chỗ và tên phân khu.
  * <p>
- * Thứ tự vẽ: nền, rồi (trong tọa độ sơ đồ, sau khi áp ma trận) sân khấu, tên hai bãi Standing và
- * các chỗ, rồi (trong tọa độ màn hình) tên các phân khu còn lại. Tên phân khu ghế vẽ trong tọa độ
- * màn hình để luôn nằm ngang, cùng cỡ chữ và đọc được ở mọi mức zoom và mọi góc xoay (ADR-07).
- * Chữ "SÂN KHẤU" và tên bãi Standing thì vẽ trong tọa độ sơ đồ, nên xoay cùng sân khấu: hành lang
- * giữa sân khấu và bãi Standing quá hẹp để chứa chữ nằm ngang khi sơ đồ xoay dọc.
+ * Thứ tự vẽ: nền, rồi (trong tọa độ sơ đồ, sau khi áp ma trận) sân khấu và các chỗ, rồi (trong tọa độ
+ * màn hình) tên mọi phân khu. Tên phân khu vẽ trong tọa độ màn hình để luôn nằm ngang, cùng cỡ chữ và
+ * đọc được ở mọi mức zoom và mọi góc xoay (ADR-07); viết hoa, có viền kem, kể cả tên hai bãi Standing
+ * (đè lên mép sân khấu và bãi như mẫu G, Q48). Chữ "SÂN KHẤU" vẽ trong tọa độ sơ đồ nên xoay cùng sân khấu.
  * <p>
  * Không cấp phát gì trong {@link #draw}.
  */
@@ -60,8 +59,10 @@ public final class VenueRenderer {
     /** Hình sân khấu có mép lượn; dựng một lần cho mỗi sơ đồ (xem {@link #buildStagePath}). */
     private final Path stagePath = new Path();
     private Venue stagePathVenue;
+    /** Tên phân khu viết hoa (mẫu G), tính một lần cho mỗi sơ đồ để onDraw không phải đổi chữ. */
+    private String[] upperLabels = new String[0];
+    private Venue labelsVenue;
     private final Paint stageTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Paint standingLabelPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint labelPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint labelHaloPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint.FontMetrics fontMetrics = new Paint.FontMetrics();
@@ -91,9 +92,6 @@ public final class VenueRenderer {
         stageTextPaint.setColor(stageText);
         stageTextPaint.setTextAlign(Paint.Align.CENTER);
         stageTextPaint.setTypeface(display);
-        standingLabelPaint.setColor(labelText);
-        standingLabelPaint.setTextAlign(Paint.Align.CENTER);
-        standingLabelPaint.setTypeface(mono);
         labelPaint.setColor(labelText);
         labelPaint.setTextAlign(Paint.Align.CENTER);
         labelPaint.setTypeface(mono);
@@ -128,7 +126,6 @@ public final class VenueRenderer {
         canvas.save();
         canvas.concat(worldToScreen);
         drawStage(canvas, venue, scale);
-        drawStandingLabels(canvas, venue);
         drawSpots(canvas, venue, states, scale, angleRad, pulse, visibleBounds, effects, now);
         canvas.restore();
 
@@ -147,7 +144,8 @@ public final class VenueRenderer {
         stageStrokePaint.setStrokeWidth(3f * density / scale);
         canvas.drawPath(stagePath, stageStrokePaint);
 
-        stageTextPaint.setTextSize(height * 0.5f);
+        // Chữ "SÂN KHẤU" to gần hết chiều cao sân khấu như mẫu G.
+        stageTextPaint.setTextSize(height * 0.72f);
         stageTextPaint.getFontMetrics(fontMetrics);
         final float baseline = rect.centerY() - (fontMetrics.ascent + fontMetrics.descent) / 2f;
         canvas.drawText(stageLabel, rect.centerX(), baseline, stageTextPaint);
@@ -179,21 +177,6 @@ public final class VenueRenderer {
             }
         }
         stagePath.close();
-    }
-
-    /** Tên hai bãi Standing, nằm trong hành lang giữa sân khấu và bãi. */
-    private void drawStandingLabels(Canvas canvas, Venue venue) {
-        // Cỡ chữ theo chiều cao sân khấu (50 đơn vị): 13 đơn vị vừa với hành lang rộng 30.
-        standingLabelPaint.setTextSize((venue.stageBottom - venue.stageTop) * 0.26f);
-        standingLabelPaint.getFontMetrics(fontMetrics);
-        final float centerOffset = (fontMetrics.ascent + fontMetrics.descent) / 2f;
-        final List<Section> sections = venue.getSections();
-        for (int i = 0; i < sections.size(); i++) {
-            final Section section = sections.get(i);
-            if (section.zone == ZoneType.STANDING) {
-                canvas.drawText(section.name, section.labelX, section.labelY - centerOffset, standingLabelPaint);
-            }
-        }
     }
 
     private void drawSpots(Canvas canvas, Venue venue, SpotStateSource states, float scale, float angleRad,
@@ -242,7 +225,20 @@ public final class VenueRenderer {
         }
     }
 
+    private void buildUpperLabels(Venue venue) {
+        final Locale vietnamese = Locale.forLanguageTag("vi-VN");
+        final List<Section> sections = venue.getSections();
+        upperLabels = new String[sections.size()];
+        for (int i = 0; i < sections.size(); i++) {
+            upperLabels[i] = sections.get(i).name.toUpperCase(vietnamese);
+        }
+    }
+
     private void drawSectionLabels(Canvas canvas, Venue venue, Matrix worldToScreen) {
+        if (labelsVenue != venue) {
+            buildUpperLabels(venue);
+            labelsVenue = venue;
+        }
         final List<Spot> spots = venue.getSpots();
         final boolean detailed = !spots.isEmpty() && spotRenderer.showsDetails(spots.get(0).size);
         final float textSize = (detailed ? 12f : 10f) * density;
@@ -254,14 +250,11 @@ public final class VenueRenderer {
         final List<Section> sections = venue.getSections();
         for (int i = 0; i < sections.size(); i++) {
             final Section section = sections.get(i);
-            if (section.zone == ZoneType.STANDING) {
-                continue;
-            }
             point[0] = section.labelX;
             point[1] = section.labelY;
             worldToScreen.mapPoints(point);
-            canvas.drawText(section.name, point[0], point[1] - centerOffset, labelHaloPaint);
-            canvas.drawText(section.name, point[0], point[1] - centerOffset, labelPaint);
+            canvas.drawText(upperLabels[i], point[0], point[1] - centerOffset, labelHaloPaint);
+            canvas.drawText(upperLabels[i], point[0], point[1] - centerOffset, labelPaint);
         }
     }
 }
