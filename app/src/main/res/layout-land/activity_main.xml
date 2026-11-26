@@ -12,6 +12,12 @@
     android:layout_height="match_parent"
     tools:context=".ui.MainActivity">
 
+    <!-- Nền poster hồng sen với dải lỏng chuyển động (Q42, Q43): nằm dưới cùng, mọi lớp khác vẽ đè lên. -->
+    <com.example.midtermproject.decor.LiquidPosterView
+        android:id="@+id/poster_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
     <!-- Cột nội dung: panel lọc rồi khung chứa sơ đồ. Lề hệ thống được áp vào đây (xem bản dọc). -->
     <LinearLayout
         android:id="@+id/content_column"

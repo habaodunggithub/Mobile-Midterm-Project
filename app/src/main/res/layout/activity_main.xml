@@ -7,6 +7,12 @@
     android:layout_height="match_parent"
     tools:context=".ui.MainActivity">
 
+    <!-- Nền poster hồng sen với dải lỏng chuyển động (Q42, Q43): nằm dưới cùng, mọi lớp khác vẽ đè lên. -->
+    <com.example.midtermproject.decor.LiquidPosterView
+        android:id="@+id/poster_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
     <!--
         Cột nội dung: thanh lọc rồi khung chứa sơ đồ. clipChildren=false ở đây và ở khung chứa sơ đồ để bóng đổ
         (elevation) của các nút và thẻ nổi không bị cắt phẳng ở mép khung. Lề thanh trạng thái được áp vào đây chứ không phải vào
