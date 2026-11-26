@@ -69,6 +69,8 @@ public class VenueMapView extends View {
     private SpotStateSource states;
     /** Hiệu ứng trên từng chỗ (Q43); tạo khi gắn sơ đồ vì gốc các làn sóng là tâm sân khấu. */
     private SpotEffects effects;
+    /** Khoảng cách xa nhất từ tâm sân khấu tới một chỗ, khác 0 khi mở màn đang chờ khung hình đầu tiên. */
+    private float pendingIntroReach;
     private int bottomInsetPx;
     /** Hiệu ứng camera đang chạy (Reset View, tự chỉnh thẳng, la bàn); chạm vào màn hình sẽ hủy nó. */
     private ValueAnimator cameraAnimator;
@@ -194,6 +196,24 @@ public class VenueMapView extends View {
         camera.setWorldSize(venue.worldWidth, venue.worldHeight);
         camera.resetToFit();
         onCameraChanged();
+    }
+
+    /**
+     * Mở màn (Q43): các chỗ hiện ra lần lượt từ sân khấu ra ngoài. Chỉ ghi nhận ở đây; làn sóng bắt đầu ở khung hình
+     * đầu tiên được vẽ, để người dùng thấy trọn làn sóng dù View đo xong muộn.
+     */
+    public void playIntro() {
+        if (venue == null) {
+            return;
+        }
+        final float originX = (venue.stageLeft + venue.stageRight) / 2f;
+        final float originY = (venue.stageTop + venue.stageBottom) / 2f;
+        float farthest = 0f;
+        for (Spot spot : venue.getSpots()) {
+            farthest = Math.max(farthest, (float) Math.hypot(spot.cx - originX, spot.cy - originY));
+        }
+        pendingIntroReach = farthest;
+        invalidate();
     }
 
     /** Chỗ vừa được chọn hoặc bỏ chọn: nảy lên kèm một vòng lan (Q43). */
@@ -421,6 +441,10 @@ public class VenueMapView extends View {
         worldToScreen.postTranslate(camera.getTx(), camera.getTy());
         camera.getVisibleWorldBounds(visibleBounds);
         final long now = SystemClock.uptimeMillis();
+        if (pendingIntroReach > 0f) {
+            effects.startIntro(now, pendingIntroReach);
+            pendingIntroReach = 0f;
+        }
         renderer.draw(canvas, venue, states, worldToScreen, camera.getScale(), camera.getAngle(), focusPulse,
                 visibleBounds, effects, now);
         // Còn hiệu ứng chạy thì hẹn vẽ khung tiếp theo; hết thì thôi, sơ đồ đứng yên không tốn pin.

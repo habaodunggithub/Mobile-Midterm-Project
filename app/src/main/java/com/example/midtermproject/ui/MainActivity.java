@@ -84,6 +84,10 @@ public class MainActivity extends AppCompatActivity
         savedMine = state.snapshotMyTicketIds();
         mapView = findViewById(R.id.map_view);
         mapView.bind(venue, new VenueMapStateSource(state));
+        // Mở màn chỉ chạy khi app mở mới, không chạy lại mỗi lần xoay máy (Activity được tạo lại).
+        if (savedInstanceState == null) {
+            mapView.playIntro();
+        }
         // Dòng chữ chạy quanh viền sticker: tên khu và giá thấp nhất, dựng một lần từ dữ liệu.
         final StickerFrameView stickerFrame = findViewById(R.id.sticker_frame);
         stickerFrame.setTickerText(TickerText.build(venue, getString(R.string.stage_label),
