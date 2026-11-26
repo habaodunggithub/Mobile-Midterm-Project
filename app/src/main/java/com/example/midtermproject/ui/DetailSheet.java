@@ -41,7 +41,10 @@ final class DetailSheet {
     /** Thời gian tổng tiền chạy số từ giá trị cũ tới giá trị mới (Q43). */
     private static final long TOTAL_COUNT_MS = 380L;
 
-    /** Báo cho sơ đồ biết bảng thu gọn đang che bao nhiêu pixel phía dưới. */
+    /**
+     * Báo cho sơ đồ biết dạng thu gọn của bảng đang che bao nhiêu pixel phía dưới khung sơ đồ. Từ Q47 dạng thu gọn là
+     * viên thuốc ở góc, nên con số là chiều cao viên thuốc cộng khoảng cách từ nó tới đáy khung.
+     */
     interface PeekHeightListener {
         void onPeekHeightChanged(int peekHeightPx);
     }
@@ -119,6 +122,11 @@ final class DetailSheet {
         behavior.setMaxHeight((int) (context.getResources().getDisplayMetrics().heightPixels * MAX_HEIGHT_FRACTION));
         header.setOnClickListener(v -> toggle());
         pill.setOnClickListener(v -> behavior.setState(BottomSheetBehavior.STATE_EXPANDED));
+        pill.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+            if (bottom - top != oldBottom - oldTop) {
+                notifyCoveredHeight();
+            }
+        });
         // Mở app thì bảng ẩn, chỉ có viên thuốc. Sau khi xoay máy, BottomSheetBehavior tự khôi phục trạng thái cũ
         // (việc khôi phục chạy sau onCreate nên ghi đè dòng này).
         behavior.setState(BottomSheetBehavior.STATE_HIDDEN);
@@ -158,6 +166,24 @@ final class DetailSheet {
 
     void setPeekHeightListener(PeekHeightListener listener) {
         this.peekHeightListener = listener;
+        notifyCoveredHeight();
+    }
+
+    /**
+     * Phần đáy khung sơ đồ bị viên thuốc che = chiều cao viên thuốc + lề dưới gốc của nó (lề thanh điều hướng không
+     * tính, vì khung sơ đồ đã kết thúc phía trên thanh điều hướng). Viên thuốc đang GONE (bảng mở sẵn sau khi xoay
+     * máy) thì chưa có chiều cao, nên đo thử nó.
+     */
+    private void notifyCoveredHeight() {
+        if (peekHeightListener == null) {
+            return;
+        }
+        int height = pill.getHeight();
+        if (height == 0) {
+            pill.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+            height = pill.getMeasuredHeight();
+        }
+        peekHeightListener.onPeekHeightChanged(height + pillBaseMarginPx);
     }
 
     /**
@@ -181,9 +207,6 @@ final class DetailSheet {
         final int peek = header.getHeight() + navigationInset;
         if (peek != behavior.getPeekHeight()) {
             behavior.setPeekHeight(peek);
-            if (peekHeightListener != null) {
-                peekHeightListener.onPeekHeightChanged(peek);
-            }
         }
     }
 

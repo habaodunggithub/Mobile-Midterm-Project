@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity
             // View chưa có kích thước, nên ảnh chụp góc nhìn được áp khi View đo xong; ảnh hỏng thì dùng vừa khít.
             mapView.setPendingCameraSnapshot(savedInstanceState.getFloatArray(KEY_CAMERA_SNAPSHOT));
         }
-        // Bảng chi tiết thu gọn che bao nhiêu thì sơ đồ, bảng chú thích và thông báo M7 phải chừa bấy nhiêu.
+        // Dạng thu gọn của bảng (viên thuốc) che bao nhiêu thì sơ đồ, bảng chú thích và thông báo M7 phải chừa bấy nhiêu.
         detailSheet.setPeekHeightListener(peekHeightPx -> {
             mapView.setBottomInset(peekHeightPx);
             legendCard.setBottomInset(peekHeightPx);
@@ -122,14 +122,15 @@ public class MainActivity extends AppCompatActivity
             saveSessionIfChanged();
         });
 
-        // Chừa lề cho thanh trạng thái và vết khuyết màn hình bằng lề của cột nội dung. Phía dưới thì
-        // bảng chi tiết tự chừa chỗ cho thanh điều hướng (nền bảng kéo dài xuống tận đáy màn hình).
+        // Chừa lề cho thanh trạng thái, vết khuyết màn hình và thanh điều hướng bằng lề của cột nội dung. Bảng chi tiết
+        // và viên thuốc nằm ngoài cột này nên tự chừa chỗ cho thanh điều hướng (nền bảng kéo dài xuống tận đáy).
         final View contentColumn = findViewById(R.id.content_column);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.root), (view, insets) -> {
             Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
                     | WindowInsetsCompat.Type.displayCutout());
             ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) contentColumn.getLayoutParams();
-            params.setMargins(bars.left, bars.top, bars.right, 0);
+            // Lề dưới bằng thanh điều hướng: sticker sơ đồ kết thúc ngay trên thanh, không còn nằm dưới bảng (Q47).
+            params.setMargins(bars.left, bars.top, bars.right, bars.bottom);
             contentColumn.setLayoutParams(params);
             detailSheet.setInsets(bars.left, bars.right, bars.bottom);
             return insets;
