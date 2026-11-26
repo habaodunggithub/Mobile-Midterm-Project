@@ -1,15 +1,16 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Giao diện sáng, không có thanh tiêu đề; chỉ dùng chế độ sáng (REQUIREMENTS Q19). -->
+    <!-- Giao diện sáng "Poster lỏng" (Q42), không có thanh tiêu đề; chỉ dùng chế độ sáng (REQUIREMENTS Q19). -->
     <style name="Theme.MidtermProject" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="colorPrimary">@color/spot_selected</item>
         <item name="colorOnPrimary">@color/on_spot_selected</item>
         <item name="colorSecondary">@color/zone_vip</item>
         <item name="colorOnSecondary">@color/on_zone_vip</item>
-        <item name="android:windowBackground">@color/map_background</item>
+        <item name="android:windowBackground">@color/poster_background</item>
         <!-- Vẽ tràn xuống dưới thanh hệ thống (bắt buộc từ Android 15); Activity tự chừa lề bằng insets. -->
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar">true</item>
+        <!-- Biểu tượng thanh trạng thái màu sáng, vì nằm trên nền poster hồng sen. -->
+        <item name="android:windowLightStatusBar">false</item>
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.MidtermProject.MaterialAlertDialog</item>
     </style>
 

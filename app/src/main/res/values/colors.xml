@@ -1,63 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Hướng thiết kế A (Tonal). Mỗi cặp màu nền/ký hiệu đã được kiểm tương phản:
-         chữ >= 4,5:1; hình và ký hiệu có nghĩa >= 3:1 so với màu kề nó. -->
+    <!-- Hướng thiết kế G "Poster lỏng" (REQUIREMENTS Q42). Mỗi cặp màu nền/ký hiệu đã được kiểm tương phản:
+         chữ >= 4,5:1; hình và ký hiệu có nghĩa >= 3:1 so với màu kề nó. Nền trong sticker sơ đồ là kem. -->
+
+    <!-- Poster phủ cả màn hình: nền hồng sen và ba màu dải lỏng -->
+    <color name="poster_background">#FFFF1493</color>
+    <color name="liquid_orange">#FFFF6A00</color>
+    <color name="liquid_green">#FF0B7A2A</color>
+    <color name="liquid_violet">#FF5B1BFF</color>
+
+    <!-- Viền sticker quanh sơ đồ và chữ chạy trên viền (mực tím trên cam: 5,6:1) -->
+    <color name="sticker_band">#FFFF6A00</color>
+    <color name="sticker_band_text">#FF2A0A5E</color>
+    <color name="sticker_outline">#FF5B1BFF</color>
 
     <!-- Nền và chữ trên sơ đồ -->
-    <color name="map_background">#FFF3F5F9</color>
-    <color name="stage_fill">#FFDDE2EC</color>
-    <color name="stage_text">#FF3B445A</color>
-    <color name="label_text">#FF3B445A</color>
-    <color name="label_halo">#FFF3F5F9</color>
+    <color name="map_background">#FFFFF3E4</color>
+    <color name="stage_fill">#FF0B7A2A</color>
+    <color name="stage_stroke">#FFFF6A00</color>
+    <color name="stage_text">#FFFFF3E4</color>
+    <color name="label_text">#FF2A0A5E</color>
+    <color name="label_halo">#FFFFF3E4</color>
 
-    <!-- Ba khu: màu nền chỗ, màu chữ trên chỗ và màu viền (viền giúp chỗ đạt 3:1 trên nền) -->
-    <color name="zone_standing">#FFF2A93B</color>
-    <color name="zone_standing_stroke">#FFB8730A</color>
-    <color name="on_zone_standing">#FF3B2600</color>
-    <color name="zone_vip">#FF7B5BD6</color>
-    <color name="zone_vip_stroke">#FF5C40B8</color>
+    <!-- Ba khu: màu nền chỗ, màu chữ trên chỗ và màu viền (viền giúp chỗ đạt 3:1 trên nền kem) -->
+    <color name="zone_standing">#FFFF6A00</color>
+    <color name="zone_standing_stroke">#FFC24E00</color>
+    <color name="on_zone_standing">#FF2A0A5E</color>
+    <color name="zone_vip">#FF5B1BFF</color>
+    <color name="zone_vip_stroke">#FF4310CC</color>
     <color name="on_zone_vip">#FFFFFFFF</color>
-    <color name="zone_standard">#FF4FA3E0</color>
-    <color name="zone_standard_stroke">#FF2B7FBF</color>
-    <color name="on_zone_standard">#FF06263F</color>
+    <color name="zone_standard">#FFE0137A</color>
+    <color name="zone_standard_stroke">#FFAD0D5E</color>
+    <color name="on_zone_standard">#FFFFFFFF</color>
 
     <!-- Các trạng thái hiển thị còn lại -->
-    <color name="spot_selected">#FF1C2230</color>
-    <color name="on_spot_selected">#FFFFFFFF</color>
-    <color name="spot_mine">#FF12A150</color>
-    <color name="on_spot_mine">#FFFFFFFF</color>
-    <color name="spot_booked">#FFCDD2DB</color>
-    <color name="spot_booked_stroke">#FF7D8799</color>
-    <color name="on_spot_booked">#FF596273</color>
-    <color name="spot_locked_fill">#FFFFFFFF</color>
-    <color name="spot_locked_stroke">#FF59616F</color>
+    <color name="spot_selected">#FF2A0A5E</color>
+    <color name="on_spot_selected">#FFFFF3E4</color>
+    <color name="spot_mine">#FF0B7A2A</color>
+    <color name="on_spot_mine">#FFFFF3E4</color>
+    <color name="spot_booked">#FFF1D9C8</color>
+    <color name="spot_booked_stroke">#FF9C7464</color>
+    <color name="on_spot_booked">#FF6E4A3C</color>
+    <color name="spot_locked_fill">#FFFFF3E4</color>
+    <color name="spot_locked_stroke">#FF5A3A50</color>
 
-    <!-- Nút nổi trên sơ đồ -->
-    <color name="surface">#FFFFFFFF</color>
-    <color name="compass_needle">#FF1C2230</color>
-    <color name="compass_tail">#FF9AA3B5</color>
-    <color name="map_button_icon">#FF1C2230</color>
+    <!-- Nút nổi và các thẻ sticker -->
+    <color name="surface">#FFFFF3E4</color>
+    <color name="compass_needle">#FF2A0A5E</color>
+    <color name="compass_tail">#FFB9A3C9</color>
+    <color name="map_button_icon">#FF5B1BFF</color>
 
-    <!-- Viền ô tìm kiếm khi nghỉ: tương phản >= 3:1 với nền sơ đồ -->
-    <color name="field_stroke_idle">#FF7D8799</color>
+    <!-- Viền ô tìm kiếm khi nghỉ: tím, tương phản >= 3:1 với nền kem -->
+    <color name="field_stroke_idle">#FF5B1BFF</color>
 
-    <!-- Màu trung tính cho mẫu "ghế tròn" và "ô đứng vuông" trong bảng chú thích (tương phản >= 3:1 trên nền trắng) -->
-    <color name="legend_shape">#FF7D8799</color>
+    <!-- Màu trung tính cho mẫu "ghế tròn" và "ô đứng vuông" trong bảng chú thích (tương phản >= 3:1 trên nền kem) -->
+    <color name="legend_shape">#FF8A6E7E</color>
 
-    <!-- Bảng chi tiết (hướng A): nền trắng, chữ mực; mỗi chip trạng thái là một cặp nền/chữ đạt tương phản >= 4,5:1 -->
-    <color name="sheet_text">#FF1C2230</color>
-    <color name="sheet_text_secondary">#FF4A5366</color>
-    <color name="sheet_handle">#FF9AA3B5</color>
-    <color name="chip_available_bg">#FFE6EAF2</color>
-    <color name="chip_available_fg">#FF2C3446</color>
-    <color name="chip_selected_bg">#FF1C2230</color>
-    <color name="chip_selected_fg">#FFFFFFFF</color>
-    <color name="chip_mine_bg">#FFD3F0E0</color>
-    <color name="chip_mine_fg">#FF0B5C2E</color>
-    <color name="chip_unavailable_bg">#FFE3E6EC</color>
-    <color name="chip_unavailable_fg">#FF464F61</color>
+    <!-- Bảng chi tiết: nền kem, chữ mực tím; mỗi chip trạng thái là một cặp nền/chữ đạt tương phản >= 4,5:1 -->
+    <color name="sheet_text">#FF2A0A5E</color>
+    <color name="sheet_text_secondary">#FF5E4A6E</color>
+    <color name="sheet_handle">#FFFF6A00</color>
+    <color name="chip_available_bg">#FFF6E3D3</color>
+    <color name="chip_available_fg">#FF2A0A5E</color>
+    <color name="chip_selected_bg">#FF5B1BFF</color>
+    <color name="chip_selected_fg">#FFFFF3E4</color>
+    <color name="chip_mine_bg">#FFCDEBD3</color>
+    <color name="chip_mine_fg">#FF0B5D1E</color>
+    <color name="chip_unavailable_bg">#FFEFE0D6</color>
+    <color name="chip_unavailable_fg">#FF5A3A50</color>
 
-    <!-- Vòng đánh dấu chỗ đang xem: viền trắng bên dưới, vòng mực bên trên để thấy trên mọi màu -->
-    <color name="focus_ring_halo">#FFFFFFFF</color>
-    <color name="focus_ring">#FF1C2230</color>
+    <!-- Vòng đánh dấu chỗ đang xem: viền kem bên dưới, vòng mực bên trên để thấy trên mọi màu -->
+    <color name="focus_ring_halo">#FFFFF3E4</color>
+    <color name="focus_ring">#FF2A0A5E</color>
 </resources>
