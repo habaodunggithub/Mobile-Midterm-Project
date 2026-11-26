@@ -4,10 +4,7 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
-import android.view.animation.OvershootInterpolator;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -68,9 +65,6 @@ final class DetailSheet {
     private final TextView focusState;
     private final TextView summary;
     private final Button bookButton;
-    /** Viên thuốc tóm tắt: dạng thu gọn của bảng, chỉ hiện khi bảng ẩn (Q47). */
-    private final Button pill;
-    private final int pillBaseMarginPx;
     private final Drawable chipBackground;
     private final BottomSheetBehavior<View> behavior;
     /** Tên phân khu theo mã, dựng một lần để hiển thị không phải duyệt danh sách mỗi lần. */
@@ -84,10 +78,8 @@ final class DetailSheet {
     private int navigationInset;
     private PeekHeightListener peekHeightListener;
 
-    DetailSheet(View sheet, Button pill, Venue venue, VenueMapState state, Callbacks callbacks) {
+    DetailSheet(View sheet, Venue venue, VenueMapState state, Callbacks callbacks) {
         this.context = sheet.getContext();
-        this.pill = pill;
-        this.pillBaseMarginPx = ((ViewGroup.MarginLayoutParams) pill.getLayoutParams()).bottomMargin;
         this.state = state;
         this.sheet = sheet;
         this.header = sheet.findViewById(R.id.sheet_header);
@@ -118,10 +110,6 @@ final class DetailSheet {
         list.setAdapter(adapter);
         behavior.setMaxHeight((int) (context.getResources().getDisplayMetrics().heightPixels * MAX_HEIGHT_FRACTION));
         header.setOnClickListener(v -> toggle());
-        pill.setOnClickListener(v -> behavior.setState(BottomSheetBehavior.STATE_EXPANDED));
-        // Mở app thì bảng ẩn, chỉ có viên thuốc. Sau khi xoay máy, BottomSheetBehavior tự khôi phục trạng thái cũ
-        // (việc khôi phục chạy sau onCreate nên ghi đè dòng này).
-        behavior.setState(BottomSheetBehavior.STATE_HIDDEN);
         bookButton.setOnClickListener(v -> callbacks.onBookRequested());
         // Chiều cao phần đầu đổi (ví dụ cỡ chữ hệ thống) thì peekHeight phải đổi theo.
         header.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
@@ -134,7 +122,6 @@ final class DetailSheet {
             public void onStateChanged(View bottomSheet, int newState) {
                 updateHeaderAction();
                 updateListVisibility(newState);
-                updatePill(newState, true);
             }
 
             @Override
@@ -148,11 +135,9 @@ final class DetailSheet {
         sheet.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
             updateListVisibility(behavior.getState());
             updateHeaderAction();
-            updatePill(behavior.getState(), false);
         });
         updateListVisibility(behavior.getState());
         updateHeaderAction();
-        updatePill(behavior.getState(), false);
         render();
     }
 
@@ -167,9 +152,6 @@ final class DetailSheet {
     void setInsets(int leftPx, int rightPx, int bottomPx) {
         navigationInset = bottomPx;
         sheet.setPadding(leftPx, sheet.getPaddingTop(), rightPx, bottomPx);
-        final ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) pill.getLayoutParams();
-        params.bottomMargin = pillBaseMarginPx + bottomPx;
-        pill.setLayoutParams(params);
         updatePeekHeight();
     }
 
@@ -206,44 +188,7 @@ final class DetailSheet {
         bookButton.setEnabled(count >= 1);
         bookButton.setText(count >= 1 ? context.getString(R.string.book_button, count)
                 : context.getString(R.string.book_button_empty));
-        renderPill(count, state.getSelectedTotal());
         adapter.refresh(context);
-    }
-
-    /** Chữ trên viên thuốc: "N chỗ · T đ", hoặc "Chưa chọn chỗ" khi chưa chọn gì (viên thuốc vẫn hiện, Q47). */
-    private void renderPill(int count, long total) {
-        final String text = count == 0 ? context.getString(R.string.pill_empty)
-                : context.getString(R.string.pill_summary, count, PriceFormatter.format(total));
-        pill.setText(text);
-        pill.setContentDescription(context.getString(R.string.pill_description, text));
-    }
-
-    /**
-     * Viên thuốc chỉ hiện khi bảng ẩn. Hiện thì phóng từ 60% lên 100% và rõ dần (200ms); bảng bắt đầu kéo lên thì viên
-     * thuốc mờ đi nhanh hơn (120ms), rồi mới GONE để không còn nhận chạm.
-     */
-    private void updatePill(int sheetState, boolean animate) {
-        final boolean show = sheetState == BottomSheetBehavior.STATE_HIDDEN;
-        pill.animate().cancel();
-        if (!animate || !animated) {
-            pill.setVisibility(show ? View.VISIBLE : View.GONE);
-            pill.setAlpha(1f);
-            pill.setScaleX(1f);
-            pill.setScaleY(1f);
-            return;
-        }
-        if (show) {
-            pill.setVisibility(View.VISIBLE);
-            pill.setAlpha(0f);
-            pill.setScaleX(0.6f);
-            pill.setScaleY(0.6f);
-            pill.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(200L)
-                    .setInterpolator(new OvershootInterpolator()).withEndAction(null).start();
-        } else if (pill.getVisibility() == View.VISIBLE) {
-            pill.animate().alpha(0f).scaleX(0.8f).scaleY(0.8f).setDuration(120L)
-                    .setInterpolator(new AccelerateInterpolator())
-                    .withEndAction(() -> pill.setVisibility(View.GONE)).start();
-        }
     }
 
     /**
