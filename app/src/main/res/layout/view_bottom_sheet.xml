@@ -93,7 +93,7 @@
                 android:layout_weight="1"
                 android:ellipsize="end"
                 android:maxLines="1"
-                android:textColor="@color/sheet_text_secondary"
+                android:textColor="@color/sheet_text"
                 android:textSize="14sp" />
 
             <!-- Chữ và trạng thái bật/tắt do DetailSheet đặt từ state: "Đặt N vé" khi N >= 1, ngược lại "Đặt vé" và mờ. -->

@@ -87,7 +87,7 @@
     </style>
 
     <!--
-        Nút "Đặt N vé": nút đặc màu mực (colorPrimary), chữ thường bằng chữ lượn Kablammo, vì đây là một trong hai chỗ
+        Nút "Đặt N vé": nút đặc xanh lá viền cam như mẫu G (Q48), chữ thường bằng chữ lượn Kablammo, vì đây là một trong hai chỗ
         chữ to của màn hình (Q44). Vùng chạm cao 48dp, phần nhìn thấy thấp hơn nhờ inset của Material.
     -->
     <style name="Widget.MidtermProject.Button.Book" parent="Widget.MaterialComponents.Button.UnelevatedButton">
@@ -95,7 +95,12 @@
         <item name="android:textAllCaps">false</item>
         <item name="android:textSize">17sp</item>
         <item name="android:fontFamily">@font/kablammo</item>
-        <item name="cornerRadius">20dp</item>
+        <!-- Mẫu G: nền xanh lá, chữ kem (5,5:1), viền cam 3dp; tắt thì xám be. -->
+        <item name="backgroundTint">@color/book_button_background</item>
+        <item name="android:textColor">@color/book_button_text</item>
+        <item name="strokeColor">@color/book_button_stroke</item>
+        <item name="strokeWidth">3dp</item>
+        <item name="cornerRadius">22dp</item>
         <item name="android:stateListAnimator">@animator/press_bounce</item>
     </style>
 

@@ -60,6 +60,9 @@
     <color name="chip_available_fg">#FF2A0A5E</color>
     <color name="chip_selected_bg">#FF5B1BFF</color>
     <color name="chip_selected_fg">#FFFFF3E4</color>
+    <!-- Chip trạng thái "Đang chọn" trong bảng chi tiết: màu mực như mẫu G (chip lọc đang chọn thì tím) -->
+    <color name="state_selected_bg">#FF2A0A5E</color>
+    <color name="state_selected_fg">#FFFFF3E4</color>
     <color name="chip_mine_bg">#FFCDEBD3</color>
     <color name="chip_mine_fg">#FF0B5D1E</color>
     <color name="chip_unavailable_bg">#FFEFE0D6</color>

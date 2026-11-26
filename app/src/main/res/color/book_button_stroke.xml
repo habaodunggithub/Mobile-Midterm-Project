@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Nút "Đặt N vé" (mẫu G): bật thì nền xanh lá, chữ kem, viền cam; tắt (chưa chọn chỗ) thì về màu xám be. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/chip_unavailable_bg" android:state_enabled="false" />
+    <item android:color="@color/sticker_band" />
+</selector>

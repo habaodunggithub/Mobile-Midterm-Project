@@ -2,7 +2,11 @@ package com.example.midtermproject.ui;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.StyleSpan;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
@@ -233,9 +237,21 @@ final class DetailSheet {
             focusState.setVisibility(View.GONE);
             return;
         }
-        focusInfo.setText(context.getString(R.string.sheet_focus_info,
-                sectionNames.get(spot.sectionId), spot.rowLabel, spot.label, PriceFormatter.format(spot.price)));
+        final String section = sectionNames.get(spot.sectionId);
+        final String text = context.getString(R.string.sheet_focus_info,
+                section, spot.rowLabel, spot.label, PriceFormatter.format(spot.price));
+        // Mẫu G: tên khu và mã chỗ in đậm, phần còn lại chữ thường.
+        final SpannableString styled = new SpannableString(text);
+        bold(styled, text.indexOf(section), section.length());
+        bold(styled, text.indexOf(spot.label, section.length()), spot.label.length());
+        focusInfo.setText(styled);
         showStateChip(state.getDisplayState(spot));
+    }
+
+    private static void bold(SpannableString text, int start, int length) {
+        if (start >= 0) {
+            text.setSpan(new StyleSpan(Typeface.BOLD), start, start + length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
     }
 
     /** Chip luôn có chữ, nên trạng thái không chỉ dựa vào màu (độ tương phản mỗi cặp đã kiểm tra). */
@@ -246,8 +262,8 @@ final class DetailSheet {
         switch (displayState) {
             case SELECTED:
                 label = R.string.state_selected;
-                background = R.color.chip_selected_bg;
-                foreground = R.color.chip_selected_fg;
+                background = R.color.state_selected_bg;
+                foreground = R.color.state_selected_fg;
                 break;
             case MINE:
                 label = R.string.state_mine;
