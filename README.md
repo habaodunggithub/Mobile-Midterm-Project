@@ -33,6 +33,8 @@ Mỗi chỗ có một trong năm trạng thái hiển thị: **Còn trống**, *
 | Đặt vé | Nút "Đặt N vé", hộp thoại xác nhận, chỗ đã đặt thành "Vé của bạn" |
 | Lưu dữ liệu | Lựa chọn và vé của bạn được lưu bằng `SharedPreferences` và còn lại sau khi tắt hẳn app; nút ⋮ → "Làm mới dữ liệu" để xóa |
 | Xoay màn hình | Giữ nguyên chỗ đang xem, bộ lọc, góc nhìn, bảng chú thích, hộp thoại; bố cục riêng cho máy ngang (panel lọc bên trái, bảng chi tiết 420dp) |
+| Giao diện "Poster lỏng" | Cả màn hình là poster hồng sen với các dải lỏng cam, xanh lá, tím uốn lượn liên tục; sơ đồ là một miếng sticker có viền cam dày, trên viền có chữ chạy vòng quanh (tên khu và giá thấp nhất); thanh lọc, nút và bảng chi tiết cũng là sticker. Chữ lượn Kablammo cho "SÂN KHẤU" và nút "Đặt N vé", Space Mono cho nhãn |
+| Hiệu ứng động | Mở app: chỗ hiện dần từ sân khấu ra. Chọn hoặc bỏ chọn: chỗ nảy lên kèm vòng lan. Chạm chỗ không chọn được: chỗ lắc ngang. Đặt vé xong: các chỗ lần lượt lật sang "Vé của bạn". Chip và nút nảy khi bấm; tổng tiền chạy số. Tắt hết khi người dùng tắt hiệu ứng động của hệ thống |
 
 ### Ảnh chụp màn hình
 
@@ -83,6 +85,11 @@ com.example.midtermproject
 ├── map/      MapCamera, HitTester, RotationTracker, FlingDecay        (Java thuần)
 │             VenueMapView, VenueRenderer, SpotRenderer                 (android.*)
 │             Camera và hình học thuần; lớp View và lớp vẽ tách riêng.
+│             SpotEffects                                               (Java thuần)
+│             Mốc thời gian và đường cong hiệu ứng của từng chỗ.
+├── decor/    LiquidColumns, TickerText                                 (Java thuần)
+│             LiquidPosterView, StickerFrameView                        (android.*)
+│             Trang trí: nền poster chuyển động, viền sticker có chữ chạy. Không vẽ chỗ nào.
 ├── storage/  PrefsSessionStore
 │             Hiện thực SessionStore bằng SharedPreferences.
 └── ui/       MainActivity, DetailSheet, FilterBar, LegendCard,
@@ -95,6 +102,8 @@ com.example.midtermproject
 | `MapCamera` | Giữ `scale`, `angle`, `tx`, `ty` bằng `float`; pan, zoom, xoay, kẹp biên, fit, đổi tọa độ hai chiều. Không dùng `android.graphics.Matrix` nên test được trên JVM |
 | `VenueRenderer`, `SpotRenderer` | Vẽ nền, sân khấu, từng chỗ theo trạng thái, tên phân khu. Mọi `Paint` và `Path` dựng sẵn trong constructor |
 | `HitTester` | Tìm chỗ dưới điểm chạm (chỉ hình học) |
+| `SpotEffects` | Giữ mốc thời gian của các hiệu ứng trên từng chỗ (mở màn, nảy, lật, rung) và trả về hệ số phóng, độ lệch, tiến độ vòng lan cho mỗi khung hình |
+| `LiquidPosterView`, `StickerFrameView` | Hai View trang trí nằm dưới và đè lên mép sơ đồ; hình dải lỏng và nội dung chữ chạy do `LiquidColumns`, `TickerText` tính |
 | `VenueMapState` | Lựa chọn, vé của bạn, chỗ đang xem, bộ lọc; mọi thay đổi đi qua các hàm của nó rồi báo `Listener` (mô hình Observer) |
 | `DetailSheet`, `FilterBar`, `LegendCard` | Điều khiển các view XML; chỉ đọc từ `VenueMapState`, không giữ bản sao dữ liệu |
 | `MainActivity` | Ghép các mảnh, nhận cú chạm từ sơ đồ, lưu và khôi phục trạng thái |
@@ -105,6 +114,7 @@ Các quyết định kiến trúc chính:
 - **Camera giữ số, không giữ `Matrix`.** Công thức tường minh và test được bằng JUnit; `Matrix` chỉ được dựng lúc vẽ từ `scale`, `angle`, `tx`, `ty`.
 - **Cử chỉ:** `GestureDetector` cho kéo một ngón và chạm (`onSingleTapUp`, phản hồi tức thì, không chờ chạm đúp); zoom và xoay hai ngón tự đo, vì `ScaleGestureDetector` chỉ bắt đầu khi hai ngón cách nhau tối thiểu `getScaledMinimumScalingSpan()` (đo được 446px trên emulator Android 15) nên zoom bị trễ rõ rệt.
 - **Bottom Sheet:** `CoordinatorLayout` + `BottomSheetBehavior` (persistent sheet, sơ đồ vẫn chạm được khi sheet mở). Hai hộp thoại xác nhận là `DialogFragment` nên `FragmentManager` tự tạo lại sau khi xoay.
+- **Trang trí tách khỏi sơ đồ.** Nền poster và viền sticker là hai View riêng trong package `decor/`, không phải là chỗ, nên không vi phạm yêu cầu "mọi chỗ vẽ bởi một Custom View". `VenueMapView` vẫn chỉ vẽ sân khấu và 224 chỗ; sơ đồ lùi vào 16dp để mép nằm khuất dưới viền, chạm lên viền không lọt xuống sơ đồ.
 - **Bố cục dọc và ngang** dùng chung các file include (`view_map_layers`, `view_bottom_sheet`, `view_price_controls`, `view_filter_status`) với **cùng bộ id**, nên `MainActivity` không cần biết hướng màn hình. `layout-land/` chỉ khác ở vị trí các khối.
 
 ## 4. Cách tổ chức dữ liệu
@@ -234,7 +244,8 @@ Mỗi dữ liệu chỉ có **một nguồn**:
 ## 8. Tối ưu hiệu năng
 
 - **Không cấp phát trong `onDraw`:** mọi `Paint`, `Path`, `Matrix`, `RectF` và mảng tạm được dựng sẵn khi khởi tạo (`VenueRenderer`, `SpotRenderer`, `VenueMapView`); nhãn chỗ (`A05`) là `String` tính sẵn trong `Spot`; không nối chuỗi hay `String.format` lúc vẽ. `./gradlew lint` không có cảnh báo `DrawAllocation`.
-- **Chỉ vẽ lại khi cần:** `invalidate()` chỉ được gọi khi camera đổi (cử chỉ, animation) hoặc khi `VenueMapState` báo thay đổi; animation dùng `postInvalidateOnAnimation()`.
+- **Chỉ vẽ lại khi cần:** sơ đồ chỉ `invalidate()` khi camera đổi (cử chỉ, animation), khi `VenueMapState` báo thay đổi, hoặc khi `SpotEffects` còn hiệu ứng đang chạy; animation dùng `postInvalidateOnAnimation()`. Hết hiệu ứng thì sơ đồ đứng yên.
+- **Nền chuyển động liên tục** (sinh viên chọn, REQUIREMENTS Q43): `LiquidPosterView` và `StickerFrameView` tự vẽ lại mỗi khung hình. Hai View này nằm riêng nên khi chúng vẽ lại, phần cứng chỉ ghi lại hình của chúng, không gọi lại `onDraw` của sơ đồ. Chúng cũng không cấp phát trong `onDraw` (mảng mép dải cấp trong `onSizeChanged`, chữ chạy dựng một lần). Khi app vào nền, hệ thống ngừng vẽ nên vòng lặp tự dừng; khi người dùng tắt hiệu ứng động của hệ thống, cả hai đứng yên và không hẹn khung tiếp theo.
 - **Culling:** mỗi khung hình `MapCamera.getVisibleWorldBounds` trả về khung bao của vùng nhìn trong tọa độ sơ đồ (bốn góc màn hình đổi ngược về sơ đồ, có tính cả xoay); `VenueRenderer` bỏ qua các chỗ nằm hẳn ngoài khung này (có lề 24dp cho vòng sáng và viền). Khi zoom lớn chỉ còn vài chục chỗ được vẽ.
 - **Mức chi tiết (LOD):** mã chỗ, dấu ✓ ✕ ★ chỉ vẽ khi chỗ đủ to trên màn hình (đường kính từ 22dp); gạch chéo của chỗ bị khóa từ 9dp. Ở mức Fit chỉ vẽ hình tròn hoặc vuông.
 - **Cắt theo khung:** `onDraw` tự `clipRect` theo khung của View, và chữ tên phân khu vẽ trong tọa độ màn hình nên luôn cùng cỡ.
