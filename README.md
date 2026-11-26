@@ -394,3 +394,18 @@ Dự án được làm với trợ lý lập trình **Claude Code** (Anthropic).
   - Ảnh chụp trong `docs/screenshots/` vẫn là giao diện cũ, chưa chụp lại.
   - Hiệu ứng chỉ được kiểm trên emulator bằng ảnh chụp từng khung, chưa thử trên máy thật.
 - **Sinh viên kiểm tra/điều chỉnh:**
+
+### 2026-11-26 (tiếp): sửa góc sticker, thử viên thuốc, rồi khớp bản xem trước G
+
+- **Agent/model:** Claude Code (Claude Opus 5.5), có dùng `huashu-design` để vẽ ba cách thay bảng chi tiết bằng nút ở góc (`design-demos/ui-psychedelic/sheet-options.html`, ngoài repo). Hỏi sinh viên về kiểu nút, mức bật lên, danh sách commit (Q47) rồi về việc khớp mẫu G (Q48); kiểm trên emulator bằng ảnh chụp phóng to từng góc, đặt cạnh ảnh mẫu G, `sendevent` (pinch, xoay) và `uiautomator dump`.
+- **Nhiệm vụ được giao:** sửa góc nhọn lòi ra ở 4 góc sticker và cạnh dưới sticker bị bảng chi tiết che; đổi bảng chi tiết thành nút ở góc; sau đó làm giao diện đúng từng chi tiết của mẫu G.
+- **Code được sinh/sửa:** `StickerFrameView` (cắt sơ đồ bằng outline, mép trong lượn, đáy sticker phía trên bảng, chặn chạm ngoài phần giữa), `TickerText` (`items`, `fitToColumns`), `VenueRenderer` (nhãn viết hoa trong tọa độ màn hình, chữ sân khấu to), `SpotRenderer` (vẽ ghế như G, ký hiệu ở mọi mức zoom), `DetailSheet` (in đậm khu và mã chỗ), `MainActivity`, màu, theme, drawable chú thích, layout ô tìm kiếm; thêm 6 test vào `TickerTextTest` (cả dự án 241 test). Ba commit viên thuốc được làm rồi hoàn tác bằng `git revert` khi sinh viên chọn quay về mẫu G.
+- **Lỗi hoặc hạn chế của kết quả AI:**
+  - Sửa góc nhọn mất ba lần: bo góc sơ đồ 26dp vẫn còn mẩu kem lòi ra, 32dp vẫn còn ở một góc; chỉ hết khi chỉnh cả hình mép ngoài.
+  - Lần sửa đầu cho chỗ nối chữ chạy (giãn khoảng cách chữ bằng `letterSpacing`) được commit nhưng không đúng: bề rộng đo được không khớp với chữ vẽ thật, chỗ nối vẫn đứt, và chữ bị giãn rộng khác mẫu G. Commit sau thay bằng cách đếm ký tự của font đơn cách.
+  - Các commit viên thuốc có lỗi ở màn hình ngang: thẻ `<include>` của bố cục ngang ghi đè thuộc tính nên bảng không ẩn được và nằm sai chỗ sau khi xoay. Lỗi mất đi khi hoàn tác, nhưng đã nằm trong lịch sử git.
+  - Một test mới viết sai giá trị mong đợi (quên các dấu cách bù); code đúng, test được sửa trước khi commit.
+  - Vì sticker kết thúc phía trên bảng chi tiết như mẫu G, ở màn hình ngang phần sơ đồ chỉ còn cao khoảng 140dp (mẫu G chỉ có bản dọc).
+  - Dòng ghế đang xem vẫn ghi "Hàng B", mẫu G thì không, vì AC-5.1 yêu cầu có hàng. Snackbar vẫn là kiểu tối mặc định, mẫu G không có Snackbar để so.
+  - Ảnh chụp trong `docs/screenshots/` vẫn là giao diện cũ.
+- **Sinh viên kiểm tra/điều chỉnh:**
