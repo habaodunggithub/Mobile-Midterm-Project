@@ -57,14 +57,19 @@ public class StickerFrameView extends View {
     private final Path band = new Path();
     private final Path tickerPath = new Path();
     private final RectF rect = new RectF();
+    private final RectF oval = new RectF();
     private final Paint.FontMetrics fontMetrics = new Paint.FontMetrics();
 
     private float density;
     private float margin;
     private float bandWidth;
     private String ticker = "";
+    /** Bề rộng một vòng chữ sau khi đã giãn cho vừa khít (xem {@link #fitTickerToLap}). */
     private float tickerWidth;
-    private float tickerLength;
+    /** Chu vi đường giữa dải, tức chiều dài một vòng đường chữ chạy. */
+    private float lapLength;
+    /** Số vòng chữ nằm vừa trên một vòng đường. */
+    private int tickerCopies;
     private float tickerBaseline;
     /** Tắt khi người dùng tắt hiệu ứng động của hệ thống: chữ đứng yên. */
     private boolean animated = true;
@@ -136,7 +141,7 @@ public class StickerFrameView extends View {
     /** Đặt nội dung một vòng chữ chạy (xem {@link TickerText}); đo bề rộng một lần ở đây. */
     public void setTickerText(String text) {
         ticker = text != null ? text : "";
-        tickerWidth = tickerPaint.measureText(ticker);
+        fitTickerToLap();
         invalidate();
     }
 
@@ -150,11 +155,56 @@ public class StickerFrameView extends View {
         rect.inset(bandWidth, bandWidth);
         band.addRoundRect(rect, corner, corner, Path.Direction.CW);
 
-        // Đường chữ chạy nằm giữa dải, theo chiều kim đồng hồ.
+        // Đường chữ chạy nằm giữa dải, theo chiều kim đồng hồ, đi hai vòng liền nhau (xem onDraw).
         tickerPath.reset();
         rect.set(margin + bandWidth / 2f, margin + bandWidth / 2f, w - margin - bandWidth / 2f, h - margin - bandWidth / 2f);
-        tickerPath.addRoundRect(rect, corner, corner, Path.Direction.CW);
-        tickerLength = 2f * (rect.width() + rect.height());
+        addRoundRectLap(rect, corner, true);
+        addRoundRectLap(rect, corner, false);
+        // Chu vi hình chữ nhật bo góc: bốn cạnh thẳng (đã trừ phần góc) cộng bốn cung một phần tư = một đường tròn.
+        lapLength = 2f * (rect.width() + rect.height()) - 8f * corner + (float) (2 * Math.PI * corner);
+        fitTickerToLap();
+    }
+
+    /**
+     * Thêm một vòng hình chữ nhật bo góc vào {@link #tickerPath} bằng nét liền (không đóng hình), bắt đầu ở đầu cạnh
+     * trên. Hai vòng nối tiếp nhau thành một đường duy nhất, vì {@code drawTextOnPath} chỉ đi theo một đường liền.
+     */
+    private void addRoundRectLap(RectF r, float c, boolean first) {
+        if (first) {
+            tickerPath.moveTo(r.left + c, r.top);
+        } else {
+            tickerPath.lineTo(r.left + c, r.top);
+        }
+        tickerPath.lineTo(r.right - c, r.top);
+        oval.set(r.right - 2 * c, r.top, r.right, r.top + 2 * c);
+        tickerPath.arcTo(oval, 270f, 90f, false);
+        tickerPath.lineTo(r.right, r.bottom - c);
+        oval.set(r.right - 2 * c, r.bottom - 2 * c, r.right, r.bottom);
+        tickerPath.arcTo(oval, 0f, 90f, false);
+        tickerPath.lineTo(r.left + c, r.bottom);
+        oval.set(r.left, r.bottom - 2 * c, r.left + 2 * c, r.bottom);
+        tickerPath.arcTo(oval, 90f, 90f, false);
+        tickerPath.lineTo(r.left, r.top + c);
+        oval.set(r.left, r.top, r.left + 2 * c, r.top + 2 * c);
+        tickerPath.arcTo(oval, 180f, 90f, false);
+    }
+
+    /**
+     * Giãn khoảng cách chữ để đúng n vòng chữ phủ khít một vòng đường: n = phần nguyên của (chu vi / bề rộng chữ),
+     * mỗi vòng chữ phải rộng chu vi / n, phần thiếu chia đều cho từng ký tự. Nhờ vậy chữ ở cuối vòng đường nối liền
+     * với chữ ở đầu vòng, không còn chỗ hai đoạn chữ khác nhau đụng vào nhau.
+     */
+    private void fitTickerToLap() {
+        tickerPaint.setLetterSpacing(0f);
+        final float raw = tickerPaint.measureText(ticker);
+        if (raw <= 0f || lapLength <= 0f) {
+            tickerWidth = 0f;
+            return;
+        }
+        tickerCopies = Math.max(1, (int) (lapLength / raw));
+        tickerWidth = lapLength / tickerCopies;
+        // letterSpacing tính theo em (bội của cỡ chữ) và cộng vào sau mỗi ký tự.
+        tickerPaint.setLetterSpacing((tickerWidth - raw) / (tickerPaint.getTextSize() * ticker.length()));
     }
 
     /**
@@ -190,8 +240,10 @@ public class StickerFrameView extends View {
         // Quãng chữ đã chạy, lấy phần dư theo bề rộng một vòng chữ để vẽ lặp liền mạch.
         final float travelled = animated
                 ? (SystemClock.uptimeMillis() / 1000f * TICKER_SPEED_DP * density) % tickerWidth : 0f;
-        for (float offset = -travelled; offset < tickerLength; offset += tickerWidth) {
-            canvas.drawTextOnPath(ticker, tickerPath, offset, tickerBaseline, tickerPaint);
+        // Đường dài hai vòng. Vòng chữ thứ k bắt đầu ở k·W − quãng đã chạy (k = 1..n); vòng cuối vắt qua điểm nối sang
+        // vòng đường thứ hai, nên phủ luôn đoạn đầu mà không chữ nào bị cắt ngang ở điểm nối.
+        for (int k = 1; k <= tickerCopies; k++) {
+            canvas.drawTextOnPath(ticker, tickerPath, k * tickerWidth - travelled, tickerBaseline, tickerPaint);
         }
         if (animated) {
             postInvalidateOnAnimation();
