@@ -16,6 +16,7 @@ import com.example.midtermproject.ui.PriceFormatter;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 public class TickerTextTest {
@@ -64,5 +65,48 @@ public class TickerTextTest {
     public void q42_cheapestPriceIsMinusOneForEmptySection() {
         assertEquals(-1L, TickerText.cheapestPrice(smallVenue(), "EMPTY"));
         assertEquals(1_900_000L, TickerText.cheapestPrice(smallVenue(), "VIP-G"));
+    }
+
+    @Test
+    public void q48_itemsAreUpperCaseAndStartWithStage() {
+        List<String> items = TickerText.items(smallVenue(), "Sân khấu", FORMAT, PriceFormatter::format);
+        assertEquals(Arrays.asList("SÂN KHẤU", "VIP GIỮA TỪ 1.900.000 Đ"), items);
+    }
+
+    @Test
+    public void q48_fitToColumnsHasExactLength() {
+        List<String> items = TickerText.items(MockVenueFactory.create(), "SÂN KHẤU", FORMAT, PriceFormatter::format);
+        for (int columns : new int[]{40, 120, 333, 500}) {
+            assertEquals(columns, TickerText.fitToColumns(items, columns).length());
+        }
+    }
+
+    @Test
+    public void q48_fitToColumnsKeepsWholeItemsInOrder() {
+        List<String> items = Arrays.asList("AAAA", "BB", "CCCCCC");
+        // 3 mục đầu dài 4+2+6 = 12 ký tự, cộng 3 dấu ngăn (3 ký tự mỗi dấu) = 21; mục thứ tư (lặp lại AAAA) cần 7 nữa,
+        // nên không lấy nó mà bù 4 dấu cách vào ba dấu ngăn: 2, 1, 1.
+        String text = TickerText.fitToColumns(items, 25);
+        assertEquals("AAAA •   BB •  CCCCCC •  ", text);
+        assertFalse("không cắt dở mục thứ tư", text.contains("CCCCCC • A"));
+    }
+
+    @Test
+    public void q48_paddingIsSpreadOverSeparators() {
+        List<String> items = Arrays.asList("AA", "BB");
+        // Hai mục chiếm 2·(2+3) = 10 ký tự; thêm 1 mục nữa thành 15 > 13, nên bù 3 dấu cách: 2 sau dấu đầu, 1 sau dấu sau.
+        assertEquals("AA •   BB •  ", TickerText.fitToColumns(items, 13));
+    }
+
+    @Test
+    public void q48_itemsRepeatWhenLapIsLong() {
+        List<String> items = Arrays.asList("AA", "BB");
+        assertEquals("AA • BB • AA • BB • ", TickerText.fitToColumns(items, 20));
+    }
+
+    @Test
+    public void q48_shortLapCutsFirstItem() {
+        assertEquals("SÂN", TickerText.fitToColumns(Arrays.asList("SÂN KHẤU"), 3));
+        assertEquals("", TickerText.fitToColumns(Arrays.asList("A"), 0));
     }
 }
