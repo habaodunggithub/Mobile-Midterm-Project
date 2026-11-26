@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.Outline;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
@@ -13,6 +14,7 @@ import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewOutlineProvider;
 
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -34,9 +36,16 @@ import com.example.midtermproject.R;
  */
 public class StickerFrameView extends View {
     /** Biên độ gợn của mép ngoài, tính bằng dp. */
-    private static final float WOBBLE_DP = 2.5f;
+    private static final float WOBBLE_DP = 2f;
     /** Bán kính bo góc của mép trong và của đường chữ chạy, tính bằng dp. */
     private static final float CORNER_DP = 14f;
+    /**
+     * Bán kính bo góc của View nằm dưới viền (sơ đồ). Sơ đồ là hình chữ nhật lùi vào giữa dải viền; nếu để góc vuông
+     * thì góc đó thò ra ngoài mép ngoài đã bo tròn của viền. Bo 32dp thì điểm góc (theo đường chéo, cách góc khung
+     * khoảng 25dp) vừa nằm ngoài mép trong của dải (khoảng 28dp), vừa nằm trong mép ngoài (khoảng 15dp, lõm vào tới
+     * 18dp ở chỗ gợn sâu nhất), tức là khuất dưới dải.
+     */
+    private static final float CONTENT_CORNER_DP = 32f;
     /** Tốc độ chữ chạy, dp mỗi giây. */
     private static final float TICKER_SPEED_DP = 40f;
     private static final float TICKER_TEXT_SP = 9.5f;
@@ -103,6 +112,21 @@ public class StickerFrameView extends View {
         setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
     }
 
+    /**
+     * Cắt View nằm dưới viền (sơ đồ) theo hình chữ nhật bo góc, để góc vuông của nó không thò ra ngoài viền. Dùng
+     * outline của View nên phần cắt do bộ dựng hình làm, không tốn gì trong {@code onDraw} của sơ đồ.
+     */
+    public void clipContent(View content) {
+        final float radius = CONTENT_CORNER_DP * density;
+        content.setOutlineProvider(new ViewOutlineProvider() {
+            @Override
+            public void getOutline(View view, Outline outline) {
+                outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(), radius);
+            }
+        });
+        content.setClipToOutline(true);
+    }
+
     /** Bật hoặc tắt chữ chạy (theo cài đặt hiệu ứng của hệ thống, xem MainActivity). */
     public void setAnimated(boolean animated) {
         this.animated = animated;
@@ -136,9 +160,10 @@ public class StickerFrameView extends View {
     /**
      * Mép ngoài lượn: "siêu ellipse" (chữ nhật bo góc tròn trịa) cộng gợn sóng nhỏ, cùng công thức với mép
      * sân khấu trong {@code VenueRenderer}: x = cx + (hw + w)·sgn(cos t)·|cos t|^(2/k), tương tự với y.
+     * Dùng k = 20 (vuông vức hơn sân khấu) để góc ngoài đủ rộng che góc bo của sơ đồ.
      */
     private static void outline(Path path, RectF r, float wobble) {
-        final double power = 2.0 / 12.0;
+        final double power = 2.0 / 20.0;
         final float cx = r.centerX(), cy = r.centerY(), hw = r.width() / 2f, hh = r.height() / 2f;
         for (int i = 0; i < OUTLINE_POINTS; i++) {
             final double t = 2 * Math.PI * i / OUTLINE_POINTS;

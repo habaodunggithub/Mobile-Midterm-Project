@@ -92,6 +92,7 @@ public class MainActivity extends AppCompatActivity
         }
         // Dòng chữ chạy quanh viền sticker: tên khu và giá thấp nhất, dựng một lần từ dữ liệu.
         final StickerFrameView stickerFrame = findViewById(R.id.sticker_frame);
+        stickerFrame.clipContent(mapView);
         stickerFrame.setTickerText(TickerText.build(venue, getString(R.string.stage_label),
                 getString(R.string.ticker_section_format), PriceFormatter::format));
         mapView.setOnSpotTapListener(this);
