@@ -82,12 +82,15 @@
         <item name="android:textStyle">bold</item>
     </style>
 
-    <!-- Nút "Đặt N vé": nút đặc màu mực (colorPrimary), chữ thường; vùng chạm cao 48dp, phần nhìn thấy thấp hơn nhờ inset của Material. -->
+    <!--
+        Nút "Đặt N vé": nút đặc màu mực (colorPrimary), chữ thường bằng chữ lượn Kablammo, vì đây là một trong hai chỗ
+        chữ to của màn hình (Q44). Vùng chạm cao 48dp, phần nhìn thấy thấp hơn nhờ inset của Material.
+    -->
     <style name="Widget.MidtermProject.Button.Book" parent="Widget.MaterialComponents.Button.UnelevatedButton">
         <item name="android:minWidth">0dp</item>
         <item name="android:textAllCaps">false</item>
-        <item name="android:textSize">14sp</item>
-        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">17sp</item>
+        <item name="android:fontFamily">@font/kablammo</item>
         <item name="cornerRadius">20dp</item>
     </style>
 
