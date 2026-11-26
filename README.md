@@ -376,3 +376,20 @@ Dự án được làm với trợ lý lập trình **Claude Code** (Anthropic).
   - Link video chưa có vì video do sinh viên tự quay và tải lên; README đang ghi "chưa cập nhật".
   - Những tiêu chí chấp nhận không có test JUnit (giao diện, xoay màn hình, Reset View, bảng chi tiết) chỉ được kiểm thủ công trên emulator, chưa thử bằng ngón tay thật.
 - **Sinh viên kiểm tra/điều chỉnh:** Đã rà lại các mục README theo đề, đối chiếu mô tả hit-testing với mã test và chọn bốn ảnh minh họa các thao tác chính. Đã bổ sung nội dung kiểm tra và điều chỉnh cho từng chặng trong Nhật ký AI. Mục liên kết video còn chờ cập nhật.
+
+### 2026-11-26 (tiếp): nhánh `ui/psychedelic-redesign`, giao diện "Poster lỏng" và hiệu ứng động
+
+- **Agent/model:** Claude Code (Claude Opus 5.5), có dùng hai skill `ui-ux-pro-max` và `huashu-design`. Vẽ bản xem trước bằng HTML (nằm ngoài repo, `design-demos/ui-psychedelic/`), hỏi sinh viên về hướng thiết kế, mức hiệu ứng, font, kiến trúc và danh sách commit (Q42–Q46); kiểm trên emulator bằng `adb`, `sendevent` (pinch, xoay), `uiautomator dump` và ảnh chụp liên tiếp để bắt từng khung hiệu ứng.
+- **Nhiệm vụ được giao:** tạo nhánh mới, thiết kế lại giao diện theo bộ ảnh tham chiếu psychedelic của sinh viên, thêm nhiều hiệu ứng thao tác và hiệu ứng động (24 commit code, 2 commit tài liệu, trên nhánh `ui/psychedelic-redesign`, chưa gộp vào `main`).
+- **Code được sinh/sửa:** package mới `decor/` (`LiquidColumns`, `TickerText`, `LiquidPosterView`, `StickerFrameView`); `map/SpotEffects` mới; sửa `VenueRenderer` (sân khấu sticker, font, áp hiệu ứng), `SpotRenderer` (vòng lan), `VenueMapView` (mở màn, nảy, lật, rung), `DetailSheet` (tổng tiền chạy số), `MainActivity`; màu, theme, drawable, layout dọc và ngang; font Kablammo và Space Mono kèm giấy phép OFL; thêm `LiquidColumnsTest`, `TickerTextTest`, `SpotEffectsTest` (20 test, cả dự án 235 test).
+- **Lỗi hoặc hạn chế của kết quả AI:**
+  - Hai loạt bản xem trước đầu bị sinh viên chê ("hơi rối", rồi "thêm đặc trưng mạnh của ref/"); đến loạt thứ ba mới chốt được hướng G.
+  - Lúc đầu AI viết `ValueAnimator.areAnimatorsEnabled()` trong `DetailSheet`, hàm này chỉ có từ Android 8 nên app sẽ crash trên Android 7 (minSdk 24). Build vẫn xanh vì `assembleDebug` không chạy lint; AI thấy trước khi commit và đổi sang đọc `Settings.Global`.
+  - `TickerText` ban đầu dùng constructor `Locale` đã bị đánh dấu lỗi thời; AI sửa bằng cách amend commit vừa tạo (chưa push).
+  - Font Kablammo sau khi cắt còn 426KB, lớn hơn mức 50–150KB AI đã báo khi hỏi sinh viên.
+  - Nền và chữ chạy vẽ lại liên tục 60 lần mỗi giây, khác quy tắc hiệu năng ban đầu của dự án ("chỉ vẽ lại khi có thay đổi"); sinh viên đã chọn như vậy (Q43). Chưa đo lại `dumpsys gfxinfo` sau khi đổi giao diện.
+  - Cạnh dưới của viền sticker nằm khuất sau bảng chi tiết, khác bản xem trước (ở đó sticker kết thúc phía trên bảng), để không phải đổi cách camera tính vùng nhìn.
+  - Ở mức Fit, chỗ "Đã đặt" (be nhạt) khá gần màu nền kem của sơ đồ; dấu ✕ chỉ hiện khi đã zoom đủ to.
+  - Ảnh chụp trong `docs/screenshots/` vẫn là giao diện cũ, chưa chụp lại.
+  - Hiệu ứng chỉ được kiểm trên emulator bằng ảnh chụp từng khung, chưa thử trên máy thật.
+- **Sinh viên kiểm tra/điều chỉnh:**
