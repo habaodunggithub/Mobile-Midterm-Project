@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Bảng chi tiết: luôn hiện ở dạng thu gọn (không ẩn được), kéo lên hoặc bấm phần đầu để mở rộng.
+    Bảng chi tiết (Q47): chỉ có hai trạng thái, ẩn và mở rộng (skipCollapsed). Khi ẩn, dạng thu gọn của bảng là viên
+    thuốc tóm tắt ở góc dưới phải. Vuốt xuống hoặc bấm phần đầu thì bảng ẩn.
     Không đặt layout_gravity: BottomSheetBehavior tự dịch bảng xuống đáy, thêm gravity sẽ đẩy bảng ra ngoài màn hình.
     Phần đầu có chiều cao cố định (mỗi dòng chỉ một dòng chữ) nên peekHeight không đổi theo nội dung.
 -->
@@ -15,7 +16,8 @@
     android:elevation="8dp"
     android:orientation="vertical"
     app:behavior_fitToContents="true"
-    app:behavior_hideable="false"
+    app:behavior_hideable="true"
+    app:behavior_skipCollapsed="true"
     app:behavior_peekHeight="96dp"
     app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 

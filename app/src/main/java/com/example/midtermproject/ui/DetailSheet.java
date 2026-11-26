@@ -169,9 +169,10 @@ final class DetailSheet {
         }
     }
 
+    /** Bảng đang mở rộng thì ẩn đi (về viên thuốc), còn lại thì mở rộng (Q47: không còn mức hai dòng ở giữa). */
     void toggle() {
         behavior.setState(behavior.getState() == BottomSheetBehavior.STATE_EXPANDED
-                ? BottomSheetBehavior.STATE_COLLAPSED : BottomSheetBehavior.STATE_EXPANDED);
+                ? BottomSheetBehavior.STATE_HIDDEN : BottomSheetBehavior.STATE_EXPANDED);
     }
 
     void collapse() {
