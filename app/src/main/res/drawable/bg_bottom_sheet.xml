@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Bảng chi tiết (hướng thiết kế A): nền trắng, hai góc trên bo 24dp. -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+<!--
+    Bảng chi tiết kiểu sticker (Q42): nền kem, viền cam dày 4dp, bo góc 24dp. Bảng cách hai mép màn hình 10dp nên
+    nền poster lộ ra hai bên, giống một miếng dán chồng lên sticker sơ đồ.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
     <solid android:color="@color/surface" />
-    <corners
-        android:topLeftRadius="24dp"
-        android:topRightRadius="24dp" />
+    <stroke
+        android:width="4dp"
+        android:color="@color/sticker_band" />
+    <corners android:radius="24dp" />
 </shape>

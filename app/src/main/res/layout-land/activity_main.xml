@@ -106,6 +106,8 @@
         android:layout_width="@dimen/sheet_max_width"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
+        android:layout_marginStart="@dimen/sheet_side_margin"
+        android:layout_marginEnd="@dimen/sheet_side_margin"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

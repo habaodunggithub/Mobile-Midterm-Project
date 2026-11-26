@@ -9,6 +9,8 @@
     android:id="@+id/bottom_sheet"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/sheet_side_margin"
+    android:layout_marginEnd="@dimen/sheet_side_margin"
     android:background="@drawable/bg_bottom_sheet"
     android:elevation="8dp"
     android:orientation="vertical"

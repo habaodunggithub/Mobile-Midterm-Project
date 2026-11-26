@@ -4,6 +4,8 @@
     <dimen name="legend_card_padding">8dp</dimen>
     <!-- Bảng chi tiết rộng tối đa 420dp; chỉ bố cục ngang dùng giá trị này (Q40), bố cục dọc để bảng rộng hết chiều ngang. -->
     <dimen name="sheet_max_width">420dp</dimen>
+    <!-- Bảng chi tiết nổi như miếng sticker, cách hai mép 10dp (Q42). -->
+    <dimen name="sheet_side_margin">10dp</dimen>
     <!-- Miếng sticker quanh sơ đồ (Q42): cách mép khung 8dp, viền cam dày 16dp. Sơ đồ lùi vào 16dp (giữa viền),
          nên mép sơ đồ nằm khuất dưới viền. -->
     <dimen name="sticker_margin">8dp</dimen>
