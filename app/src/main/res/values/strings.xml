@@ -44,6 +44,10 @@
     <!-- Nút đặt vé: chưa chọn chỗ nào thì nút mờ và không có số -->
     <string name="book_button">Đặt %d vé</string>
     <string name="book_button_empty">Đặt vé</string>
+    <!-- Viên thuốc tóm tắt ở góc (Q47): dạng thu gọn của bảng chi tiết -->
+    <string name="pill_summary">%1$d chỗ · %2$s đ</string>
+    <string name="pill_empty">Chưa chọn chỗ</string>
+    <string name="pill_description">Mở bảng chi tiết: %s</string>
     <string name="sheet_section_selected">Đang chọn (%1$d)</string>
     <string name="sheet_section_mine">Vé của bạn (%1$d)</string>
     <string name="sheet_spot_title">%1$s · %2$s</string>

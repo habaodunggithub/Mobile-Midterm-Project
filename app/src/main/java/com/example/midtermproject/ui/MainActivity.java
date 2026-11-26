@@ -101,7 +101,8 @@ public class MainActivity extends AppCompatActivity
         // nổi trên sơ đồ và thông báo không có kết quả.
         filterBar = new FilterBar(findViewById(R.id.root), state);
 
-        detailSheet = new DetailSheet(findViewById(R.id.bottom_sheet), venue, state, this);
+        detailSheet = new DetailSheet(findViewById(R.id.bottom_sheet), findViewById(R.id.btn_summary_pill),
+                venue, state, this);
         legendCard = new LegendCard(findViewById(R.id.card_legend), findViewById(R.id.btn_legend));
         if (savedInstanceState != null) {
             legendCard.setShown(savedInstanceState.getBoolean(KEY_LEGEND_VISIBLE, false));

@@ -95,6 +95,9 @@
         </FrameLayout>
     </LinearLayout>
 
+    <!-- Viên thuốc tóm tắt, hiện khi bảng chi tiết ẩn (Q47): góc dưới phải, như bản dọc. -->
+    <include layout="@layout/view_summary_pill" />
+
     <!--
         Bảng chi tiết ở máy ngang: rộng tối đa 420dp, nằm sát đáy bên phải (Q40, AC-7.2). Nhờ vậy panel lọc bên trái
         thấy trọn chiều cao và không bị bảng che. Ghi đè chiều rộng và gravity ngay trên include; id giữ nguyên.

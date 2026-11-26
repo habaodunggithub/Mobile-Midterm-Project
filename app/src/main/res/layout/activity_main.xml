@@ -101,6 +101,9 @@
         </FrameLayout>
     </LinearLayout>
 
+    <!-- Viên thuốc tóm tắt, hiện khi bảng chi tiết ẩn (Q47). -->
+    <include layout="@layout/view_summary_pill" />
+
     <!-- Bảng chi tiết: xem view_bottom_sheet.xml. -->
     <include layout="@layout/view_bottom_sheet" />
 
