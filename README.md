@@ -409,3 +409,14 @@ Dự án được làm với trợ lý lập trình **Claude Code** (Anthropic).
   - Dòng ghế đang xem vẫn ghi "Hàng B", mẫu G thì không, vì AC-5.1 yêu cầu có hàng. Snackbar vẫn là kiểu tối mặc định, mẫu G không có Snackbar để so.
   - Ảnh chụp trong `docs/screenshots/` vẫn là giao diện cũ.
 - **Sinh viên kiểm tra/điều chỉnh:**
+
+### 2026-11-26 (tiếp): bảng chi tiết nổi như mẫu G
+
+- **Agent/model:** Claude Code (Claude Opus 5.5). Kiểm trên emulator bằng ảnh chụp: thu gọn và mở rộng, dọc và ngang.
+- **Nhiệm vụ được giao:** cho thẻ bảng chi tiết nổi cách đáy màn hình như mẫu G, không dính liền xuống đáy.
+- **Code được sinh/sửa:** `view_bottom_sheet.xml` (nền kem và viền cam chuyển vào khung con `sheet_card`, khung ngoài trong suốt), `DetailSheet` (chừa dưới bằng thanh điều hướng + 10dp, tính vào chiều cao thu gọn).
+- **Lỗi hoặc hạn chế của kết quả AI:**
+  - Phần trong suốt dưới thẻ (thanh điều hướng và khe 10dp) vẫn thuộc bảng chi tiết, nên chạm vào khe đó không lọt xuống sơ đồ; khe chỉ cao 10dp nên khó gặp.
+  - Hiệu ứng gợn khi bấm phần đầu thẻ là hình chữ nhật, có thể tràn nhẹ ra hai góc bo phía trên.
+  - Chỉ kiểm trên emulator, chưa thử trên máy thật.
+- **Sinh viên kiểm tra/điều chỉnh:**
