@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Nền chip lọc: đang chọn là mực xanh đen, còn lại xám xanh nhạt (hướng thiết kế A). -->
+<!-- Nền chip lọc: đang chọn là tím, còn lại kem như các miếng sticker (Q42). -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:color="@color/chip_selected_bg" android:state_checked="true" />
-    <item android:color="@color/chip_available_bg" />
+    <item android:color="@color/surface" />
 </selector>

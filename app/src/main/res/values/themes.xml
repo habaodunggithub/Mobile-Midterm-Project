@@ -24,33 +24,37 @@
         <item name="android:textAllCaps">false</item>
     </style>
 
-    <!-- Chip lọc khu: chọn một trong bốn; bỏ dấu tick vì nền mực đã đủ báo đang chọn. Vùng chạm vẫn 48dp (mặc định của Chip). -->
+    <!--
+        Chip lọc khu: chọn một trong bốn; bỏ dấu tick vì nền tím đã đủ báo đang chọn. Kiểu sticker (Q42): nền kem,
+        viền tím dày 3dp, chữ đậm. Vùng chạm vẫn 48dp (mặc định của Chip).
+    -->
     <style name="Widget.MidtermProject.Chip.Filter" parent="Widget.MaterialComponents.Chip.Choice">
         <item name="chipBackgroundColor">@color/chip_filter_background</item>
         <item name="android:textColor">@color/chip_filter_text</item>
-        <item name="android:textSize">14sp</item>
+        <item name="android:textAppearance">@style/TextAppearance.MidtermProject.Sticker</item>
         <item name="checkedIconVisible">false</item>
-        <item name="chipStrokeWidth">0dp</item>
+        <item name="chipStrokeWidth">3dp</item>
+        <item name="chipStrokeColor">@color/sticker_outline</item>
         <item name="textStartPadding">4dp</item>
         <item name="textEndPadding">4dp</item>
     </style>
 
-    <!-- Ô tìm kiếm dạng viên thuốc: nền xám xanh nhạt, viền đổi sang mực khi đang gõ. Gợi ý nằm trong ô, không nổi lên. -->
+    <!-- Ô tìm kiếm dạng sticker viên thuốc: nền kem, viền tím dày 3dp, đổi sang mực khi đang gõ. Gợi ý nằm trong ô. -->
     <style name="Widget.MidtermProject.SearchField" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
         <item name="hintEnabled">false</item>
-        <item name="boxBackgroundColor">@color/chip_available_bg</item>
+        <item name="boxBackgroundColor">@color/surface</item>
         <item name="boxCornerRadiusTopStart">24dp</item>
         <item name="boxCornerRadiusTopEnd">24dp</item>
         <item name="boxCornerRadiusBottomStart">24dp</item>
         <item name="boxCornerRadiusBottomEnd">24dp</item>
         <item name="boxStrokeColor">@color/field_stroke</item>
-        <item name="boxStrokeWidth">1dp</item>
-        <item name="boxStrokeWidthFocused">2dp</item>
+        <item name="boxStrokeWidth">3dp</item>
+        <item name="boxStrokeWidthFocused">3dp</item>
         <item name="startIconTint">@color/sheet_text_secondary</item>
         <item name="endIconTint">@color/sheet_text_secondary</item>
     </style>
 
-    <!-- Nút "Giá": giống chip lọc (viên thuốc xám xanh, mực khi đang mở) nhưng bật tắt riêng, không thuộc nhóm chọn một. -->
+    <!-- Nút "Giá": giống chip lọc (sticker kem viền tím, tím khi đang mở) nhưng bật tắt riêng, không thuộc nhóm chọn một. -->
     <style name="Widget.MidtermProject.Button.Filter" parent="Widget.MaterialComponents.Button.UnelevatedButton">
         <item name="android:checkable">true</item>
         <item name="android:textAllCaps">false</item>
@@ -58,7 +62,16 @@
         <item name="android:textSize">14sp</item>
         <item name="backgroundTint">@color/chip_filter_background</item>
         <item name="iconTint">@color/chip_filter_text</item>
+        <item name="strokeColor">@color/sticker_outline</item>
+        <item name="strokeWidth">3dp</item>
+        <item name="android:textStyle">bold</item>
         <item name="cornerRadius">18dp</item>
+    </style>
+
+    <!-- Chữ đậm trên chip và nút kiểu sticker. -->
+    <style name="TextAppearance.MidtermProject.Sticker" parent="TextAppearance.MaterialComponents.Chip">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
     <!-- Nút chữ trong thẻ nổi ("Xóa lọc"): màu mực theo colorPrimary, chữ thường, vùng chạm cao 48dp. -->
