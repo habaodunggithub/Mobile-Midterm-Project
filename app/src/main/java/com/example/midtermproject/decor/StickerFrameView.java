@@ -22,6 +22,9 @@ import androidx.core.content.res.ResourcesCompat;
 
 import com.example.midtermproject.R;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Viền sticker quanh sơ đồ: một dải cam dày, mép ngoài lượn như miếng dán cắt tay, trên dải có dòng chữ
  * chạy vòng quanh (REQUIREMENTS Q42). Nằm đè lên mép của {@code VenueMapView}; phần giữa để trống nên
@@ -64,13 +67,13 @@ public class StickerFrameView extends View {
     private float density;
     private float margin;
     private float bandWidth;
+    /** Các mục của dòng chữ chạy (xem {@link TickerText#items}); chuỗi vẽ được ghép lại mỗi khi chu vi đổi. */
+    private List<String> tickerItems = Collections.emptyList();
     private String ticker = "";
-    /** Bề rộng một vòng chữ sau khi đã giãn cho vừa khít (xem {@link #fitTickerToLap}). */
+    /** Bề rộng một vòng chữ đã ghép cho vừa chu vi (xem {@link #fitTickerToLap}). */
     private float tickerWidth;
     /** Chu vi đường giữa dải, tức chiều dài một vòng đường chữ chạy. */
     private float lapLength;
-    /** Số vòng chữ nằm vừa trên một vòng đường. */
-    private int tickerCopies;
     private float tickerBaseline;
     /**
      * Phần đáy khung dành cho bảng chi tiết (chiều cao bảng thu gọn + khe 10dp), tính bằng pixel. Sticker kết thúc
@@ -169,9 +172,9 @@ public class StickerFrameView extends View {
         invalidate();
     }
 
-    /** Đặt nội dung một vòng chữ chạy (xem {@link TickerText}); đo bề rộng một lần ở đây. */
-    public void setTickerText(String text) {
-        ticker = text != null ? text : "";
+    /** Đặt các mục của dòng chữ chạy (xem {@link TickerText#items}); chuỗi vẽ được ghép cho vừa chu vi viền. */
+    public void setTickerItems(List<String> items) {
+        tickerItems = items != null ? items : Collections.<String>emptyList();
         fitTickerToLap();
         invalidate();
     }
@@ -234,21 +237,20 @@ public class StickerFrameView extends View {
     }
 
     /**
-     * Giãn khoảng cách chữ để đúng n vòng chữ phủ khít một vòng đường: n = phần nguyên của (chu vi / bề rộng chữ),
-     * mỗi vòng chữ phải rộng chu vi / n, phần thiếu chia đều cho từng ký tự. Nhờ vậy chữ ở cuối vòng đường nối liền
-     * với chữ ở đầu vòng, không còn chỗ hai đoạn chữ khác nhau đụng vào nhau.
+     * Ghép một vòng chữ vừa khít chu vi viền. Space Mono là font đơn cách nên mọi ký tự rộng bằng nhau: số ký tự vừa
+     * một vòng = phần nguyên của (chu vi / bề rộng một ký tự). {@link TickerText#fitToColumns} ghép các mục nguyên
+     * cho đủ đúng số ký tự đó. Phần dư (chưa tới một ký tự) chỉ là một khoảng trống rất nhỏ ở chỗ nối vòng.
      */
     private void fitTickerToLap() {
-        tickerPaint.setLetterSpacing(0f);
-        final float raw = tickerPaint.measureText(ticker);
-        if (raw <= 0f || lapLength <= 0f) {
+        final float advance = tickerPaint.measureText("M");
+        if (lapLength <= 0f || advance <= 0f || tickerItems.isEmpty()) {
+            ticker = "";
             tickerWidth = 0f;
             return;
         }
-        tickerCopies = Math.max(1, (int) (lapLength / raw));
-        tickerWidth = lapLength / tickerCopies;
-        // letterSpacing tính theo em (bội của cỡ chữ) và cộng vào sau mỗi ký tự.
-        tickerPaint.setLetterSpacing((tickerWidth - raw) / (tickerPaint.getTextSize() * ticker.length()));
+        final int columns = (int) (lapLength / advance);
+        ticker = TickerText.fitToColumns(tickerItems, columns);
+        tickerWidth = tickerPaint.measureText(ticker);
     }
 
     /**
@@ -284,11 +286,9 @@ public class StickerFrameView extends View {
         // Quãng chữ đã chạy, lấy phần dư theo bề rộng một vòng chữ để vẽ lặp liền mạch.
         final float travelled = animated
                 ? (SystemClock.uptimeMillis() / 1000f * TICKER_SPEED_DP * density) % tickerWidth : 0f;
-        // Đường dài hai vòng. Vòng chữ thứ k bắt đầu ở k·W − quãng đã chạy (k = 1..n); vòng cuối vắt qua điểm nối sang
-        // vòng đường thứ hai, nên phủ luôn đoạn đầu mà không chữ nào bị cắt ngang ở điểm nối.
-        for (int k = 1; k <= tickerCopies; k++) {
-            canvas.drawTextOnPath(ticker, tickerPath, k * tickerWidth - travelled, tickerBaseline, tickerPaint);
-        }
+        // Đường dài hai vòng. Vòng chữ bắt đầu ở W − quãng đã chạy, nên phần cuối của nó vắt qua điểm nối sang vòng
+        // đường thứ hai và phủ luôn đoạn đầu: chữ liền mạch, không chữ nào bị cắt ngang ở điểm nối.
+        canvas.drawTextOnPath(ticker, tickerPath, tickerWidth - travelled, tickerBaseline, tickerPaint);
         if (animated) {
             postInvalidateOnAnimation();
         }
