@@ -41,7 +41,7 @@
             <include layout="@layout/view_map_layers" />
 
             <!--
-                Các thẻ nổi ở phía trên sơ đồ, chừa 72dp bên phải cho cột nút. Thẻ nổi đè lên sơ đồ chứ không đẩy
+                Các thẻ nổi ở phía trên sơ đồ, bên trong viền sticker, chừa chỗ bên phải cho cột nút. Thẻ nổi đè lên sơ đồ chứ không đẩy
                 sơ đồ xuống, vì sơ đồ đổi kích thước thì tự về mức vừa khít và mất chỗ đang phóng to (Q37).
                 LinearLayout này không nhận chạm; chỉ từng thẻ bên trong (clickable) mới chặn chạm không lọt xuống sơ đồ.
             -->
@@ -50,9 +50,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|start"
-                android:layout_marginStart="12dp"
-                android:layout_marginTop="12dp"
-                android:layout_marginEnd="72dp"
+                android:layout_marginStart="@dimen/sticker_content_margin"
+                android:layout_marginTop="@dimen/sticker_content_margin"
+                android:layout_marginEnd="@dimen/sticker_overlay_end_margin"
                 android:divider="@drawable/divider_vertical_8dp"
                 android:orientation="vertical"
                 android:showDividers="middle">

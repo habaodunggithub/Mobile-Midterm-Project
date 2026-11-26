@@ -17,6 +17,8 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.midtermproject.R;
 import com.example.midtermproject.data.MockVenueFactory;
+import com.example.midtermproject.decor.StickerFrameView;
+import com.example.midtermproject.decor.TickerText;
 import com.example.midtermproject.map.VenueMapStateSource;
 import com.example.midtermproject.map.VenueMapView;
 import com.example.midtermproject.model.SelectionResult;
@@ -82,6 +84,10 @@ public class MainActivity extends AppCompatActivity
         savedMine = state.snapshotMyTicketIds();
         mapView = findViewById(R.id.map_view);
         mapView.bind(venue, new VenueMapStateSource(state));
+        // Dòng chữ chạy quanh viền sticker: tên khu và giá thấp nhất, dựng một lần từ dữ liệu.
+        final StickerFrameView stickerFrame = findViewById(R.id.sticker_frame);
+        stickerFrame.setTickerText(TickerText.build(venue, getString(R.string.stage_label),
+                getString(R.string.ticker_section_format), PriceFormatter::format));
         mapView.setOnSpotTapListener(this);
 
         // Các control lọc tự nghe state. Truyền cả khung gốc vì chúng nằm ở nhiều chỗ: thanh lọc phía trên, các thẻ

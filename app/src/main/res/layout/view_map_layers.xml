@@ -5,9 +5,24 @@
 -->
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <!-- Toàn bộ sơ đồ được vẽ trên đúng một View này (yêu cầu bắt buộc của đề). -->
+    <!--
+        Toàn bộ sơ đồ được vẽ trên đúng một View này (yêu cầu bắt buộc của đề). Lùi vào 16dp ở ba cạnh để mép sơ đồ
+        nằm khuất dưới viền sticker; cạnh dưới vẫn kéo xuống dưới bảng chi tiết như trước.
+    -->
     <com.example.midtermproject.map.VenueMapView
         android:id="@+id/map_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="@dimen/sticker_map_inset"
+        android:layout_marginTop="@dimen/sticker_map_inset"
+        android:layout_marginEnd="@dimen/sticker_map_inset" />
+
+    <!--
+        Viền sticker cam có chữ chạy (Q42), đè lên mép sơ đồ. Cạnh dưới của viền nằm khuất sau bảng chi tiết, như
+        miếng dán bị miếng khác dán chồng lên. Chạm lên viền không lọt xuống sơ đồ.
+    -->
+    <com.example.midtermproject.decor.StickerFrameView
+        android:id="@+id/sticker_frame"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
@@ -56,7 +71,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|end"
-        android:layout_margin="12dp"
+        android:layout_margin="@dimen/sticker_content_margin"
         android:orientation="vertical">
 
         <ImageButton
@@ -120,7 +135,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:layout_margin="12dp"
+        android:layout_margin="@dimen/sticker_content_margin"
         android:background="@drawable/bg_floating_card"
         android:clickable="true"
         android:columnCount="@integer/legend_columns"

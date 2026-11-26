@@ -3,6 +3,8 @@
 
     <!-- Sơ đồ -->
     <string name="stage_label">SÂN KHẤU</string>
+    <!-- Một mục của dòng chữ chạy quanh sơ đồ: tên khu và giá thấp nhất (được viết hoa khi hiển thị). -->
+    <string name="ticker_section_format">%1$s từ %2$s đ</string>
     <string name="map_content_description">Sơ đồ chỗ ngồi của đêm concert</string>
 
     <string name="compass_content_description">Xoay sơ đồ về hướng mặc định</string>

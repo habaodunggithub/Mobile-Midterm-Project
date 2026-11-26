@@ -9,4 +9,8 @@
     <dimen name="sticker_margin">8dp</dimen>
     <dimen name="sticker_band">16dp</dimen>
     <dimen name="sticker_map_inset">16dp</dimen>
+    <!-- Nút nổi và thẻ nổi nằm bên trong viền: 8dp lề + 16dp viền + 6dp khoảng hở. -->
+    <dimen name="sticker_content_margin">30dp</dimen>
+    <!-- Thẻ nổi phía trên sơ đồ chừa chỗ cho cột nút: 30dp + nút 48dp + 8dp khoảng hở. -->
+    <dimen name="sticker_overlay_end_margin">86dp</dimen>
 </resources>
