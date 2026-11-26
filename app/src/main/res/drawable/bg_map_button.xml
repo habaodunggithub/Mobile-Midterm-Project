@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Nút nổi trên sơ đồ (hướng thiết kế A): vuông bo góc 16dp, nền trắng, gợn sóng khi bấm. -->
+<!-- Nút nổi trên sơ đồ kiểu sticker (Q42): tròn, nền kem, viền tím dày 3dp, gợn sóng khi bấm. -->
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
     android:color="?attr/colorControlHighlight">
     <item>
-        <shape android:shape="rectangle">
+        <shape android:shape="oval">
             <solid android:color="@color/surface" />
-            <corners android:radius="16dp" />
+            <stroke
+                android:width="3dp"
+                android:color="@color/sticker_outline" />
         </shape>
     </item>
-    <!-- Lớp mặt nạ: gợn sóng chỉ lan trong hình bo góc, không tràn ra các góc vuông. -->
+    <!-- Lớp mặt nạ: gợn sóng chỉ lan trong hình tròn. -->
     <item android:id="@android:id/mask">
-        <shape android:shape="rectangle">
+        <shape android:shape="oval">
             <solid android:color="@android:color/white" />
-            <corners android:radius="16dp" />
         </shape>
     </item>
 </ripple>
