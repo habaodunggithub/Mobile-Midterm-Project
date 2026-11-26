@@ -71,6 +71,13 @@ public class StickerFrameView extends View {
     /** Số vòng chữ nằm vừa trên một vòng đường. */
     private int tickerCopies;
     private float tickerBaseline;
+    /**
+     * Phần đáy khung dành cho bảng chi tiết (chiều cao bảng thu gọn + khe 10dp), tính bằng pixel. Sticker kết thúc
+     * phía trên phần này, như mẫu G (Q48).
+     */
+    private int bottomInset;
+    /** View nằm dưới viền (sơ đồ), để cập nhật phần bị cắt khi đáy sticker đổi. */
+    private View content;
     /** Tắt khi người dùng tắt hiệu ứng động của hệ thống: chữ đứng yên. */
     private boolean animated = true;
 
@@ -118,18 +125,41 @@ public class StickerFrameView extends View {
     }
 
     /**
-     * Cắt View nằm dưới viền (sơ đồ) theo hình chữ nhật bo góc, để góc vuông của nó không thò ra ngoài viền. Dùng
-     * outline của View nên phần cắt do bộ dựng hình làm, không tốn gì trong {@code onDraw} của sơ đồ.
+     * Cắt View nằm dưới viền (sơ đồ) theo hình chữ nhật bo góc, để góc vuông của nó không thò ra ngoài viền, và bỏ
+     * phần nằm dưới đáy sticker (sơ đồ vẫn kéo xuống dưới bảng chi tiết, nhưng phần đó không được vẽ). Mép dưới của
+     * phần giữ lại nằm ở giữa dải viền dưới, nên khuất dưới viền như ba cạnh còn lại. Dùng outline của View nên phần
+     * cắt do bộ dựng hình làm, không tốn gì trong {@code onDraw} của sơ đồ. View phải là anh em cùng khung cha với
+     * viền này.
      */
     public void clipContent(View content) {
+        this.content = content;
         final float radius = CONTENT_CORNER_DP * density;
         content.setOutlineProvider(new ViewOutlineProvider() {
             @Override
             public void getOutline(View view, Outline outline) {
-                outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(), radius);
+                // Giữa dải viền dưới, theo tọa độ của viền, rồi đổi sang tọa độ của View bị cắt.
+                final float bandMiddle = getHeight() - bottomInset - margin - bandWidth / 2f;
+                final int bottom = Math.round(bandMiddle - (view.getTop() - getTop()));
+                outline.setRoundRect(0, 0, view.getWidth(), Math.max(0, Math.min(view.getHeight(), bottom)), radius);
             }
         });
         content.setClipToOutline(true);
+    }
+
+    /**
+     * Đặt phần đáy khung dành cho bảng chi tiết: sticker co lên để kết thúc phía trên bảng (Q48). Dựng lại các
+     * đường viền và phần cắt của sơ đồ.
+     */
+    public void setBottomInset(int px) {
+        if (px == bottomInset) {
+            return;
+        }
+        bottomInset = px;
+        buildPaths(getWidth(), getHeight());
+        if (content != null) {
+            content.invalidateOutline();
+        }
+        invalidate();
     }
 
     /** Bật hoặc tắt chữ chạy (theo cài đặt hiệu ứng của hệ thống, xem MainActivity). */
@@ -148,16 +178,28 @@ public class StickerFrameView extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
+        buildPaths(w, h);
+        if (content != null) {
+            content.invalidateOutline();
+        }
+    }
+
+    /** Dựng dải viền và đường chữ chạy cho khung rộng {@code w}, cao {@code h} (đáy sticker = h − bottomInset). */
+    private void buildPaths(int w, int h) {
+        if (w == 0 || h == 0) {
+            return;
+        }
         final float corner = CORNER_DP * density;
+        final float bottom = h - bottomInset;
         band.reset();
-        rect.set(margin, margin, w - margin, h - margin);
+        rect.set(margin, margin, w - margin, bottom - margin);
         outline(band, rect, WOBBLE_DP * density);
         rect.inset(bandWidth, bandWidth);
         band.addRoundRect(rect, corner, corner, Path.Direction.CW);
 
         // Đường chữ chạy nằm giữa dải, theo chiều kim đồng hồ, đi hai vòng liền nhau (xem onDraw).
         tickerPath.reset();
-        rect.set(margin + bandWidth / 2f, margin + bandWidth / 2f, w - margin - bandWidth / 2f, h - margin - bandWidth / 2f);
+        rect.set(margin + bandWidth / 2f, margin + bandWidth / 2f, w - margin - bandWidth / 2f, bottom - margin - bandWidth / 2f);
         addRoundRectLap(rect, corner, true);
         addRoundRectLap(rect, corner, false);
         // Chu vi hình chữ nhật bo góc: bốn cạnh thẳng (đã trừ phần góc) cộng bốn cung một phần tư = một đường tròn.
@@ -251,8 +293,9 @@ public class StickerFrameView extends View {
     }
 
     /**
-     * Chạm xuống trên dải viền thì giữ lại, không cho lọt xuống sơ đồ: chỗ nằm dưới viền không nhìn thấy
-     * nên không được chọn. Chạm ở phần giữa (sơ đồ) hay ngoài sticker thì bỏ qua để View bên dưới xử lý.
+     * Chạm xuống ngoài phần giữa sticker (trên dải viền, ở lề, hay ở khe giữa sticker và bảng chi tiết) thì giữ lại,
+     * không cho lọt xuống sơ đồ: phần sơ đồ ở đó bị che hoặc bị cắt nên không nhìn thấy, không được chọn. Chạm ở phần
+     * giữa thì bỏ qua để sơ đồ xử lý.
      */
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -261,9 +304,9 @@ public class StickerFrameView extends View {
             return false;
         }
         final float x = event.getX(), y = event.getY();
-        final boolean insideOuter = x >= margin && x <= getWidth() - margin && y >= margin && y <= getHeight() - margin;
         final float inner = margin + bandWidth;
-        final boolean insideInner = x > inner && x < getWidth() - inner && y > inner && y < getHeight() - inner;
-        return insideOuter && !insideInner;
+        final boolean insideInner = x > inner && x < getWidth() - inner
+                && y > inner && y < getHeight() - bottomInset - inner;
+        return !insideInner;
     }
 }

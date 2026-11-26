@@ -109,10 +109,16 @@ public class MainActivity extends AppCompatActivity
             mapView.setPendingCameraSnapshot(savedInstanceState.getFloatArray(KEY_CAMERA_SNAPSHOT));
         }
         // Bảng chi tiết thu gọn che bao nhiêu thì sơ đồ, bảng chú thích và thông báo M7 phải chừa bấy nhiêu.
+        // Sticker sơ đồ kết thúc cách bảng thu gọn một khe 10dp (mẫu G, Q48). Camera chừa thêm 16dp để vùng nhìn mặc định
+        // cách mép trong của viền dưới đúng bằng ba cạnh kia.
+        final int sheetGap = getResources().getDimensionPixelSize(R.dimen.sheet_side_margin);
+        final int mapInset = getResources().getDimensionPixelSize(R.dimen.sticker_map_inset);
         detailSheet.setPeekHeightListener(peekHeightPx -> {
-            mapView.setBottomInset(peekHeightPx);
-            legendCard.setBottomInset(peekHeightPx);
-            filterBar.setBottomInset(peekHeightPx);
+            final int covered = peekHeightPx + sheetGap;
+            stickerFrame.setBottomInset(covered);
+            mapView.setBottomInset(covered + mapInset);
+            legendCard.setBottomInset(covered);
+            filterBar.setBottomInset(covered);
         });
         // Mọi thay đổi đều đi qua state; state báo thì cả sơ đồ lẫn bảng chi tiết cùng vẽ lại.
         state.addListener(() -> {
