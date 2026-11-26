@@ -79,11 +79,14 @@ final class DetailSheet {
     private ValueAnimator totalAnimator;
     /** Tắt khi người dùng tắt hiệu ứng động của hệ thống: tổng tiền hiện thẳng, không chạy số. */
     private boolean animated = true;
+    /** Phần chừa dưới thẻ: thanh điều hướng + khe nổi. Nằm trong peekHeight nhưng trong suốt. */
     private int navigationInset;
+    private final int floatGapPx;
     private PeekHeightListener peekHeightListener;
 
     DetailSheet(View sheet, Venue venue, VenueMapState state, Callbacks callbacks) {
         this.context = sheet.getContext();
+        this.floatGapPx = context.getResources().getDimensionPixelSize(R.dimen.sheet_side_margin);
         this.state = state;
         this.sheet = sheet;
         this.header = sheet.findViewById(R.id.sheet_header);
@@ -154,12 +157,13 @@ final class DetailSheet {
      * hướng) để nội dung không bị che, còn nền bảng vẫn kéo dài tới mép màn hình.
      */
     void setInsets(int leftPx, int rightPx, int bottomPx) {
-        navigationInset = bottomPx;
-        sheet.setPadding(leftPx, sheet.getPaddingTop(), rightPx, bottomPx);
+        // Chừa thêm một khe dưới thẻ bằng lề hai bên (10dp), để thẻ nổi cách đáy như mẫu G (Q48).
+        navigationInset = bottomPx + floatGapPx;
+        sheet.setPadding(leftPx, sheet.getPaddingTop(), rightPx, navigationInset);
         updatePeekHeight();
     }
 
-    /** peekHeight = phần đầu + thanh điều hướng; phần thanh điều hướng nằm dưới đáy, không nhìn thấy. */
+    /** peekHeight = phần đầu + thanh điều hướng + khe nổi 10dp; hai phần sau trong suốt, nằm dưới thẻ. */
     private void updatePeekHeight() {
         if (header.getHeight() == 0) {
             return;
