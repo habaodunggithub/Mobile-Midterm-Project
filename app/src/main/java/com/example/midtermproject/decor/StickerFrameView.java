@@ -35,17 +35,18 @@ import com.example.midtermproject.R;
  * {@link #onDraw} không cấp phát gì; mọi Path được dựng lại trong {@link #onSizeChanged}.
  */
 public class StickerFrameView extends View {
-    /** Biên độ gợn của mép ngoài, tính bằng dp. */
-    private static final float WOBBLE_DP = 2f;
+    /** Biên độ gợn của mép ngoài và mép trong, tính bằng dp (giống mẫu G). */
+    private static final float OUTER_WOBBLE_DP = 2.5f;
+    private static final float INNER_WOBBLE_DP = 1.5f;
     /** Bán kính bo góc của mép trong và của đường chữ chạy, tính bằng dp. */
     private static final float CORNER_DP = 14f;
     /**
      * Bán kính bo góc của View nằm dưới viền (sơ đồ). Sơ đồ là hình chữ nhật lùi vào giữa dải viền; nếu để góc vuông
-     * thì góc đó thò ra ngoài mép ngoài đã bo tròn của viền. Bo 32dp thì điểm góc (theo đường chéo, cách góc khung
-     * khoảng 25dp) vừa nằm ngoài mép trong của dải (khoảng 28dp), vừa nằm trong mép ngoài (khoảng 15dp, lõm vào tới
-     * 18dp ở chỗ gợn sâu nhất), tức là khuất dưới dải.
+     * thì góc đó thò ra ngoài mép ngoài đã bo tròn của viền. Bo 44dp thì điểm góc (theo đường chéo, cách góc khung
+     * khoảng 29dp) nằm giữa mép ngoài (khoảng 21dp, lồi ra tới 25dp ở chỗ gợn) và mép trong (khoảng 36dp), tức là
+     * khuất dưới dải.
      */
-    private static final float CONTENT_CORNER_DP = 32f;
+    private static final float CONTENT_CORNER_DP = 44f;
     /** Tốc độ chữ chạy, dp mỗi giây. */
     private static final float TICKER_SPEED_DP = 40f;
     private static final float TICKER_TEXT_SP = 9.5f;
@@ -193,9 +194,10 @@ public class StickerFrameView extends View {
         final float bottom = h - bottomInset;
         band.reset();
         rect.set(margin, margin, w - margin, bottom - margin);
-        outline(band, rect, WOBBLE_DP * density);
+        outline(band, rect, OUTER_WOBBLE_DP * density, 1);
+        // Mép trong cũng lượn như mép ngoài (mẫu G), gợn nhỏ hơn và lệch pha để hai mép không song song.
         rect.inset(bandWidth, bandWidth);
-        band.addRoundRect(rect, corner, corner, Path.Direction.CW);
+        outline(band, rect, INNER_WOBBLE_DP * density, 2);
 
         // Đường chữ chạy nằm giữa dải, theo chiều kim đồng hồ, đi hai vòng liền nhau (xem onDraw).
         tickerPath.reset();
@@ -250,17 +252,17 @@ public class StickerFrameView extends View {
     }
 
     /**
-     * Mép ngoài lượn: "siêu ellipse" (chữ nhật bo góc tròn trịa) cộng gợn sóng nhỏ, cùng công thức với mép
-     * sân khấu trong {@code VenueRenderer}: x = cx + (hw + w)·sgn(cos t)·|cos t|^(2/k), tương tự với y.
-     * Dùng k = 20 (vuông vức hơn sân khấu) để góc ngoài đủ rộng che góc bo của sơ đồ.
+     * Mép lượn: "siêu ellipse" (chữ nhật bo góc tròn trịa) cộng gợn sóng nhỏ, đúng công thức của mẫu G:
+     * x = cx + (hw + w)·sgn(cos t)·|cos t|^(2/k), tương tự với y, với k = 10 và
+     * w(t) = A·sin(7t + φ) + 0,6A·sin(13t − 2φ), φ là pha riêng của mỗi mép.
      */
-    private static void outline(Path path, RectF r, float wobble) {
-        final double power = 2.0 / 20.0;
+    private static void outline(Path path, RectF r, float wobble, int phase) {
+        final double power = 2.0 / 10.0;
         final float cx = r.centerX(), cy = r.centerY(), hw = r.width() / 2f, hh = r.height() / 2f;
         for (int i = 0; i < OUTLINE_POINTS; i++) {
             final double t = 2 * Math.PI * i / OUTLINE_POINTS;
             final double c = Math.cos(t), s = Math.sin(t);
-            final double w = wobble * (Math.sin(11 * t) + 0.6 * Math.sin(23 * t + 1));
+            final double w = wobble * (Math.sin(7 * t + phase) + 0.6 * Math.sin(13 * t - 2 * phase));
             final float x = (float) (cx + (hw + w) * Math.signum(c) * Math.pow(Math.abs(c), power));
             final float y = (float) (cy + (hh + w) * Math.signum(s) * Math.pow(Math.abs(s), power));
             if (i == 0) {
