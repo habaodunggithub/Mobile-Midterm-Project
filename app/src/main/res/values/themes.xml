@@ -51,8 +51,9 @@
         <item name="boxStrokeColor">@color/field_stroke</item>
         <item name="boxStrokeWidth">3dp</item>
         <item name="boxStrokeWidthFocused">3dp</item>
-        <item name="startIconTint">@color/sheet_text_secondary</item>
-        <item name="endIconTint">@color/sheet_text_secondary</item>
+        <!-- Kính lúp, nút xóa và chữ gợi ý màu tím như mẫu G (tím trên kem 6,6:1). -->
+        <item name="startIconTint">@color/sticker_outline</item>
+        <item name="endIconTint">@color/sticker_outline</item>
     </style>
 
     <!-- Nút "Giá": giống chip lọc (sticker kem viền tím, tím khi đang mở) nhưng bật tắt riêng, không thuộc nhóm chọn một. -->
@@ -66,6 +67,7 @@
         <item name="strokeColor">@color/sticker_outline</item>
         <item name="strokeWidth">3dp</item>
         <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0</item>
         <item name="cornerRadius">18dp</item>
         <item name="android:stateListAnimator">@animator/press_bounce</item>
     </style>
