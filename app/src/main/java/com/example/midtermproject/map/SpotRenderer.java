@@ -30,17 +30,14 @@ import com.example.midtermproject.model.ZoneType;
 public final class SpotRenderer {
     /** Độ trong suốt (0-255) của chỗ ngoài bộ lọc: khoảng 22%. */
     private static final int DIMMED_ALPHA = 56;
-        /** Chỗ có đường kính trên màn hình từ ngưỡng này trở lên mới vẽ mã chỗ và ký hiệu. */
-    private static final float DETAIL_MIN_DIAMETER_DP = 22f;
     /**
-     * Gạch chéo của chỗ bị khóa hiện từ ngưỡng nhỏ hơn: chỉ có 8 chỗ khóa, và nếu thiếu gạch chéo
-     * thì ở mức Fit chúng chỉ là vòng trắng, dễ nhầm với chỗ rỗng.
+     * Chỗ có đường kính trên màn hình từ ngưỡng này trở lên mới vẽ mã chỗ (A05…): nhỏ hơn thì chữ không đọc được.
+     * Các ký hiệu trạng thái ✓ ✕ ★ và gạch chéo thì vẽ ở mọi mức zoom, như mẫu G (Q48).
      */
-    private static final float LOCK_SLASH_MIN_DIAMETER_DP = 9f;
+    private static final float DETAIL_MIN_DIAMETER_DP = 22f;
 
     private final float density;
     private final float detailMinDiameterPx;
-    private final float lockSlashMinDiameterPx;
 
     private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint stroke = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -71,7 +68,6 @@ public final class SpotRenderer {
     public SpotRenderer(Context context) {
         density = context.getResources().getDisplayMetrics().density;
         detailMinDiameterPx = DETAIL_MIN_DIAMETER_DP * density;
-        lockSlashMinDiameterPx = LOCK_SLASH_MIN_DIAMETER_DP * density;
 
         zoneFill[ZoneType.STANDING.ordinal()] = color(context, R.color.zone_standing);
         onZone[ZoneType.STANDING.ordinal()] = color(context, R.color.on_zone_standing);
@@ -128,16 +124,16 @@ public final class SpotRenderer {
         final boolean detail = showsDetails(spot.size);
         switch (state) {
             case SELECTED:
-                drawSelected(canvas, spot, detail);
+                drawSelected(canvas, spot);
                 break;
             case MINE:
-                drawMine(canvas, spot, detail);
+                drawMine(canvas, spot);
                 break;
             case BOOKED:
-                drawBooked(canvas, spot, detail);
+                drawBooked(canvas, spot);
                 break;
             case LOCKED:
-                drawLocked(canvas, spot, detail, 2f * spot.size * scale >= lockSlashMinDiameterPx);
+                drawLocked(canvas, spot);
                 break;
             default:
                 drawAvailable(canvas, spot, detail);
@@ -157,36 +153,28 @@ public final class SpotRenderer {
         }
     }
 
-    private void drawSelected(Canvas canvas, Spot spot, boolean detail) {
+    private void drawSelected(Canvas canvas, Spot spot) {
         drawRingAround(canvas, spot, selected);
         shape(canvas, spot, spot.size, fillPaint(selected));
-        if (detail) {
-            drawCheck(canvas, spot, onSelected);
-        }
+        drawCheck(canvas, spot, onSelected);
     }
 
-    private void drawMine(Canvas canvas, Spot spot, boolean detail) {
+    private void drawMine(Canvas canvas, Spot spot) {
         shape(canvas, spot, spot.size, fillPaint(mine));
-        if (detail) {
-            drawStar(canvas, spot, onMine);
-        }
+        drawStar(canvas, spot, onMine);
     }
 
-    private void drawBooked(Canvas canvas, Spot spot, boolean detail) {
+    private void drawBooked(Canvas canvas, Spot spot) {
         shape(canvas, spot, spot.size, fillPaint(booked));
-        if (detail) {
-            drawCross(canvas, spot, onBooked);
-        }
+        drawCross(canvas, spot, onBooked);
     }
 
-    private void drawLocked(Canvas canvas, Spot spot, boolean detail, boolean slash) {
+    private void drawLocked(Canvas canvas, Spot spot) {
         // Mẫu G: nền kem, viền mực tím dày 16% bán kính (theo sơ đồ, nên dày lên khi zoom như các phần khác của chỗ).
         final float strokeWorld = spot.size * 0.16f;
         shape(canvas, spot, spot.size - strokeWorld / 2f, fillPaint(lockedFill));
         shape(canvas, spot, spot.size - strokeWorld / 2f, strokePaint(lockedStroke, strokeWorld * scale, 255));
-        if (slash) {
-            drawSlash(canvas, spot, lockedStroke);
-        }
+        drawSlash(canvas, spot, lockedStroke);
     }
 
     /**
@@ -229,7 +217,7 @@ public final class SpotRenderer {
         lines[4] = x - r * 0.08f; lines[5] = y + r * 0.36f; lines[6] = x + r * 0.46f; lines[7] = y - r * 0.32f;
         canvas.save();
         canvas.rotate(uprightDegrees, x, y);
-        canvas.drawLines(lines, glyphPaint(color, Math.max(1.6f * density * pixel, r * 0.16f)));
+        canvas.drawLines(lines, glyphPaint(color, r * 0.24f));
         canvas.restore();
     }
 
@@ -239,7 +227,7 @@ public final class SpotRenderer {
         lines[4] = x - d; lines[5] = y + d; lines[6] = x + d; lines[7] = y - d;
         canvas.save();
         canvas.rotate(uprightDegrees, x, y);
-        canvas.drawLines(lines, glyphPaint(color, Math.max(1.4f * density * pixel, spot.size * 0.13f)));
+        canvas.drawLines(lines, glyphPaint(color, spot.size * 0.19f));
         canvas.restore();
     }
 
@@ -248,7 +236,7 @@ public final class SpotRenderer {
         canvas.save();
         canvas.rotate(uprightDegrees, x, y);
         canvas.drawLine(x - d, y + d, x + d, y - d,
-                glyphPaint(color, Math.max(1.5f * density * pixel, spot.size * 0.13f)));
+                glyphPaint(color, spot.size * 0.19f));
         canvas.restore();
     }
 
