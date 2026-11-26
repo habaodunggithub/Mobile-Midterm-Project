@@ -1,6 +1,7 @@
 package com.example.midtermproject.ui;
 
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.midtermproject.R;
 import com.example.midtermproject.data.MockVenueFactory;
+import com.example.midtermproject.decor.LiquidPosterView;
 import com.example.midtermproject.decor.StickerFrameView;
 import com.example.midtermproject.decor.TickerText;
 import com.example.midtermproject.map.VenueMapStateSource;
@@ -156,6 +158,29 @@ public class MainActivity extends AppCompatActivity
             compass.setRotation((float) Math.toDegrees(angleRad));
             compass.setVisibility(atDefault ? View.GONE : View.VISIBLE);
         });
+    }
+
+    /**
+     * Mỗi lần quay lại app thì đọc lại cài đặt hiệu ứng của hệ thống (người dùng có thể vừa đổi nó trong Cài đặt) và
+     * bật hoặc tắt mọi chuyển động trang trí theo đó (Q43).
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        final boolean animated = animationsEnabled();
+        ((LiquidPosterView) findViewById(R.id.poster_background)).setAnimated(animated);
+        ((StickerFrameView) findViewById(R.id.sticker_frame)).setAnimated(animated);
+        mapView.setEffectsEnabled(animated);
+        detailSheet.setAnimated(animated);
+    }
+
+    /**
+     * Hiệu ứng động bị tắt khi hệ số thời lượng animation của hệ thống bằng 0: đó là cách Android lưu lựa chọn
+     * "Xóa hiệu ứng động" (Hỗ trợ tiếp cận) hoặc "Tỉ lệ thời lượng animator: tắt" (Tùy chọn cho nhà phát triển).
+     * Đọc thẳng Settings.Global vì {@code ValueAnimator.areAnimatorsEnabled()} chỉ có từ Android 8 (API 26).
+     */
+    private boolean animationsEnabled() {
+        return Settings.Global.getFloat(getContentResolver(), Settings.Global.ANIMATOR_DURATION_SCALE, 1f) != 0f;
     }
 
     /** Dựng lại bộ lọc từ gói tạm; gói thiếu hoặc khóa hỏng thì dùng giá trị mặc định (UC-11, error course). */

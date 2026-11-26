@@ -200,6 +200,14 @@ public class VenueMapView extends View {
         onCameraChanged();
     }
 
+    /** Bật hoặc tắt hiệu ứng trên từng chỗ (theo cài đặt hiệu ứng của hệ thống, xem MainActivity). */
+    public void setEffectsEnabled(boolean enabled) {
+        if (effects != null) {
+            effects.setEnabled(enabled);
+            invalidate();
+        }
+    }
+
     /**
      * Mở màn (Q43): các chỗ hiện ra lần lượt từ sân khấu ra ngoài. Chỉ ghi nhận ở đây; làn sóng bắt đầu ở khung hình
      * đầu tiên được vẽ, để người dùng thấy trọn làn sóng dù View đo xong muộn.
@@ -460,6 +468,7 @@ public class VenueMapView extends View {
         camera.getVisibleWorldBounds(visibleBounds);
         final long now = SystemClock.uptimeMillis();
         if (pendingIntroReach > 0f) {
+            // Hiệu ứng đang tắt thì startIntro không làm gì, sơ đồ hiện đủ ngay.
             effects.startIntro(now, pendingIntroReach);
             pendingIntroReach = 0f;
         }

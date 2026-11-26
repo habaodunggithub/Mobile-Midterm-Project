@@ -38,6 +38,8 @@ public class LiquidPosterView extends View {
     private int samples;
     private float[] left = new float[0];
     private float[] right = new float[0];
+    /** Tắt khi người dùng tắt hiệu ứng động của hệ thống: dải đứng yên ở hình ban đầu. */
+    private boolean animated = true;
 
     public LiquidPosterView(Context context) {
         super(context);
@@ -69,6 +71,12 @@ public class LiquidPosterView extends View {
         setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
     }
 
+    /** Bật hoặc tắt chuyển động (theo cài đặt hiệu ứng của hệ thống, xem MainActivity). */
+    public void setAnimated(boolean animated) {
+        this.animated = animated;
+        invalidate();
+    }
+
     private static Paint fillPaint(int color) {
         final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setStyle(Paint.Style.FILL);
@@ -92,7 +100,8 @@ public class LiquidPosterView extends View {
             return;
         }
         // Pha thời gian, lấy phần dư theo chu kỳ để số không lớn dần làm mất độ chính xác.
-        final double time = (SystemClock.uptimeMillis() / SWAY_CYCLE_MS * 2 * Math.PI) % LiquidColumns.PERIOD;
+        final double time = animated
+                ? (SystemClock.uptimeMillis() / SWAY_CYCLE_MS * 2 * Math.PI) % LiquidColumns.PERIOD : 0.0;
         final float tileWidth = LiquidColumns.DESIGN_WIDTH * density;
 
         canvas.save();
@@ -110,7 +119,9 @@ public class LiquidPosterView extends View {
             }
         }
         canvas.restore();
-        postInvalidateOnAnimation();
+        if (animated) {
+            postInvalidateOnAnimation();
+        }
     }
 
     /** Nối mép trái từ trên xuống, rồi mép phải từ dưới lên, thành một hình kín. */

@@ -57,6 +57,8 @@ public class StickerFrameView extends View {
     private float tickerWidth;
     private float tickerLength;
     private float tickerBaseline;
+    /** Tắt khi người dùng tắt hiệu ứng động của hệ thống: chữ đứng yên. */
+    private boolean animated = true;
 
     public StickerFrameView(Context context) {
         super(context);
@@ -99,6 +101,12 @@ public class StickerFrameView extends View {
 
         // Trang trí: chữ chạy lặp lại thông tin đã có trên sơ đồ, trình đọc màn hình bỏ qua.
         setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
+    }
+
+    /** Bật hoặc tắt chữ chạy (theo cài đặt hiệu ứng của hệ thống, xem MainActivity). */
+    public void setAnimated(boolean animated) {
+        this.animated = animated;
+        invalidate();
     }
 
     /** Đặt nội dung một vòng chữ chạy (xem {@link TickerText}); đo bề rộng một lần ở đây. */
@@ -155,11 +163,14 @@ public class StickerFrameView extends View {
             return;
         }
         // Quãng chữ đã chạy, lấy phần dư theo bề rộng một vòng chữ để vẽ lặp liền mạch.
-        final float travelled = (SystemClock.uptimeMillis() / 1000f * TICKER_SPEED_DP * density) % tickerWidth;
+        final float travelled = animated
+                ? (SystemClock.uptimeMillis() / 1000f * TICKER_SPEED_DP * density) % tickerWidth : 0f;
         for (float offset = -travelled; offset < tickerLength; offset += tickerWidth) {
             canvas.drawTextOnPath(ticker, tickerPath, offset, tickerBaseline, tickerPaint);
         }
-        postInvalidateOnAnimation();
+        if (animated) {
+            postInvalidateOnAnimation();
+        }
     }
 
     /**

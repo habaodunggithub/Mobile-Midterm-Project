@@ -73,6 +73,8 @@ final class DetailSheet {
     /** Tổng tiền đang hiện trên dòng tóm tắt; −1 là chưa hiện lần nào (lần đầu hiện thẳng, không chạy số). */
     private long shownTotal = -1L;
     private ValueAnimator totalAnimator;
+    /** Tắt khi người dùng tắt hiệu ứng động của hệ thống: tổng tiền hiện thẳng, không chạy số. */
+    private boolean animated = true;
     private int navigationInset;
     private PeekHeightListener peekHeightListener;
 
@@ -197,7 +199,7 @@ final class DetailSheet {
             totalAnimator.cancel();
             totalAnimator = null;
         }
-        if (shownTotal < 0 || shownTotal == total) {
+        if (shownTotal < 0 || shownTotal == total || !animated) {
             showSummary(count, total);
             return;
         }
@@ -212,6 +214,10 @@ final class DetailSheet {
             showSummary(count, f >= 1f ? total : value);
         });
         totalAnimator.start();
+    }
+
+    void setAnimated(boolean animated) {
+        this.animated = animated;
     }
 
     private void showSummary(int count, long total) {
