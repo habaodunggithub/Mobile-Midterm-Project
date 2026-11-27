@@ -32,7 +32,7 @@ Mỗi chỗ có một trong năm trạng thái hiển thị: **Còn trống**, *
 | Bottom Sheet | Thu gọn hiện chỗ đang xem và tóm tắt lựa chọn; mở rộng hiện danh sách "Đang chọn" và "Vé của bạn"; bấm dòng để định vị chỗ trên sơ đồ, bấm ✕ để bỏ chọn; đồng bộ hai chiều với sơ đồ |
 | Đặt vé | Nút "Đặt N vé", hộp thoại xác nhận, chỗ đã đặt thành "Vé của bạn" |
 | Lưu dữ liệu | Lựa chọn và vé của bạn được lưu bằng `SharedPreferences` và còn lại sau khi tắt hẳn app; nút ⋮ → "Làm mới dữ liệu" để xóa |
-| Xoay màn hình | Giữ nguyên chỗ đang xem, bộ lọc, góc nhìn, bảng chú thích, hộp thoại; bố cục riêng cho máy ngang (panel lọc bên trái, bảng chi tiết 420dp) |
+| Xoay màn hình | Giữ nguyên chỗ đang xem, bộ lọc, góc nhìn, bảng chú thích, hộp thoại; bố cục riêng cho máy ngang: cột trái gồm panel lọc ở trên và bảng chi tiết ở đáy, sơ đồ bên phải cao trọn màn hình nên bảng chú thích chỉ che khoảng 22% sơ đồ |
 | Giao diện "Poster lỏng" | Cả màn hình là poster hồng sen với các dải lỏng cam, xanh lá, tím uốn lượn liên tục; sơ đồ là một miếng sticker có viền cam lượn sóng, nổi khối (sáng ở góc trên trái, tối ở góc dưới phải); thanh lọc, nút, hộp thoại và bảng chi tiết cũng là sticker có viền nổi cùng hướng sáng; sticker sơ đồ kết thúc cách bảng chi tiết 10dp nên không bị che. Nhãn khu viết hoa; ký hiệu ✓ ✕ ★ và gạch chéo hiện ở mọi mức zoom. Chữ lượn Kablammo cho "SÂN KHẤU" và nút "Đặt N vé" (xanh lá viền cam), Space Mono cho nhãn. Bố cục khớp bản xem trước "G. Poster lỏng" |
 | Hiệu ứng động | Mở app: chỗ hiện dần từ sân khấu ra. Chọn hoặc bỏ chọn: chỗ nảy lên kèm vòng lan. Chạm chỗ không chọn được: chỗ lắc ngang. Đặt vé xong: các chỗ lần lượt lật sang "Vé của bạn". Chip và nút nảy khi bấm; tổng tiền chạy số. Tắt hết khi người dùng tắt hiệu ứng động của hệ thống |
 | Tên đêm nhạc "Gieo" | Chữ lượn Kablammo màu kem viền tím ở đầu thanh lọc (máy ngang: đầu panel lọc). Mở app: từng chữ rơi xuống nảy nhẹ, sau đó lắc lư rất chậm; xoay máy thì hiện ngay, không rơi lại |
@@ -46,7 +46,7 @@ Chụp trên emulator Pixel 6 (Android 15) từ bản thử nghiệm giao diện
 |:---:|:---:|:---:|
 | <img src="docs/screenshots/portrait-default.jpg" width="240" alt="Màn hình dọc ở góc nhìn mặc định"> | <img src="docs/screenshots/portrait-selected-sheet.jpg" width="240" alt="Đã zoom vào sơ đồ, chọn 3 chỗ, bảng chi tiết mở rộng"> | <img src="docs/screenshots/booking-dialog.jpg" width="240" alt="Hộp thoại xác nhận đặt 3 vé"> |
 
-Ngang: panel lọc bên trái, bảng chi tiết rộng 420dp ở góc dưới phải, bảng chú thích đang mở, bộ lọc VIP đang bật.
+Ngang: cột trái gồm panel lọc và bảng chi tiết, sơ đồ cao trọn màn hình bên phải; bộ lọc VIP đang bật (thẻ "Đang lọc" nổi ở đầu sơ đồ) và bảng chú thích đang mở.
 
 <img src="docs/screenshots/landscape-filter-legend.jpg" width="640" alt="Màn hình ngang có bộ lọc VIP và bảng chú thích">
 
@@ -122,7 +122,7 @@ Các quyết định kiến trúc chính:
 - **Cử chỉ:** `GestureDetector` cho kéo một ngón và chạm (`onSingleTapUp`, phản hồi tức thì, không chờ chạm đúp); zoom và xoay hai ngón tự đo, vì `ScaleGestureDetector` chỉ bắt đầu khi hai ngón cách nhau tối thiểu `getScaledMinimumScalingSpan()` (đo được 446px trên emulator Android 15) nên zoom bị trễ rõ rệt.
 - **Bottom Sheet:** `CoordinatorLayout` + `BottomSheetBehavior` (persistent sheet, sơ đồ vẫn chạm được khi sheet mở). Hai hộp thoại xác nhận là `DialogFragment` nên `FragmentManager` tự tạo lại sau khi xoay.
 - **Trang trí tách khỏi sơ đồ.** Nền poster và viền sticker là hai View riêng trong package `decor/`, không phải là chỗ, nên không vi phạm yêu cầu "mọi chỗ vẽ bởi một Custom View". `VenueMapView` vẫn chỉ vẽ sân khấu và 224 chỗ; sơ đồ lùi vào 16dp để mép nằm khuất dưới viền. Sơ đồ vẫn kéo xuống dưới bảng chi tiết như trước (camera không đổi), nhưng được cắt bằng outline của View: bo góc 44dp và bỏ phần dưới đáy sticker. Chạm lên viền hay vào khe giữa sticker và bảng không lọt xuống sơ đồ.
-- **Bố cục dọc và ngang** dùng chung các file include (`view_map_layers`, `view_bottom_sheet`, `view_price_controls`, `view_filter_status`) với **cùng bộ id**, nên `MainActivity` không cần biết hướng màn hình. `layout-land/` chỉ khác ở vị trí các khối.
+- **Bố cục dọc và ngang** dùng chung các file include (`view_map_layers`, `view_bottom_sheet`, `view_price_controls`, `view_filter_status`) với **cùng bộ id**, nên `MainActivity` không cần biết hướng màn hình. `layout-land/` chỉ khác ở vị trí các khối: bảng chi tiết nằm trong một `CoordinatorLayout` riêng ở cột trái, nên khi mở rộng nó phủ lên panel lọc chứ không phủ sơ đồ. Cờ `sheet_beside_map` (`values-land/bools.xml`) báo cho `MainActivity` biết bảng nằm cạnh sơ đồ: khi đó panel lọc chừa chỗ cho bảng, còn sơ đồ chỉ chừa thanh điều hướng.
 
 ## 4. Cách tổ chức dữ liệu
 
@@ -201,7 +201,7 @@ Khi vẽ, `VenueMapView` dựng `Matrix` từ chính bốn số này (`setScale(
 | **Giới hạn zoom** | nhỏ nhất = Fit tại góc hiện tại, lớn nhất = `6 ×` Fit tại góc mặc định | tại mức lớn nhất một ghế to khoảng 42dp |
 | **Kẹp biên** | mép khung bao chỉ được lùi vào trong mép vùng nhìn tối đa 48dp | không kéo sơ đồ ra khỏi màn hình; nếu khung bao nhỏ hơn vùng nhìn thì căn giữa |
 
-Góc mặc định là `−90°` khi màn hình dọc (sân khấu bên trái, để sơ đồ lấp đầy chiều cao) và `0°` khi ngang (sân khấu ở trên). `bottomInset` là chiều cao bảng chi tiết đang thu gọn: sơ đồ được căn giữa phía trên bảng.
+Góc mặc định là `−90°` khi màn hình dọc (sân khấu bên trái, để sơ đồ lấp đầy chiều cao) và `0°` khi ngang (sân khấu ở trên). `bottomInset` là phần đáy bị bảng chi tiết thu gọn che (máy dọc) hoặc chỉ là thanh điều hướng (máy ngang, bảng nằm ở cột trái): sơ đồ được căn giữa phần còn lại.
 
 Xoay hai ngón dùng `RotationTracker` (Java thuần): từ hai điểm chạm tính góc đường nối bằng `atan2`, trả độ lệch so với lần trước, chuẩn hóa về `(−π, π]` để không nhảy 360° khi đi qua trục ±180°. Sơ đồ chỉ bắt đầu xoay khi đường nối quay quá 6°, và tự chỉnh thẳng nếu nhấc tay trong ±8° quanh một góc vuông.
 
@@ -471,3 +471,15 @@ Dự án có sử dụng **Claude Code** (Anthropic) và **Codex** (OpenAI). Quy
   - Ảnh chụp theo code đang sửa dở; nếu các thay đổi viền sticker không được commit thì ảnh sẽ lệch với bản nộp.
   - Ở ảnh ngang, sticker sơ đồ thấp (kết thúc phía trên bảng chi tiết thu gọn) nên bảng chú thích che gần hết sơ đồ; AI chỉ chụp đúng hiện trạng, không sửa bố cục.
 - **Sinh viên kiểm tra/điều chỉnh:** Đã rà soát và kiểm tra bốn ảnh mới cùng chú thích trong README. Ảnh minh họa đúng các trạng thái đã chọn: sơ đồ mặc định, sơ đồ đã zoom với ba chỗ đang chọn và bảng chi tiết mở rộng, hộp thoại xác nhận đặt ba vé, và bố cục ngang khi bật bộ lọc VIP và bảng chú thích.
+
+### 2026-11-27 (tiếp): kiểm tra theo đề, commit phần viền nổi, sửa bố cục ngang
+
+- **Agent/model:** Claude Code (Claude Opus 5.5), có dùng `huashu-design` và `ui-ux-pro-max` để vẽ ba hướng bố cục ngang (`design-demos/landscape-fix/options.html`, ngoài repo). Hỏi sinh viên về hướng bố cục, danh sách commit, model của phiên trước (Q50, Q51), rồi về chỗ đặt dòng "Đang lọc" và lỗi lint (Q52). Kiểm trên emulator bằng `adb`, `uiautomator dump` (đo khung bảng chú thích) và ảnh chụp, cả dọc lẫn ngang; chạy `connectedDebugAndroidTest` cho `StickerReliefTest`.
+- **Nhiệm vụ được giao:** đối chiếu đồ án với đề; commit các thay đổi Codex để lại; sửa lỗi bảng chú thích che gần hết sơ đồ khi xoay ngang.
+- **Code được sinh/sửa:** tách thay đổi của Codex thành 7 commit code và 1 commit tài liệu (không đổi nội dung). Sửa `layout-land/activity_main.xml` (cột trái hai tầng, thẻ "Đang lọc" nổi trên sơ đồ), `MainActivity`, `DetailSheet`, `FilterBar`, `view_bottom_sheet.xml` (chữ 2 dòng khi ngang), `item_legend.xml`; thêm `values/bools.xml`, `values-land/bools.xml`; sửa `dimens`, `integers`; xóa `bg_panel_card.xml`; sửa `RaisedStickerStroke` để bỏ hai API nội bộ của Material. Chụp lại ảnh ngang.
+- **Lỗi hoặc hạn chế của kết quả AI:**
+  - Bản đầu của bố cục ngang làm dòng tổng tiền bị cắt, bảng chú thích xuống 3 dòng chữ (che 28%) và dòng "Đang lọc" bị đẩy khuất; phát hiện qua ảnh chụp và đo bằng `uiautomator`, đã sửa (cột 296dp, chú thích 4 cột, thẻ "Đang lọc" nổi).
+  - Thẻ "Đang lọc" ở máy ngang che phần sân khấu khi đang lọc; nhãn khu sát mép phải vẫn có thể nằm dưới cột nút như bản dọc.
+  - Bảng chi tiết khi mở rộng ở máy ngang chỉ cao khoảng nửa màn hình nên danh sách phải cuộn sớm.
+  - Chỉ kiểm trên emulator Pixel 6; chưa thử máy thật hay máy có màn hình nhỏ hơn.
+- **Sinh viên kiểm tra/điều chỉnh:**
