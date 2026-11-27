@@ -493,4 +493,4 @@ Dự án có sử dụng **Claude Code** (Anthropic) và **Codex** (OpenAI). Quy
   - Bốn chip chỉ còn dư khoảng 6dp; nếu tăng cỡ chữ hệ thống thì chip vẫn xuống dòng (cố ý, để không bị cắt chữ).
   - Panel lọc ngang thấp nên "Chỉ chỗ trống" và khoảng giá nằm dưới, phải cuộn panel mới thấy; ngoài thanh cuộn của hệ thống không có gợi ý nào khác.
   - Sơ đồ ngang hẹp đi 24dp; chú thích vẫn che khoảng 22% sơ đồ (đo bằng `uiautomator`).
-- **Sinh viên kiểm tra/điều chỉnh:**
+- **Sinh viên kiểm tra/điều chỉnh:** Đã rà soát và kiểm tra bố cục ngang trên emulator. Đã xác nhận tên “Gieo” nằm phía trên và bên ngoài panel lọc, còn bốn chip “Tất cả”, “Standing”, “VIP” và “Standard” hiển thị trên cùng một hàng với cỡ chữ mặc định.
