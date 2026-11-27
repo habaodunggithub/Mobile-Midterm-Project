@@ -25,11 +25,19 @@ public final class StickerOutline {
     private StickerOutline() {}
 
     public static void addOuter(Path path, RectF bounds, float density) {
-        addContour(path, bounds, 2.5f * density, OUTER_WAVE);
+        addOuter(path, bounds, density, 1f);
     }
 
     public static void addInner(Path path, RectF bounds, float density) {
-        addContour(path, bounds, 1.5f * density, INNER_WAVE);
+        addInner(path, bounds, density, 1f);
+    }
+
+    public static void addOuter(Path path, RectF bounds, float density, float waveScale) {
+        addContour(path, bounds, 2.5f * density * waveScale, OUTER_WAVE);
+    }
+
+    public static void addInner(Path path, RectF bounds, float density, float waveScale) {
+        addContour(path, bounds, 1.5f * density * waveScale, INNER_WAVE);
     }
 
     private static double superellipseCoordinate(double value) {
