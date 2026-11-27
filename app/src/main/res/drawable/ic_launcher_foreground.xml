@@ -1,30 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path android:pathData="M31,63.928c0,0 6.4,-11 12.1,-13.1c7.2,-2.6 26,-1.4 26,-1.4l38.1,38.1L107,108.928l-32,-1L31,63.928z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:endX="85.84757"
-                android:endY="92.4963"
-                android:startX="42.9492"
-                android:startY="49.59793"
-                android:type="linear">
-                <item
-                    android:color="#44000000"
-                    android:offset="0.0" />
-                <item
-                    android:color="#00000000"
-                    android:offset="1.0" />
-            </gradient>
-        </aapt:attr>
-    </path>
-    <path
-        android:fillColor="#FFFFFF"
-        android:fillType="nonZero"
-        android:pathData="M65.3,45.828l3.8,-6.6c0.2,-0.4 0.1,-0.9 -0.3,-1.1c-0.4,-0.2 -0.9,-0.1 -1.1,0.3l-3.9,6.7c-6.3,-2.8 -13.4,-2.8 -19.7,0l-3.9,-6.7c-0.2,-0.4 -0.7,-0.5 -1.1,-0.3C38.8,38.328 38.7,38.828 38.9,39.228l3.8,6.6C36.2,49.428 31.7,56.028 31,63.928h46C76.3,56.028 71.8,49.428 65.3,45.828zM43.4,57.328c-0.8,0 -1.5,-0.5 -1.8,-1.2c-0.3,-0.7 -0.1,-1.5 0.4,-2.1c0.5,-0.5 1.4,-0.7 2.1,-0.4c0.7,0.3 1.2,1 1.2,1.8C45.3,56.528 44.5,57.328 43.4,57.328L43.4,57.328zM64.6,57.328c-0.8,0 -1.5,-0.5 -1.8,-1.2s-0.1,-1.5 0.4,-2.1c0.5,-0.5 1.4,-0.7 2.1,-0.4c0.7,0.3 1.2,1 1.2,1.8C66.5,56.528 65.6,57.328 64.6,57.328L64.6,57.328z"
-        android:strokeWidth="1"
-        android:strokeColor="#00000000" />
+    <group
+        android:pivotX="54"
+        android:pivotY="54"
+        android:rotation="-12"
+        android:scaleX="0.9"
+        android:scaleY="0.9">
+        <!-- Offset edge echoes the raised sticker frame on the venue map. -->
+        <group android:translateY="4">
+            <path
+                android:fillColor="@color/sticker_band"
+                android:strokeColor="@color/label_text"
+                android:strokeWidth="3"
+                android:strokeLineJoin="round"
+                android:pathData="M32,34 C41,36 46,32 55,33 C64,34 69,37 76,35 Q82,34 82,41 V47 C73,46 73,59 82,58 V65 Q82,71 76,71 C67,69 62,74 53,73 C45,72 40,69 32,71 Q26,72 26,66 V59 C35,60 35,47 26,48 V40 Q26,33 32,34 Z" />
+        </group>
+        <path
+            android:fillColor="@color/map_background"
+            android:strokeColor="@color/label_text"
+            android:strokeWidth="3"
+            android:strokeLineJoin="round"
+            android:pathData="M32,34 C41,36 46,32 55,33 C64,34 69,37 76,35 Q82,34 82,41 V47 C73,46 73,59 82,58 V65 Q82,71 76,71 C67,69 62,74 53,73 C45,72 40,69 32,71 Q26,72 26,66 V59 C35,60 35,47 26,48 V40 Q26,33 32,34 Z" />
+        <!-- An open G with a seedling beside its opening. -->
+        <path
+            android:fillColor="@color/label_text"
+            android:pathData="M62,45 C59,40 51,39 45,43 C38,47 38,57 43,62 C47,67 55,68 61,64 C64,62 66,58 66,54 Q66,51 63,51 H56 Q53,51 53,54 Q53,57 56,57 H59 C58,60 55,61 52,61 C47,61 44,58 45,53 C46,48 50,45 54,46 C56,46 57,48 59,48 Q63,48 62,45 Z" />
+        <path
+            android:fillColor="@color/stage_fill"
+            android:pathData="M63,49 C62,44 65,40 71,40 C72,46 69,50 63,49 Z" />
+    </group>
 </vector>

@@ -260,7 +260,7 @@ Mỗi dữ liệu chỉ có **một nguồn**:
 
 ## 9. Nhật ký sử dụng AI Agent
 
-Dự án được làm với trợ lý lập trình **Claude Code** (Anthropic). Quy trình: viết yêu cầu và kế hoạch trước (đặc tả, tiêu chí chấp nhận, quyết định kiến trúc), hỏi sinh viên mọi quyết định có nhiều lựa chọn hợp lý, rồi làm từng mảnh nhỏ: viết code, build và test xanh, rồi commit. Mỗi commit làm đúng một việc kỹ thuật. AI không push và không ghi công trong commit; việc dùng AI chỉ được ghi ở đây. Dòng "Sinh viên kiểm tra/điều chỉnh" ở mỗi phiên do sinh viên tự điền.
+Dự án có sử dụng **Claude Code** (Anthropic) và **Codex** (OpenAI). Quy trình: viết yêu cầu và kế hoạch trước (đặc tả, tiêu chí chấp nhận, quyết định kiến trúc), hỏi sinh viên mọi quyết định có nhiều lựa chọn hợp lý, rồi làm từng mảnh nhỏ: viết code, build và test xanh, rồi commit. Mỗi commit làm đúng một việc kỹ thuật. Các phiên sử dụng AI được ghi trong nhật ký. Việc push và merge thực hiện theo yêu cầu của sinh viên. Dòng "Sinh viên kiểm tra/điều chỉnh" ở mỗi phiên do sinh viên tự điền.
 
 ### 2026-11-25: lập kế hoạch và Chặng 1
 
@@ -439,3 +439,13 @@ Dự án được làm với trợ lý lập trình **Claude Code** (Anthropic).
   - Hiệu ứng chỉ được kiểm qua ảnh chụp trên emulator; cú nảy 4dp của nút Đặt vé quá nhỏ để thấy rõ trong ảnh. Chưa thử trên máy thật.
   - Ở máy ngang, tên "Gieo" (chữ kem viền tím) nằm trên panel lọc cũng màu kem nên chủ yếu thấy phần viền.
 - **Sinh viên kiểm tra/điều chỉnh:** Đã rà soát ba phương án đặt tên và chọn biển hiệu “Gieo” phía trên ô tìm kiếm. Đã chốt chuyển động của từng chữ và bốn hiệu ứng thao tác cho bộ lọc, bảng chi tiết, thẻ nổi và vòng đánh dấu. Kết quả kiểm tra trong phiên gồm ảnh chụp trên emulator khi bật và tắt hiệu ứng hệ thống.
+
+### 2026-11-27 (tiếp): logo ứng dụng Gieo
+
+- **Agent/model:** Codex (OpenAI), dùng `frontend-skill` để bám concept “Poster lỏng” và kiểm tra độ rõ ở kích thước launcher.
+- **Nhiệm vụ được giao:** thiết kế logo cho app theo giao diện hiện tại. Biểu tượng kết hợp chữ G lượn, mầm xanh và vé sticker kem viền cam trên nền hồng sen gợn tím.
+- **Code được sinh/sửa:** tài nguyên launcher trong `res/drawable/` và `res/mipmap-*/`, gồm biểu tượng thích ứng màu, lớp đơn sắc theo chủ đề Android và các bản WebP cho Android cũ.
+- **Lỗi hoặc hạn chế của kết quả AI:**
+  - Bản đầu đặt vé quá sát mép của mặt nạ tròn. Codex thu nhỏ phần vé để giữ khoảng trống quanh viền.
+  - Đã chạy `assembleDebug test` và xác nhận biểu tượng màu hiển thị trên launcher của emulator. Bản đơn sắc và bản kích thước nhỏ được đối chiếu bằng ảnh xem trước.
+- **Sinh viên kiểm tra/điều chỉnh:** Đã yêu cầu thiết kế logo theo concept hiện tại và bổ sung kết quả vào nhật ký. Codex thực hiện các bước kiểm tra trên.
