@@ -13,16 +13,20 @@ import android.widget.LinearLayout;
 
 import com.example.midtermproject.R;
 import com.example.midtermproject.decor.StickerOutline;
+import com.example.midtermproject.decor.StickerRelief;
 
 /** Giữ nền, viền và bóng đổ ôm quanh phần bảng đang hiện khi kéo. */
 public final class FloatingSheetLayout extends LinearLayout {
+    private static final float CORNER_DP = 26f;
+    // Thẻ thấp hơn khung sơ đồ nên dùng cùng dáng gợn với biên độ nhỏ hơn.
+    private static final float WAVE_SCALE = 0.7f;
     private final float density = getResources().getDisplayMetrics().density;
     private final float bandWidth = getResources().getDimension(R.dimen.sheet_band_width);
     private final int contentBottomInset = getResources().getDimensionPixelSize(R.dimen.sheet_content_inset);
     private final Path outerPath = new Path();
     private final Path innerPath = new Path();
     private final RectF contour = new RectF();
-    private final Paint bandPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final StickerRelief relief;
     private final Paint surfacePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private int cardLeft;
     private int cardRight;
@@ -30,14 +34,14 @@ public final class FloatingSheetLayout extends LinearLayout {
 
     public FloatingSheetLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-        bandPaint.setColor(context.getColor(R.color.sticker_band));
+        relief = new StickerRelief(context.getColor(R.color.sticker_band));
         surfacePaint.setColor(context.getColor(R.color.surface));
         setWillNotDraw(false);
         setOutlineProvider(new ViewOutlineProvider() {
             @Override
             public void getOutline(View view, Outline outline) {
                 // Bóng theo hình chữ nhật bo góc để dùng được cả trên các bản Android cũ.
-                outline.setRoundRect(cardLeft, 0, cardRight, cardBottom, 24f * density);
+                outline.setRoundRect(cardLeft, 0, cardRight, cardBottom, CORNER_DP * density);
             }
         });
     }
@@ -70,15 +74,17 @@ public final class FloatingSheetLayout extends LinearLayout {
         outerPath.rewind();
         innerPath.rewind();
         // Chừa biên độ gợn của mép ngoài để nét sóng nằm trọn trong thẻ.
-        final float waveInset = 4f * density;
+        final float waveInset = 4f * density * WAVE_SCALE;
         contour.set(left + waveInset, waveInset, right - waveInset, bottom - waveInset);
         if (!contour.isEmpty()) {
-            StickerOutline.addOuter(outerPath, contour, density);
+            StickerOutline.addOuter(outerPath, contour, density, WAVE_SCALE);
             contour.inset(bandWidth, bandWidth);
             if (!contour.isEmpty()) {
-                StickerOutline.addInner(innerPath, contour, density);
+                StickerOutline.addInner(innerPath, contour, density, WAVE_SCALE);
             }
         }
+        contour.set(left, 0, right, bottom);
+        relief.update(outerPath, innerPath, contour, bandWidth);
         invalidateOutline();
         invalidate();
     }
@@ -86,8 +92,8 @@ public final class FloatingSheetLayout extends LinearLayout {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.drawPath(outerPath, bandPaint);
-        canvas.drawPath(innerPath, surfacePaint);
+        canvas.drawPath(outerPath, surfacePaint);
+        relief.draw(canvas, outerPath, innerPath);
     }
 
     @Override
