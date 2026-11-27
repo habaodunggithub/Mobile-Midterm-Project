@@ -40,7 +40,7 @@ Mỗi chỗ có một trong năm trạng thái hiển thị: **Còn trống**, *
 
 ### Ảnh chụp màn hình
 
-Chụp trên emulator Pixel 6 (Android 15).
+Chụp trên emulator Pixel 6 (Android 15) từ bản thử nghiệm giao diện “Poster lỏng” với viền sticker đang được chỉnh.
 
 | Dọc, mặc định | Dọc, đã zoom, bảng chi tiết mở rộng | Hộp thoại đặt vé |
 |:---:|:---:|:---:|
@@ -449,3 +449,13 @@ Dự án có sử dụng **Claude Code** (Anthropic) và **Codex** (OpenAI). Quy
   - Bản đầu đặt vé quá sát mép của mặt nạ tròn. Codex thu nhỏ phần vé để giữ khoảng trống quanh viền.
   - Đã chạy `assembleDebug test` và xác nhận biểu tượng màu hiển thị trên launcher của emulator. Bản đơn sắc và bản kích thước nhỏ được đối chiếu bằng ảnh xem trước.
 - **Sinh viên kiểm tra/điều chỉnh:** Đã yêu cầu thiết kế logo theo concept hiện tại và bổ sung kết quả vào nhật ký. Codex thực hiện các bước kiểm tra trên.
+
+### 2026-11-27 (tiếp): chụp lại ảnh giao diện
+
+- **Agent/model:** Claude Code (Claude Opus 5.5). Build từ code hiện tại (gồm các thay đổi viền sticker chưa commit), cài lên emulator Pixel 6 (Android 15), thao tác bằng `adb input`, `sendevent` (pinch) và `uiautomator dump`.
+- **Nhiệm vụ được giao:** cập nhật ảnh chụp giao diện trong README theo giao diện "Poster lỏng".
+- **Code được sinh/sửa:** không sửa code. Chụp lại 4 ảnh trong `docs/screenshots/` (cùng tên, cùng kích thước; tổng khoảng 394KB do nền nhiều màu) và thêm tên giao diện vào chú thích ảnh.
+- **Lỗi hoặc hạn chế của kết quả AI:**
+  - Ảnh chụp theo code đang sửa dở; nếu các thay đổi viền sticker không được commit thì ảnh sẽ lệch với bản nộp.
+  - Ở ảnh ngang, sticker sơ đồ thấp (kết thúc phía trên bảng chi tiết thu gọn) nên bảng chú thích che gần hết sơ đồ; AI chỉ chụp đúng hiện trạng, không sửa bố cục.
+- **Sinh viên kiểm tra/điều chỉnh:** Đã rà soát và kiểm tra bốn ảnh mới cùng chú thích trong README. Ảnh minh họa đúng các trạng thái đã chọn: sơ đồ mặc định, sơ đồ đã zoom với ba chỗ đang chọn và bảng chi tiết mở rộng, hộp thoại xác nhận đặt ba vé, và bố cục ngang khi bật bộ lọc VIP và bảng chú thích.
