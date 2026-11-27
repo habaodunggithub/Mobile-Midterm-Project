@@ -230,8 +230,14 @@ final class FilterBar {
         final MaterialButton toggle = root.findViewById(R.id.btn_filter_advanced);
         final View priceCard = root.findViewById(R.id.card_price_filter);
         if (toggle != null) {
-            toggle.addOnCheckedChangeListener((button, checked) ->
-                    priceCard.setVisibility(checked ? View.VISIBLE : View.GONE));
+            // Thẻ giá nằm ngay dưới nút "Giá" ở bên phải: bung ra từ góc trên phải của thẻ, về phía nút (Q49).
+            toggle.addOnCheckedChangeListener((button, checked) -> {
+                if (checked) {
+                    Reveal.show(priceCard, 1f, 0f, animated);
+                } else {
+                    Reveal.hide(priceCard, animated);
+                }
+            });
         }
     }
 

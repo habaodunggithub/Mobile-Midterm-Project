@@ -50,6 +50,9 @@ final class LegendCard {
     private final ImageButton toggleButton;
     /** Khoảng cách tới đáy vùng sơ đồ ngoài phần bảng chi tiết che, để thẻ không chìm dưới bảng. */
     private final int edgeMarginPx;
+    /** Thẻ đang mở hay đóng (trạng thái cuối, kể cả khi hiệu ứng còn đang chạy). */
+    private boolean shown;
+    private boolean animated = true;
 
     LegendCard(GridLayout card, ImageButton toggleButton) {
         this.context = card.getContext();
@@ -69,12 +72,24 @@ final class LegendCard {
         setShown(false);
     }
 
+    /** Lấy từ biến {@link #shown} chứ không từ View, vì lúc đang bung ra hay thu lại View chưa ở trạng thái cuối. */
     boolean isShown() {
-        return card.getVisibility() == View.VISIBLE;
+        return shown;
+    }
+
+    /** Bật hoặc tắt hiệu ứng bung ra (theo cài đặt hiệu ứng của hệ thống, xem MainActivity). */
+    void setAnimated(boolean animated) {
+        this.animated = animated;
     }
 
     void setShown(boolean shown) {
-        card.setVisibility(shown ? View.VISIBLE : View.GONE);
+        this.shown = shown;
+        // Thẻ nằm ở đáy sơ đồ, nút ⓘ ở góc trên phải: bung ra từ góc trên phải của thẻ, về phía nút (Q49).
+        if (shown) {
+            Reveal.show(card, 1f, 0f, animated);
+        } else {
+            Reveal.hide(card, animated);
+        }
         // Trình đọc màn hình nghe việc nút sắp làm, không phải trạng thái cũ.
         toggleButton.setContentDescription(context.getString(
                 shown ? R.string.legend_hide_description : R.string.legend_show_description));

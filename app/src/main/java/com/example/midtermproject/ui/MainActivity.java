@@ -64,6 +64,10 @@ public class MainActivity extends AppCompatActivity
     private DetailSheet detailSheet;
     private LegendCard legendCard;
     private FilterBar filterBar;
+    /** La bàn đang hiện hay ẩn (trạng thái cuối, kể cả khi hiệu ứng còn đang chạy). */
+    private boolean compassShown;
+    /** Cài đặt hiệu ứng của hệ thống, đọc lại mỗi lần onResume. */
+    private boolean animationsOn = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -167,7 +171,16 @@ public class MainActivity extends AppCompatActivity
         compass.setOnClickListener(v -> mapView.rotateToDefault());
         mapView.setOnAngleChangedListener((angleRad, atDefault) -> {
             compass.setRotation((float) Math.toDegrees(angleRad));
-            compass.setVisibility(atDefault ? View.GONE : View.VISIBLE);
+            // Góc đổi liên tục khi đang xoay, nên chỉ chạy hiệu ứng hiện/ẩn khi trạng thái thật sự đổi (Q49).
+            final boolean show = !atDefault;
+            if (show != compassShown) {
+                compassShown = show;
+                if (show) {
+                    Reveal.show(compass, 0.5f, 0.5f, animationsOn);
+                } else {
+                    Reveal.hide(compass, animationsOn);
+                }
+            }
         });
     }
 
@@ -179,6 +192,8 @@ public class MainActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
         final boolean animated = animationsEnabled();
+        animationsOn = animated;
+        legendCard.setAnimated(animated);
         ((LiquidPosterView) findViewById(R.id.poster_background)).setAnimated(animated);
         ((ConcertTitleView) findViewById(R.id.concert_title)).setAnimated(animated);
         ((StickerFrameView) findViewById(R.id.sticker_frame)).setAnimated(animated);
