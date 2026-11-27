@@ -398,7 +398,7 @@ Dự án được làm với trợ lý lập trình **Claude Code** (Anthropic).
   - Ở mức Fit, chỗ "Đã đặt" (be nhạt) khá gần màu nền kem của sơ đồ; dấu ✕ chỉ hiện khi đã zoom đủ to.
   - Ảnh chụp trong `docs/screenshots/` vẫn là giao diện cũ, chưa chụp lại.
   - Hiệu ứng chỉ được kiểm trên emulator bằng ảnh chụp từng khung, chưa thử trên máy thật.
-- **Sinh viên kiểm tra/điều chỉnh:**
+- **Sinh viên kiểm tra/điều chỉnh:** Đã rà soát ba lượt bản xem trước và chốt hướng G “Poster lỏng”. Đã góp ý chỉnh bố cục và làm rõ đặc trưng của ảnh tham chiếu, sau đó chốt nền chuyển động liên tục và cách dùng font Kablammo, Space Mono.
 
 ### 2026-11-26 (tiếp): sửa góc sticker, thử viên thuốc, rồi khớp bản xem trước G
 
@@ -413,7 +413,7 @@ Dự án được làm với trợ lý lập trình **Claude Code** (Anthropic).
   - Vì sticker kết thúc phía trên bảng chi tiết như mẫu G, ở màn hình ngang phần sơ đồ chỉ còn cao khoảng 140dp (mẫu G chỉ có bản dọc).
   - Dòng ghế đang xem vẫn ghi "Hàng B", mẫu G thì không, vì AC-5.1 yêu cầu có hàng. Snackbar vẫn là kiểu tối mặc định, mẫu G không có Snackbar để so.
   - Ảnh chụp trong `docs/screenshots/` vẫn là giao diện cũ.
-- **Sinh viên kiểm tra/điều chỉnh:**
+- **Sinh viên kiểm tra/điều chỉnh:** Đã rà soát phương án viên thuốc tóm tắt và yêu cầu quay lại thẻ sticker hai dòng theo mẫu G. Đã chốt chỉnh phần mép trong của viền, giữ khoảng cách 10dp giữa sơ đồ và thẻ, viết hoa nhãn khu và hiển thị ký hiệu trạng thái ở mọi mức zoom.
 
 ### 2026-11-26 (tiếp): bảng chi tiết nổi như mẫu G
 
@@ -424,7 +424,7 @@ Dự án được làm với trợ lý lập trình **Claude Code** (Anthropic).
   - Phần trong suốt dưới thẻ (thanh điều hướng và khe 10dp) vẫn thuộc bảng chi tiết, nên chạm vào khe đó không lọt xuống sơ đồ; khe chỉ cao 10dp nên khó gặp.
   - Hiệu ứng gợn khi bấm phần đầu thẻ là hình chữ nhật, có thể tràn nhẹ ra hai góc bo phía trên.
   - Chỉ kiểm trên emulator, chưa thử trên máy thật.
-- **Sinh viên kiểm tra/điều chỉnh:**
+- **Sinh viên kiểm tra/điều chỉnh:** Đã chốt điều chỉnh bảng chi tiết thành thẻ nổi có khe 10dp phía trên thanh điều hướng để khớp mẫu G. Kết quả kiểm tra trong phiên gồm ảnh chụp trên emulator ở cả hai trạng thái thu gọn và mở rộng, theo cả chiều dọc lẫn chiều ngang.
 
 ### 2026-11-27: tên "Gieo" và các hiệu ứng tinh tế
 
@@ -438,4 +438,4 @@ Dự án được làm với trợ lý lập trình **Claude Code** (Anthropic).
   - Một lệnh shell bị treo vì gõ thừa `cat`, phải dừng tay.
   - Hiệu ứng chỉ được kiểm qua ảnh chụp trên emulator; cú nảy 4dp của nút Đặt vé quá nhỏ để thấy rõ trong ảnh. Chưa thử trên máy thật.
   - Ở máy ngang, tên "Gieo" (chữ kem viền tím) nằm trên panel lọc cũng màu kem nên chủ yếu thấy phần viền.
-- **Sinh viên kiểm tra/điều chỉnh:**
+- **Sinh viên kiểm tra/điều chỉnh:** Đã rà soát ba phương án đặt tên và chọn biển hiệu “Gieo” phía trên ô tìm kiếm. Đã chốt chuyển động của từng chữ và bốn hiệu ứng thao tác cho bộ lọc, bảng chi tiết, thẻ nổi và vòng đánh dấu. Kết quả kiểm tra trong phiên gồm ảnh chụp trên emulator khi bật và tắt hiệu ứng hệ thống.
