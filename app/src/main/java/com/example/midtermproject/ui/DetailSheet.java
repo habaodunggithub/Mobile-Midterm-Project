@@ -30,6 +30,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Bảng chi tiết ở đáy màn hình. Dạng thu gọn hiện chỗ đang xem và tóm tắt lựa chọn; kéo lên hoặc
@@ -41,6 +42,9 @@ final class DetailSheet {
     private static final float MAX_HEIGHT_FRACTION = 0.6f;
     /** Thời gian tổng tiền chạy số từ giá trị cũ tới giá trị mới (Q43). */
     private static final long TOTAL_COUNT_MS = 380L;
+    /** Dòng chỗ đang xem trượt vào khi đổi chỗ (Q49): quãng trượt và thời gian. */
+    private static final float FOCUS_SLIDE_DP = 6f;
+    private static final long FOCUS_SLIDE_MS = 180L;
 
     /** Báo cho sơ đồ biết bảng thu gọn đang che bao nhiêu pixel phía dưới. */
     interface PeekHeightListener {
@@ -79,6 +83,8 @@ final class DetailSheet {
     private ValueAnimator totalAnimator;
     /** Tắt khi người dùng tắt hiệu ứng động của hệ thống: tổng tiền hiện thẳng, không chạy số. */
     private boolean animated = true;
+    /** Mã chỗ đang xem lần render trước, để biết khi nào chỗ đang xem đổi; {@code null} là chưa có. */
+    private String shownFocusId;
     private final int floatGapPx;
     private PeekHeightListener peekHeightListener;
 
@@ -229,6 +235,11 @@ final class DetailSheet {
 
     private void renderFocus() {
         final Spot spot = state.getFocusedSpot();
+        final String focusId = spot != null ? spot.id : null;
+        if (!Objects.equals(focusId, shownFocusId)) {
+            slideInFocusLine();
+            shownFocusId = focusId;
+        }
         if (spot == null) {
             focusInfo.setText(R.string.msg_tap_a_spot);
             focusState.setVisibility(View.GONE);
@@ -243,6 +254,24 @@ final class DetailSheet {
         bold(styled, text.indexOf(spot.label, section.length()), spot.label.length());
         focusInfo.setText(styled);
         showStateChip(state.getDisplayState(spot));
+    }
+
+    /**
+     * Chỗ đang xem vừa đổi: dòng thông tin trượt lên từ thấp hơn 6dp và rõ dần trong 180ms, chậm dần ở cuối (Q49),
+     * để mắt thấy bảng vừa đổi sang chỗ khác. Chưa hiện lên màn hình (lúc mở app hay sau khi xoay) hoặc hiệu ứng bị
+     * tắt thì đổi ngay.
+     */
+    private void slideInFocusLine() {
+        focusInfo.animate().cancel();
+        if (!animated || !focusInfo.isLaidOut()) {
+            focusInfo.setAlpha(1f);
+            focusInfo.setTranslationY(0f);
+            return;
+        }
+        focusInfo.setAlpha(0f);
+        focusInfo.setTranslationY(FOCUS_SLIDE_DP * context.getResources().getDisplayMetrics().density);
+        focusInfo.animate().alpha(1f).translationY(0f).setDuration(FOCUS_SLIDE_MS)
+                .setInterpolator(new DecelerateInterpolator()).start();
     }
 
     private static void bold(SpannableString text, int start, int length) {
