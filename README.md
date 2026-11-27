@@ -460,7 +460,7 @@ Dự án có sử dụng **Claude Code** (Anthropic) và **Codex** (OpenAI). Quy
   - Không commit và không ghi nhật ký, nên bản trên GitHub tạm thời lệch với ảnh chụp trong README.
   - Bỏ chữ chạy trái với quyết định Q48 nhưng không ghi lại quyết định mới (sau đó ghi bổ sung thành Q50).
   - `StickerReliefTest` là test chạy trên máy (`connectedDebugAndroidTest`), không chạy trong `./gradlew test`.
-- **Sinh viên kiểm tra/điều chỉnh:**
+- **Sinh viên kiểm tra/điều chỉnh:** Đã kiểm tra và rà soát phần viền sticker theo Q50. Đã chốt bỏ chữ chạy quanh sơ đồ, giữ hiệu ứng viền nổi và chuyển sắc viền sân khấu. Kết quả kiểm tra trong phiên sau có `StickerReliefTest` để xác nhận phần giữa viền vẫn trong suốt.
 
 ### 2026-11-27 (tiếp): chụp lại ảnh giao diện
 
@@ -482,7 +482,7 @@ Dự án có sử dụng **Claude Code** (Anthropic) và **Codex** (OpenAI). Quy
   - Thẻ "Đang lọc" ở máy ngang che phần sân khấu khi đang lọc; nhãn khu sát mép phải vẫn có thể nằm dưới cột nút như bản dọc.
   - Bảng chi tiết khi mở rộng ở máy ngang chỉ cao khoảng nửa màn hình nên danh sách phải cuộn sớm.
   - Chỉ kiểm trên emulator Pixel 6; chưa thử máy thật hay máy có màn hình nhỏ hơn.
-- **Sinh viên kiểm tra/điều chỉnh:**
+- **Sinh viên kiểm tra/điều chỉnh:** Đã kiểm tra và rà soát bố cục ngang theo đề. Đã chọn đặt bảng chi tiết dưới bộ lọc ở cột trái để sơ đồ bên phải dùng trọn chiều cao, đồng thời đưa thẻ “Đang lọc” lên đầu sơ đồ để dễ thấy điều kiện đang áp dụng. Kết quả trên emulator được đối chiếu qua ảnh chụp và số đo vùng bảng chú thích.
 
 ### 2026-11-27 (tiếp): tên "Gieo" và hàng chip ở máy ngang
 
