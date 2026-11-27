@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Phần đầu của panel lọc ở bố cục ngang: ô tìm kiếm rồi bốn chip khu xuống dòng khi hết chỗ. Dùng lại đúng id của
-    bản dọc (layout/view_filter_bar.xml) để FilterBar không cần biết đang ở hướng nào; không có nút Giá vì các
-    control giá hiện sẵn trong panel. Thanh tự nhận focus và tắt highlight focus, lý do như bản dọc.
+    Phần đầu của panel lọc ở bố cục ngang: ô tìm kiếm rồi bốn chip khu xuống dòng khi hết chỗ. Tên "Gieo" nằm ngoài panel
+    (xem layout-land/activity_main.xml). Dùng lại đúng id của bản dọc (layout/view_filter_bar.xml) để FilterBar không cần
+    biết đang ở hướng nào; không có nút Giá vì các control giá hiện sẵn trong panel. Thanh tự nhận focus và tắt
+    highlight focus, lý do như bản dọc.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -15,13 +16,6 @@
     android:focusableInTouchMode="true"
     android:orientation="vertical"
     tools:targetApi="o">
-
-    <!-- Tên đêm nhạc "Gieo" (Q49): chữ rơi xuống khi mở app rồi lắc lư chậm. -->
-    <com.example.midtermproject.decor.ConcertTitleView
-        android:id="@+id/concert_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="4dp" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/til_search"

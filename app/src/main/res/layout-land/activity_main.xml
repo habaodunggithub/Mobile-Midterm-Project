@@ -37,44 +37,65 @@
             android:layout_width="@dimen/side_column_width"
             android:layout_height="match_parent">
 
-            <!--
-                Panel lọc: một miếng sticker kem viền tím nổi trên nền poster, cuộn được vì máy ngang ít chiều cao. Lề dưới
-                được MainActivity đặt bằng chiều cao bảng chi tiết thu gọn, nên panel kết thúc ngay trên bảng.
-            -->
-            <ScrollView
-                android:id="@+id/filter_panel"
+            <!-- Tên "Gieo" rồi panel lọc, xếp dọc; bảng chi tiết nằm đè ở đáy cột (Q51). -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_margin="@dimen/sticker_margin"
-                android:background="@drawable/bg_sticker_panel"
-                android:fillViewport="true"
-                android:overScrollMode="ifContentScrolls"
-                android:paddingStart="12dp"
-                android:paddingTop="8dp"
-                android:paddingEnd="12dp">
+                android:orientation="vertical">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <!--
+                    Tên đêm nhạc "Gieo" (Q49) nằm trên nền poster, ngoài panel lọc, cùng vị trí như bản dọc (Q53): chữ rơi
+                    xuống khi mở app rồi lắc lư chậm.
+                -->
+                <com.example.midtermproject.decor.ConcertTitleView
+                    android:id="@+id/concert_title"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:divider="@drawable/divider_vertical_8dp"
-                    android:orientation="vertical"
-                    android:showDividers="middle">
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="8dp" />
 
-                    <include
-                        android:id="@+id/filter_bar"
-                        layout="@layout/view_filter_bar" />
+                <!--
+                    Panel lọc: một miếng sticker kem viền tím nổi trên nền poster, cuộn được vì máy ngang ít chiều cao. Lề dưới
+                    được MainActivity đặt bằng chiều cao bảng chi tiết thu gọn, nên panel kết thúc ngay trên bảng. Đệm dưới 8dp để
+                    phần đang cuộn bị cắt phía trong viền, không vẽ đè lên viền.
+                -->
+                <ScrollView
+                    android:id="@+id/filter_panel"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:layout_margin="@dimen/sticker_margin"
+                    android:background="@drawable/bg_sticker_panel"
+                    android:fillViewport="true"
+                    android:overScrollMode="ifContentScrolls"
+                    android:paddingStart="12dp"
+                    android:paddingTop="8dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="8dp">
 
-                    <!-- Các control giá hiện sẵn, không có nút Giá và không có thẻ nổi. -->
                     <LinearLayout
-                        android:id="@+id/card_price_filter"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical">
+                        android:divider="@drawable/divider_vertical_8dp"
+                        android:orientation="vertical"
+                        android:showDividers="middle">
 
-                        <include layout="@layout/view_price_controls" />
+                        <include
+                            android:id="@+id/filter_bar"
+                            layout="@layout/view_filter_bar" />
+
+                        <!-- Các control giá hiện sẵn, không có nút Giá và không có thẻ nổi. -->
+                        <LinearLayout
+                            android:id="@+id/card_price_filter"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <include layout="@layout/view_price_controls" />
+                        </LinearLayout>
                     </LinearLayout>
-                </LinearLayout>
-            </ScrollView>
+                </ScrollView>
+            </LinearLayout>
 
             <!--
                 Bảng chi tiết ở máy ngang (Q51, AC-7.2): rộng bằng cột trái, nằm ở đáy cột ngay dưới panel lọc. Khi include
