@@ -35,6 +35,8 @@ Mỗi chỗ có một trong năm trạng thái hiển thị: **Còn trống**, *
 | Xoay màn hình | Giữ nguyên chỗ đang xem, bộ lọc, góc nhìn, bảng chú thích, hộp thoại; bố cục riêng cho máy ngang (panel lọc bên trái, bảng chi tiết 420dp) |
 | Giao diện "Poster lỏng" | Cả màn hình là poster hồng sen với các dải lỏng cam, xanh lá, tím uốn lượn liên tục; sơ đồ là một miếng sticker có viền cam dày, trên viền có chữ chạy vòng quanh (tên khu và giá thấp nhất); thanh lọc, nút và bảng chi tiết cũng là sticker; sticker sơ đồ kết thúc cách bảng chi tiết 10dp nên không bị che. Nhãn khu viết hoa; ký hiệu ✓ ✕ ★ và gạch chéo hiện ở mọi mức zoom. Chữ lượn Kablammo cho "SÂN KHẤU" và nút "Đặt N vé" (xanh lá viền cam), Space Mono cho nhãn và chữ chạy. Bố cục khớp bản xem trước "G. Poster lỏng" |
 | Hiệu ứng động | Mở app: chỗ hiện dần từ sân khấu ra. Chọn hoặc bỏ chọn: chỗ nảy lên kèm vòng lan. Chạm chỗ không chọn được: chỗ lắc ngang. Đặt vé xong: các chỗ lần lượt lật sang "Vé của bạn". Chip và nút nảy khi bấm; tổng tiền chạy số. Tắt hết khi người dùng tắt hiệu ứng động của hệ thống |
+| Tên đêm nhạc "Gieo" | Chữ lượn Kablammo màu kem viền tím ở đầu thanh lọc (máy ngang: đầu panel lọc). Mở app: từng chữ rơi xuống nảy nhẹ, sau đó lắc lư rất chậm; xoay máy thì hiện ngay, không rơi lại |
+| Hiệu ứng tinh tế | Đổi bộ lọc: chỗ ngoài bộ lọc mờ dần trong 200ms, chip khu đổi màu mượt. Đổi chỗ đang xem: dòng thông tin trượt lên và rõ dần, chip trạng thái đổi màu mượt, nút Đặt vé nảy khi vừa bật. Bảng chú thích, thẻ Giá và la bàn bung ra từ phía nút bấm. Chạm một chỗ: vòng đánh dấu rộng rồi thu về ôm sát chỗ |
 
 ### Ảnh chụp màn hình
 
@@ -89,6 +91,7 @@ com.example.midtermproject
 │             Mốc thời gian và đường cong hiệu ứng của từng chỗ.
 ├── decor/    LiquidColumns, TickerText                                 (Java thuần)
 │             LiquidPosterView, StickerFrameView                        (android.*)
+│             TitleMotion (Java thuần), ConcertTitleView (android.*): tên "Gieo" rơi rồi lắc.
 │             Trang trí: nền poster chuyển động, viền sticker có chữ chạy. Không vẽ chỗ nào.
 ├── storage/  PrefsSessionStore
 │             Hiện thực SessionStore bằng SharedPreferences.
@@ -102,7 +105,9 @@ com.example.midtermproject
 | `MapCamera` | Giữ `scale`, `angle`, `tx`, `ty` bằng `float`; pan, zoom, xoay, kẹp biên, fit, đổi tọa độ hai chiều. Không dùng `android.graphics.Matrix` nên test được trên JVM |
 | `VenueRenderer`, `SpotRenderer` | Vẽ nền, sân khấu, từng chỗ theo trạng thái, tên phân khu. Mọi `Paint` và `Path` dựng sẵn trong constructor |
 | `HitTester` | Tìm chỗ dưới điểm chạm (chỉ hình học) |
-| `SpotEffects` | Giữ mốc thời gian của các hiệu ứng trên từng chỗ (mở màn, nảy, lật, rung) và trả về hệ số phóng, độ lệch, tiến độ vòng lan cho mỗi khung hình |
+| `SpotEffects` | Giữ mốc thời gian của các hiệu ứng trên từng chỗ (mở màn, nảy, lật, rung, vòng chỗ đang xem thu về) và trả về hệ số phóng, độ lệch, tiến độ vòng lan cho mỗi khung hình |
+| `DimFader` | Độ mờ của từng chỗ tiến dần về mục tiêu (rõ hoặc mờ) thêm `dt / 200ms` mỗi khung, nên đổi bộ lọc là chỗ mờ dần thay vì tắt bụp |
+| `TitleMotion`, `ConcertTitleView` | Thời gian rơi (back easing, mỗi chữ trễ 90ms) và lắc (sin với biên độ tăng dần từ 0) của từng chữ trong tên "Gieo"; View vẽ từng chữ theo đó |
 | `LiquidPosterView`, `StickerFrameView` | Hai View trang trí nằm dưới và đè lên mép sơ đồ; hình dải lỏng và nội dung chữ chạy do `LiquidColumns`, `TickerText` tính |
 | `VenueMapState` | Lựa chọn, vé của bạn, chỗ đang xem, bộ lọc; mọi thay đổi đi qua các hàm của nó rồi báo `Listener` (mô hình Observer) |
 | `DetailSheet`, `FilterBar`, `LegendCard` | Điều khiển các view XML; chỉ đọc từ `VenueMapState`, không giữ bản sao dữ liệu |
@@ -245,7 +250,7 @@ Mỗi dữ liệu chỉ có **một nguồn**:
 ## 8. Tối ưu hiệu năng
 
 - **Không cấp phát trong `onDraw`:** mọi `Paint`, `Path`, `Matrix`, `RectF` và mảng tạm được dựng sẵn khi khởi tạo (`VenueRenderer`, `SpotRenderer`, `VenueMapView`); nhãn chỗ (`A05`) là `String` tính sẵn trong `Spot`; không nối chuỗi hay `String.format` lúc vẽ. `./gradlew lint` không có cảnh báo `DrawAllocation`.
-- **Chỉ vẽ lại khi cần:** sơ đồ chỉ `invalidate()` khi camera đổi (cử chỉ, animation), khi `VenueMapState` báo thay đổi, hoặc khi `SpotEffects` còn hiệu ứng đang chạy; animation dùng `postInvalidateOnAnimation()`. Hết hiệu ứng thì sơ đồ đứng yên.
+- **Chỉ vẽ lại khi cần:** sơ đồ chỉ `invalidate()` khi camera đổi (cử chỉ, animation), khi `VenueMapState` báo thay đổi, hoặc khi `SpotEffects` còn hiệu ứng đang chạy hay `DimFader` còn chỗ đang mờ dần; animation dùng `postInvalidateOnAnimation()`. Hết hiệu ứng thì sơ đồ đứng yên. Các hiệu ứng của thẻ, chip và bảng chi tiết chỉ đổi alpha, scale, dịch chuyển hoặc màu nên không làm bố cục tính lại.
 - **Nền chuyển động liên tục** (sinh viên chọn, REQUIREMENTS Q43): `LiquidPosterView` và `StickerFrameView` tự vẽ lại mỗi khung hình. Hai View này nằm riêng nên khi chúng vẽ lại, phần cứng chỉ ghi lại hình của chúng, không gọi lại `onDraw` của sơ đồ. Chúng cũng không cấp phát trong `onDraw` (mảng mép dải cấp trong `onSizeChanged`, chữ chạy dựng một lần). Khi app vào nền, hệ thống ngừng vẽ nên vòng lặp tự dừng; khi người dùng tắt hiệu ứng động của hệ thống, cả hai đứng yên và không hẹn khung tiếp theo.
 - **Culling:** mỗi khung hình `MapCamera.getVisibleWorldBounds` trả về khung bao của vùng nhìn trong tọa độ sơ đồ (bốn góc màn hình đổi ngược về sơ đồ, có tính cả xoay); `VenueRenderer` bỏ qua các chỗ nằm hẳn ngoài khung này (có lề 24dp cho vòng sáng và viền). Khi zoom lớn chỉ còn vài chục chỗ được vẽ.
 - **Mức chi tiết (LOD):** mã chỗ (A05…) chỉ vẽ khi chỗ đủ to trên màn hình (đường kính từ 22dp). Các ký hiệu trạng thái ✓ ✕ ★ và gạch chéo vẽ ở mọi mức zoom (theo bản xem trước G); chúng chỉ là vài đường thẳng hoặc một `Path` dựng sẵn nên không đáng kể.
