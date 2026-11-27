@@ -3,8 +3,13 @@ package com.example.midtermproject.ui;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.InsetDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.RippleDrawable;
 import android.view.View;
+
+import androidx.core.content.ContextCompat;
 
 import com.example.midtermproject.R;
 import com.google.android.material.button.MaterialButton;
@@ -53,29 +58,73 @@ final class StickerChrome {
         }
 
         final TextInputLayout search = root.findViewById(R.id.til_search);
-        search.setShapeAppearanceModel(shape(context, 16f));
+        final ShapeAppearanceModel searchShape = shape(context, 16f);
+        search.setShapeAppearanceModel(searchShape);
+        final View input = search.getEditText();
+        if (input != null) {
+            final int borderWidth = search.getBoxStrokeWidth();
+            final ColorStateList border = ContextCompat.getColorStateList(context, R.color.field_stroke);
+            input.setForeground(new RaisedStickerStroke(searchShape, borderWidth, border, input::getBackground));
+            search.setBoxStrokeWidth(0);
+            search.setBoxStrokeWidthFocused(0);
+        }
         for (int id : FILTER_CHIPS) {
             final Chip chip = root.findViewById(id);
             chip.setShapeAppearanceModel(controlShape);
+            chip.setForeground(new RaisedStickerStroke(controlShape, chip.getChipStrokeWidth(),
+                    chip.getChipStrokeColor(), chip::getChipDrawable));
+            chip.setChipStrokeWidth(0f);
         }
         final MaterialButton price = root.findViewById(R.id.btn_filter_advanced);
         if (price != null) {
-            price.setShapeAppearanceModel(controlShape);
+            raiseButton(price, controlShape);
         }
         final MaterialButton book = root.findViewById(R.id.btn_book);
-        book.setShapeAppearanceModel(controlShape);
+        raiseButton(book, controlShape);
     }
 
     static MaterialAlertDialogBuilder dialog(Context context) {
         return new MaterialAlertDialogBuilder(context).setBackground(surface(context, shape(context, 20f)));
     }
 
-    private static MaterialShapeDrawable surface(Context context, ShapeAppearanceModel shape) {
+    private static Drawable surface(Context context, ShapeAppearanceModel shape) {
         final MaterialShapeDrawable drawable = new MaterialShapeDrawable(shape);
         drawable.setFillColor(ColorStateList.valueOf(context.getColor(R.color.surface)));
-        drawable.setStroke(3f * context.getResources().getDisplayMetrics().density,
-                context.getColor(R.color.sticker_outline));
-        return drawable;
+        final float width = 3f * context.getResources().getDisplayMetrics().density;
+        final ColorStateList border = ColorStateList.valueOf(context.getColor(R.color.sticker_outline));
+        return new LayerDrawable(new Drawable[] {
+                drawable, new RaisedStickerStroke(shape, width, border, () -> drawable)
+        });
+    }
+
+    private static void raiseButton(MaterialButton button, ShapeAppearanceModel shape) {
+        button.setShapeAppearanceModel(shape);
+        final Drawable surface = materialSurface(button.getBackground());
+        if (surface != null) {
+            button.setForeground(new RaisedStickerStroke(shape, button.getStrokeWidth(),
+                    button.getStrokeColor(), () -> surface));
+            button.setStrokeWidth(0);
+        }
+    }
+
+    /** Nền nút Material nằm dưới ripple và các inset của vùng chạm. */
+    private static Drawable materialSurface(Drawable drawable) {
+        if (drawable instanceof MaterialShapeDrawable) {
+            return drawable;
+        }
+        if (drawable instanceof InsetDrawable) {
+            return materialSurface(((InsetDrawable) drawable).getDrawable());
+        }
+        if (drawable instanceof LayerDrawable) {
+            final LayerDrawable layers = (LayerDrawable) drawable;
+            for (int i = 0; i < layers.getNumberOfLayers(); i++) {
+                final Drawable match = materialSurface(layers.getDrawable(i));
+                if (match != null) {
+                    return match;
+                }
+            }
+        }
+        return null;
     }
 
     private static ShapeAppearanceModel shape(Context context, float cornerDp) {
