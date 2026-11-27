@@ -33,7 +33,7 @@ Mỗi chỗ có một trong năm trạng thái hiển thị: **Còn trống**, *
 | Đặt vé | Nút "Đặt N vé", hộp thoại xác nhận, chỗ đã đặt thành "Vé của bạn" |
 | Lưu dữ liệu | Lựa chọn và vé của bạn được lưu bằng `SharedPreferences` và còn lại sau khi tắt hẳn app; nút ⋮ → "Làm mới dữ liệu" để xóa |
 | Xoay màn hình | Giữ nguyên chỗ đang xem, bộ lọc, góc nhìn, bảng chú thích, hộp thoại; bố cục riêng cho máy ngang (panel lọc bên trái, bảng chi tiết 420dp) |
-| Giao diện "Poster lỏng" | Cả màn hình là poster hồng sen với các dải lỏng cam, xanh lá, tím uốn lượn liên tục; sơ đồ là một miếng sticker có viền cam dày, trên viền có chữ chạy vòng quanh (tên khu và giá thấp nhất); thanh lọc, nút và bảng chi tiết cũng là sticker; sticker sơ đồ kết thúc cách bảng chi tiết 10dp nên không bị che. Nhãn khu viết hoa; ký hiệu ✓ ✕ ★ và gạch chéo hiện ở mọi mức zoom. Chữ lượn Kablammo cho "SÂN KHẤU" và nút "Đặt N vé" (xanh lá viền cam), Space Mono cho nhãn và chữ chạy. Bố cục khớp bản xem trước "G. Poster lỏng" |
+| Giao diện "Poster lỏng" | Cả màn hình là poster hồng sen với các dải lỏng cam, xanh lá, tím uốn lượn liên tục; sơ đồ là một miếng sticker có viền cam lượn sóng, nổi khối (sáng ở góc trên trái, tối ở góc dưới phải); thanh lọc, nút, hộp thoại và bảng chi tiết cũng là sticker có viền nổi cùng hướng sáng; sticker sơ đồ kết thúc cách bảng chi tiết 10dp nên không bị che. Nhãn khu viết hoa; ký hiệu ✓ ✕ ★ và gạch chéo hiện ở mọi mức zoom. Chữ lượn Kablammo cho "SÂN KHẤU" và nút "Đặt N vé" (xanh lá viền cam), Space Mono cho nhãn. Bố cục khớp bản xem trước "G. Poster lỏng" |
 | Hiệu ứng động | Mở app: chỗ hiện dần từ sân khấu ra. Chọn hoặc bỏ chọn: chỗ nảy lên kèm vòng lan. Chạm chỗ không chọn được: chỗ lắc ngang. Đặt vé xong: các chỗ lần lượt lật sang "Vé của bạn". Chip và nút nảy khi bấm; tổng tiền chạy số. Tắt hết khi người dùng tắt hiệu ứng động của hệ thống |
 | Tên đêm nhạc "Gieo" | Chữ lượn Kablammo màu kem viền tím ở đầu thanh lọc (máy ngang: đầu panel lọc). Mở app: từng chữ rơi xuống nảy nhẹ, sau đó lắc lư rất chậm; xoay máy thì hiện ngay, không rơi lại |
 | Hiệu ứng tinh tế | Đổi bộ lọc: chỗ ngoài bộ lọc mờ dần trong 200ms, chip khu đổi màu mượt. Đổi chỗ đang xem: dòng thông tin trượt lên và rõ dần, chip trạng thái đổi màu mượt, nút Đặt vé nảy khi vừa bật. Bảng chú thích, thẻ Giá và la bàn bung ra từ phía nút bấm. Chạm một chỗ: vòng đánh dấu rộng rồi thu về ôm sát chỗ |
@@ -89,10 +89,11 @@ com.example.midtermproject
 │             Camera và hình học thuần; lớp View và lớp vẽ tách riêng.
 │             SpotEffects                                               (Java thuần)
 │             Mốc thời gian và đường cong hiệu ứng của từng chỗ.
-├── decor/    LiquidColumns, TickerText                                 (Java thuần)
+├── decor/    LiquidColumns                                             (Java thuần)
 │             LiquidPosterView, StickerFrameView                        (android.*)
 │             TitleMotion (Java thuần), ConcertTitleView (android.*): tên "Gieo" rơi rồi lắc.
-│             Trang trí: nền poster chuyển động, viền sticker có chữ chạy. Không vẽ chỗ nào.
+│             StickerRelief (android.*): tô dải viền nổi khối, dùng chung cho mọi sticker.
+│             Trang trí: nền poster chuyển động, viền sticker lượn sóng. Không vẽ chỗ nào.
 ├── storage/  PrefsSessionStore
 │             Hiện thực SessionStore bằng SharedPreferences.
 └── ui/       MainActivity, DetailSheet, FilterBar, LegendCard,
@@ -108,7 +109,8 @@ com.example.midtermproject
 | `SpotEffects` | Giữ mốc thời gian của các hiệu ứng trên từng chỗ (mở màn, nảy, lật, rung, vòng chỗ đang xem thu về) và trả về hệ số phóng, độ lệch, tiến độ vòng lan cho mỗi khung hình |
 | `DimFader` | Độ mờ của từng chỗ tiến dần về mục tiêu (rõ hoặc mờ) thêm `dt / 200ms` mỗi khung, nên đổi bộ lọc là chỗ mờ dần thay vì tắt bụp |
 | `TitleMotion`, `ConcertTitleView` | Thời gian rơi (back easing, mỗi chữ trễ 90ms) và lắc (sin với biên độ tăng dần từ 0) của từng chữ trong tên "Gieo"; View vẽ từng chữ theo đó |
-| `LiquidPosterView`, `StickerFrameView` | Hai View trang trí nằm dưới và đè lên mép sơ đồ; hình dải lỏng và nội dung chữ chạy do `LiquidColumns`, `TickerText` tính |
+| `LiquidPosterView`, `StickerFrameView` | Hai View trang trí nằm dưới và đè lên mép sơ đồ; hình dải lỏng do `LiquidColumns` tính |
+| `StickerRelief`, `RaisedStickerStroke` | Tô dải viền bằng ba `LinearGradient` dựng một lần (thân dải, mép ngoài, mép trong); khi đổi kích thước chỉ đổi ma trận của shader. `RaisedStickerStroke` là `Drawable` vẽ viền đó lên nền Material của ô tìm kiếm, chip, nút và hộp thoại |
 | `VenueMapState` | Lựa chọn, vé của bạn, chỗ đang xem, bộ lọc; mọi thay đổi đi qua các hàm của nó rồi báo `Listener` (mô hình Observer) |
 | `DetailSheet`, `FilterBar`, `LegendCard` | Điều khiển các view XML; chỉ đọc từ `VenueMapState`, không giữ bản sao dữ liệu |
 | `MainActivity` | Ghép các mảnh, nhận cú chạm từ sơ đồ, lưu và khôi phục trạng thái |
@@ -120,7 +122,6 @@ Các quyết định kiến trúc chính:
 - **Cử chỉ:** `GestureDetector` cho kéo một ngón và chạm (`onSingleTapUp`, phản hồi tức thì, không chờ chạm đúp); zoom và xoay hai ngón tự đo, vì `ScaleGestureDetector` chỉ bắt đầu khi hai ngón cách nhau tối thiểu `getScaledMinimumScalingSpan()` (đo được 446px trên emulator Android 15) nên zoom bị trễ rõ rệt.
 - **Bottom Sheet:** `CoordinatorLayout` + `BottomSheetBehavior` (persistent sheet, sơ đồ vẫn chạm được khi sheet mở). Hai hộp thoại xác nhận là `DialogFragment` nên `FragmentManager` tự tạo lại sau khi xoay.
 - **Trang trí tách khỏi sơ đồ.** Nền poster và viền sticker là hai View riêng trong package `decor/`, không phải là chỗ, nên không vi phạm yêu cầu "mọi chỗ vẽ bởi một Custom View". `VenueMapView` vẫn chỉ vẽ sân khấu và 224 chỗ; sơ đồ lùi vào 16dp để mép nằm khuất dưới viền. Sơ đồ vẫn kéo xuống dưới bảng chi tiết như trước (camera không đổi), nhưng được cắt bằng outline của View: bo góc 44dp và bỏ phần dưới đáy sticker. Chạm lên viền hay vào khe giữa sticker và bảng không lọt xuống sơ đồ.
-- **Chữ chạy vừa khít chu vi.** Space Mono là font đơn cách, nên chu vi viền chia cho bề rộng một ký tự cho ra đúng số ký tự của một vòng; `TickerText.fitToColumns` ghép các mục nguyên ("TÊN KHU TỪ GIÁ") cho đủ số đó, bù bằng dấu cách. Đường chữ đi hai vòng liền nhau để chữ vắt qua điểm nối không bị cắt.
 - **Bố cục dọc và ngang** dùng chung các file include (`view_map_layers`, `view_bottom_sheet`, `view_price_controls`, `view_filter_status`) với **cùng bộ id**, nên `MainActivity` không cần biết hướng màn hình. `layout-land/` chỉ khác ở vị trí các khối.
 
 ## 4. Cách tổ chức dữ liệu
@@ -251,7 +252,7 @@ Mỗi dữ liệu chỉ có **một nguồn**:
 
 - **Không cấp phát trong `onDraw`:** mọi `Paint`, `Path`, `Matrix`, `RectF` và mảng tạm được dựng sẵn khi khởi tạo (`VenueRenderer`, `SpotRenderer`, `VenueMapView`); nhãn chỗ (`A05`) là `String` tính sẵn trong `Spot`; không nối chuỗi hay `String.format` lúc vẽ. `./gradlew lint` không có cảnh báo `DrawAllocation`.
 - **Chỉ vẽ lại khi cần:** sơ đồ chỉ `invalidate()` khi camera đổi (cử chỉ, animation), khi `VenueMapState` báo thay đổi, hoặc khi `SpotEffects` còn hiệu ứng đang chạy hay `DimFader` còn chỗ đang mờ dần; animation dùng `postInvalidateOnAnimation()`. Hết hiệu ứng thì sơ đồ đứng yên. Các hiệu ứng của thẻ, chip và bảng chi tiết chỉ đổi alpha, scale, dịch chuyển hoặc màu nên không làm bố cục tính lại.
-- **Nền chuyển động liên tục** (sinh viên chọn, REQUIREMENTS Q43): `LiquidPosterView` và `StickerFrameView` tự vẽ lại mỗi khung hình. Hai View này nằm riêng nên khi chúng vẽ lại, phần cứng chỉ ghi lại hình của chúng, không gọi lại `onDraw` của sơ đồ. Chúng cũng không cấp phát trong `onDraw` (mảng mép dải cấp trong `onSizeChanged`, chữ chạy dựng một lần). Khi app vào nền, hệ thống ngừng vẽ nên vòng lặp tự dừng; khi người dùng tắt hiệu ứng động của hệ thống, cả hai đứng yên và không hẹn khung tiếp theo.
+- **Nền chuyển động liên tục** (REQUIREMENTS Q43): `LiquidPosterView` tự vẽ lại mỗi khung hình và tái sử dụng mảng mép dải đã cấp trong `onSizeChanged`. Nền là một View riêng nên không gọi lại `onDraw` của sơ đồ. Khi tắt hiệu ứng động của hệ thống, nền đứng yên.
 - **Culling:** mỗi khung hình `MapCamera.getVisibleWorldBounds` trả về khung bao của vùng nhìn trong tọa độ sơ đồ (bốn góc màn hình đổi ngược về sơ đồ, có tính cả xoay); `VenueRenderer` bỏ qua các chỗ nằm hẳn ngoài khung này (có lề 24dp cho vòng sáng và viền). Khi zoom lớn chỉ còn vài chục chỗ được vẽ.
 - **Mức chi tiết (LOD):** mã chỗ (A05…) chỉ vẽ khi chỗ đủ to trên màn hình (đường kính từ 22dp). Các ký hiệu trạng thái ✓ ✕ ★ và gạch chéo vẽ ở mọi mức zoom (theo bản xem trước G); chúng chỉ là vài đường thẳng hoặc một `Path` dựng sẵn nên không đáng kể.
 - **Cắt theo khung:** `onDraw` tự `clipRect` theo khung của View, và chữ tên phân khu vẽ trong tọa độ màn hình nên luôn cùng cỡ.
@@ -449,6 +450,17 @@ Dự án có sử dụng **Claude Code** (Anthropic) và **Codex** (OpenAI). Quy
   - Bản đầu đặt vé quá sát mép của mặt nạ tròn. Codex thu nhỏ phần vé để giữ khoảng trống quanh viền.
   - Đã chạy `assembleDebug test` và xác nhận biểu tượng màu hiển thị trên launcher của emulator. Bản đơn sắc và bản kích thước nhỏ được đối chiếu bằng ảnh xem trước.
 - **Sinh viên kiểm tra/điều chỉnh:** Đã yêu cầu thiết kế logo theo concept hiện tại và bổ sung kết quả vào nhật ký. Codex thực hiện các bước kiểm tra trên.
+
+### 2026-11-27 (tiếp): viền sticker nổi khối, bỏ chữ chạy
+
+- **Agent/model:** Codex (OpenAI). Các thay đổi để lại chưa commit; Claude Code (Claude Opus 5.5) tách thành 7 commit code và 1 commit tài liệu ở phiên sau, theo danh sách sinh viên duyệt.
+- **Nhiệm vụ được giao:** làm viền sticker trông nổi khối và bỏ dòng chữ chạy quanh viền sơ đồ.
+- **Code được sinh/sửa:** `decor/StickerRelief` (mới), `ui/RaisedStickerStroke` (mới); sửa `StickerFrameView` (bỏ chữ chạy, dùng viền nổi), `StickerOutline` (thêm hệ số biên độ gợn), `FloatingSheetLayout`, `StickerChrome`, `VenueRenderer` (viền sân khấu chuyển sắc), `MainActivity`, `colors.xml`, `strings.xml`; xóa `TickerText` và `TickerTextTest`; thêm test chạy trên máy `StickerReliefTest`.
+- **Lỗi hoặc hạn chế của kết quả AI:**
+  - Không commit và không ghi nhật ký, nên bản trên GitHub tạm thời lệch với ảnh chụp trong README.
+  - Bỏ chữ chạy trái với quyết định Q48 nhưng không ghi lại quyết định mới (sau đó ghi bổ sung thành Q50).
+  - `StickerReliefTest` là test chạy trên máy (`connectedDebugAndroidTest`), không chạy trong `./gradlew test`.
+- **Sinh viên kiểm tra/điều chỉnh:**
 
 ### 2026-11-27 (tiếp): chụp lại ảnh giao diện
 
