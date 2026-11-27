@@ -18,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.midtermproject.R;
 import com.example.midtermproject.data.MockVenueFactory;
+import com.example.midtermproject.decor.ConcertTitleView;
 import com.example.midtermproject.decor.LiquidPosterView;
 import com.example.midtermproject.decor.StickerFrameView;
 import com.example.midtermproject.decor.TickerText;
@@ -90,6 +91,9 @@ public class MainActivity extends AppCompatActivity
         // Mở màn chỉ chạy khi app mở mới, không chạy lại mỗi lần xoay máy (Activity được tạo lại).
         if (savedInstanceState == null) {
             mapView.playIntro();
+        } else {
+            // Tên "Gieo" cũng chỉ rơi xuống khi app mở mới; xoay máy thì hiện ngay ở vị trí cuối.
+            ((ConcertTitleView) findViewById(R.id.concert_title)).showSettled();
         }
         // Dòng chữ chạy quanh viền sticker: tên khu và giá thấp nhất, dựng một lần từ dữ liệu.
         final StickerFrameView stickerFrame = findViewById(R.id.sticker_frame);
@@ -176,6 +180,7 @@ public class MainActivity extends AppCompatActivity
         super.onResume();
         final boolean animated = animationsEnabled();
         ((LiquidPosterView) findViewById(R.id.poster_background)).setAnimated(animated);
+        ((ConcertTitleView) findViewById(R.id.concert_title)).setAnimated(animated);
         ((StickerFrameView) findViewById(R.id.sticker_frame)).setAnimated(animated);
         mapView.setEffectsEnabled(animated);
         detailSheet.setAnimated(animated);
