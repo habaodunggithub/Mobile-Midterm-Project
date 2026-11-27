@@ -184,6 +184,7 @@ public class MainActivity extends AppCompatActivity
         ((StickerFrameView) findViewById(R.id.sticker_frame)).setAnimated(animated);
         mapView.setEffectsEnabled(animated);
         detailSheet.setAnimated(animated);
+        filterBar.setAnimated(animated);
     }
 
     /**

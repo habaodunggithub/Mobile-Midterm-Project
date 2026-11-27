@@ -1,6 +1,10 @@
 package com.example.midtermproject.ui;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -11,18 +15,23 @@ import android.widget.TextView;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.StringRes;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.ColorUtils;
 
 import com.example.midtermproject.R;
 import com.example.midtermproject.model.ZoneType;
 import com.example.midtermproject.state.SpotFilter;
 import com.example.midtermproject.state.VenueMapState;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.slider.RangeSlider;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Điều khiển các control lọc: ô tìm kiếm, chip khu, công tắc "Chỉ chỗ trống" và thanh khoảng giá.
@@ -43,6 +52,11 @@ final class FilterBar {
     /** Khung thanh lọc (nhận focus được): nơi chuyển focus tới khi ô tìm kiếm xong việc. */
     private final View focusHolder;
     private final ChipGroup zoneChips;
+    /** Thời gian chip khu đổi màu khi chọn hoặc bỏ chọn (Q49). */
+    private static final long CHIP_FADE_MS = 180L;
+    /** Hiệu ứng đổi màu đang chạy của từng chip, để hủy khi chip đổi trạng thái lần nữa giữa chừng. */
+    private final Map<Chip, ValueAnimator> chipAnimators = new HashMap<>();
+    private boolean animated = true;
     private final SwitchMaterial availableOnly;
     private final RangeSlider priceSlider;
     private final TextView priceRange;
@@ -122,6 +136,55 @@ final class FilterBar {
                 state.setFilter(state.getFilter().withZone(zoneOf(checkedIds.get(0))));
             }
         });
+        for (int i = 0; i < zoneChips.getChildCount(); i++) {
+            final Chip chip = (Chip) zoneChips.getChildAt(i);
+            chip.setOnCheckedChangeListener((button, checked) -> crossfadeChip(chip, checked));
+        }
+    }
+
+    /** Bật hoặc tắt hiệu ứng đổi màu chip (theo cài đặt hiệu ứng của hệ thống, xem MainActivity). */
+    void setAnimated(boolean animated) {
+        this.animated = animated;
+    }
+
+    /**
+     * Chip vừa được chọn hoặc bỏ chọn: nền và chữ chuyển dần từ màu cũ sang màu mới trong 180ms (Q49) bằng cách
+     * trộn hai màu theo tỉ lệ f (0 → 1). Xong thì trả lại bộ màu theo trạng thái để chip tự đổi màu như cũ. Chưa hiện
+     * lên màn hình (lúc khôi phục sau khi xoay) hoặc hiệu ứng bị tắt thì không làm gì: chip đổi màu ngay.
+     */
+    private void crossfadeChip(Chip chip, boolean checked) {
+        final ValueAnimator running = chipAnimators.remove(chip);
+        if (running != null) {
+            running.cancel();
+        }
+        if (!animated || !chip.isLaidOut()) {
+            return;
+        }
+        final int bgFrom = color(checked ? R.color.surface : R.color.chip_selected_bg);
+        final int bgTo = color(checked ? R.color.chip_selected_bg : R.color.surface);
+        final int fgFrom = color(checked ? R.color.chip_available_fg : R.color.chip_selected_fg);
+        final int fgTo = color(checked ? R.color.chip_selected_fg : R.color.chip_available_fg);
+        final ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
+        animator.setDuration(CHIP_FADE_MS);
+        animator.addUpdateListener(animation -> {
+            final float f = (float) animation.getAnimatedValue();
+            chip.setChipBackgroundColor(ColorStateList.valueOf(ColorUtils.blendARGB(bgFrom, bgTo, f)));
+            chip.setTextColor(ColorUtils.blendARGB(fgFrom, fgTo, f));
+        });
+        animator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                chip.setChipBackgroundColor(ContextCompat.getColorStateList(context, R.color.chip_filter_background));
+                chip.setTextColor(ContextCompat.getColorStateList(context, R.color.chip_filter_text));
+                chipAnimators.remove(chip);
+            }
+        });
+        chipAnimators.put(chip, animator);
+        animator.start();
+    }
+
+    private int color(int resId) {
+        return ContextCompat.getColor(context, resId);
     }
 
     private void bindAvailableOnly() {
