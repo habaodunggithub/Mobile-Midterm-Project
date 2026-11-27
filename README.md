@@ -425,3 +425,17 @@ Dự án được làm với trợ lý lập trình **Claude Code** (Anthropic).
   - Hiệu ứng gợn khi bấm phần đầu thẻ là hình chữ nhật, có thể tràn nhẹ ra hai góc bo phía trên.
   - Chỉ kiểm trên emulator, chưa thử trên máy thật.
 - **Sinh viên kiểm tra/điều chỉnh:**
+
+### 2026-11-27: tên "Gieo" và các hiệu ứng tinh tế
+
+- **Agent/model:** Claude Code (Claude Opus 5.5), có dùng `huashu-design` và `ui-ux-pro-max`. Vẽ ba cách đặt tên (`design-demos/ui-psychedelic/title-options.html`, ngoài repo), hỏi sinh viên về cách đặt tên, các hiệu ứng muốn thêm và danh sách 16 commit (Q49). Kiểm trên emulator bằng ảnh chụp liên tiếp từng khung hiệu ứng, so ảnh khi tắt hiệu ứng hệ thống, và build lại từng commit trong một `git worktree` riêng.
+- **Nhiệm vụ được giao:** thêm tên đêm nhạc "Gieo" và các hiệu ứng động tinh tế.
+- **Code được sinh/sửa:** `decor/TitleMotion`, `decor/ConcertTitleView`, `map/DimFader`, `ui/Reveal` (mới); `SpotEffects` (vòng chỗ đang xem thu về), `SpotRenderer`, `VenueRenderer`, `VenueMapView`, `FilterBar`, `DetailSheet`, `LegendCard`, `MainActivity`, `strings.xml`, hai layout thanh lọc; thêm `TitleMotionTest`, `DimFaderTest` và 4 test vào `SpotEffectsTest`.
+- **Lỗi hoặc hạn chế của kết quả AI:**
+  - Khi làm, repo đang có thay đổi chưa commit không do AI làm (xóa chữ chạy quanh viền, `StickerRelief`, `RaisedStickerStroke`). AI hỏi sinh viên và giữ nguyên chúng, nhưng commit `feat(decor): add ConcertTitleView…` lúc đầu đưa cả file `strings.xml` vào nên lấy luôn việc xóa chuỗi `ticker_section_format`, làm hai commit không build được. AI chỉ phát hiện khi build lại bản commit trong worktree; được sinh viên cho phép, AI dựng lại hai commit đó (chưa push) bằng `git reset --mixed`.
+  - `SpotEffects.isRunning` lúc đầu tính `now − Long.MIN_VALUE` bị tràn số nên luôn báo còn hiệu ứng (sơ đồ sẽ vẽ lại mãi); test cũ bắt được trước khi commit.
+  - Một test mới của `TitleMotion` kiểm sai thời điểm (lúc các chữ sau còn đang rơi); code đúng, test được sửa trước khi commit.
+  - Một lệnh shell bị treo vì gõ thừa `cat`, phải dừng tay.
+  - Hiệu ứng chỉ được kiểm qua ảnh chụp trên emulator; cú nảy 4dp của nút Đặt vé quá nhỏ để thấy rõ trong ảnh. Chưa thử trên máy thật.
+  - Ở máy ngang, tên "Gieo" (chữ kem viền tím) nằm trên panel lọc cũng màu kem nên chủ yếu thấy phần viền.
+- **Sinh viên kiểm tra/điều chỉnh:**
