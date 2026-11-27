@@ -32,10 +32,10 @@ Mỗi chỗ có một trong năm trạng thái hiển thị: **Còn trống**, *
 | Bottom Sheet | Thu gọn hiện chỗ đang xem và tóm tắt lựa chọn; mở rộng hiện danh sách "Đang chọn" và "Vé của bạn"; bấm dòng để định vị chỗ trên sơ đồ, bấm ✕ để bỏ chọn; đồng bộ hai chiều với sơ đồ |
 | Đặt vé | Nút "Đặt N vé", hộp thoại xác nhận, chỗ đã đặt thành "Vé của bạn" |
 | Lưu dữ liệu | Lựa chọn và vé của bạn được lưu bằng `SharedPreferences` và còn lại sau khi tắt hẳn app; nút ⋮ → "Làm mới dữ liệu" để xóa |
-| Xoay màn hình | Giữ nguyên chỗ đang xem, bộ lọc, góc nhìn, bảng chú thích, hộp thoại; bố cục riêng cho máy ngang: cột trái gồm panel lọc ở trên và bảng chi tiết ở đáy, sơ đồ bên phải cao trọn màn hình nên bảng chú thích chỉ che khoảng 22% sơ đồ |
+| Xoay màn hình | Giữ nguyên chỗ đang xem, bộ lọc, góc nhìn, bảng chú thích, hộp thoại; bố cục riêng cho máy ngang: cột trái gồm tên "Gieo", panel lọc (bốn chip khu trên một hàng) và bảng chi tiết ở đáy, sơ đồ bên phải cao trọn màn hình nên bảng chú thích chỉ che khoảng 22% sơ đồ |
 | Giao diện "Poster lỏng" | Cả màn hình là poster hồng sen với các dải lỏng cam, xanh lá, tím uốn lượn liên tục; sơ đồ là một miếng sticker có viền cam lượn sóng, nổi khối (sáng ở góc trên trái, tối ở góc dưới phải); thanh lọc, nút, hộp thoại và bảng chi tiết cũng là sticker có viền nổi cùng hướng sáng; sticker sơ đồ kết thúc cách bảng chi tiết 10dp nên không bị che. Nhãn khu viết hoa; ký hiệu ✓ ✕ ★ và gạch chéo hiện ở mọi mức zoom. Chữ lượn Kablammo cho "SÂN KHẤU" và nút "Đặt N vé" (xanh lá viền cam), Space Mono cho nhãn. Bố cục khớp bản xem trước "G. Poster lỏng" |
 | Hiệu ứng động | Mở app: chỗ hiện dần từ sân khấu ra. Chọn hoặc bỏ chọn: chỗ nảy lên kèm vòng lan. Chạm chỗ không chọn được: chỗ lắc ngang. Đặt vé xong: các chỗ lần lượt lật sang "Vé của bạn". Chip và nút nảy khi bấm; tổng tiền chạy số. Tắt hết khi người dùng tắt hiệu ứng động của hệ thống |
-| Tên đêm nhạc "Gieo" | Chữ lượn Kablammo màu kem viền tím ở đầu thanh lọc (máy ngang: đầu panel lọc). Mở app: từng chữ rơi xuống nảy nhẹ, sau đó lắc lư rất chậm; xoay máy thì hiện ngay, không rơi lại |
+| Tên đêm nhạc "Gieo" | Chữ lượn Kablammo màu kem viền tím nằm trên nền poster, phía trên ô tìm kiếm (máy ngang: phía trên panel lọc). Mở app: từng chữ rơi xuống nảy nhẹ, sau đó lắc lư rất chậm; xoay máy thì hiện ngay, không rơi lại |
 | Hiệu ứng tinh tế | Đổi bộ lọc: chỗ ngoài bộ lọc mờ dần trong 200ms, chip khu đổi màu mượt. Đổi chỗ đang xem: dòng thông tin trượt lên và rõ dần, chip trạng thái đổi màu mượt, nút Đặt vé nảy khi vừa bật. Bảng chú thích, thẻ Giá và la bàn bung ra từ phía nút bấm. Chạm một chỗ: vòng đánh dấu rộng rồi thu về ôm sát chỗ |
 
 ### Ảnh chụp màn hình
@@ -46,7 +46,7 @@ Chụp trên emulator Pixel 6 (Android 15) từ bản thử nghiệm giao diện
 |:---:|:---:|:---:|
 | <img src="docs/screenshots/portrait-default.jpg" width="240" alt="Màn hình dọc ở góc nhìn mặc định"> | <img src="docs/screenshots/portrait-selected-sheet.jpg" width="240" alt="Đã zoom vào sơ đồ, chọn 3 chỗ, bảng chi tiết mở rộng"> | <img src="docs/screenshots/booking-dialog.jpg" width="240" alt="Hộp thoại xác nhận đặt 3 vé"> |
 
-Ngang: cột trái gồm panel lọc và bảng chi tiết, sơ đồ cao trọn màn hình bên phải; bộ lọc VIP đang bật (thẻ "Đang lọc" nổi ở đầu sơ đồ) và bảng chú thích đang mở.
+Ngang: cột trái gồm tên "Gieo", panel lọc và bảng chi tiết; sơ đồ cao trọn màn hình bên phải; bộ lọc VIP đang bật (thẻ "Đang lọc" nổi ở đầu sơ đồ) và bảng chú thích đang mở.
 
 <img src="docs/screenshots/landscape-filter-legend.jpg" width="640" alt="Màn hình ngang có bộ lọc VIP và bảng chú thích">
 
@@ -482,4 +482,15 @@ Dự án có sử dụng **Claude Code** (Anthropic) và **Codex** (OpenAI). Quy
   - Thẻ "Đang lọc" ở máy ngang che phần sân khấu khi đang lọc; nhãn khu sát mép phải vẫn có thể nằm dưới cột nút như bản dọc.
   - Bảng chi tiết khi mở rộng ở máy ngang chỉ cao khoảng nửa màn hình nên danh sách phải cuộn sớm.
   - Chỉ kiểm trên emulator Pixel 6; chưa thử máy thật hay máy có màn hình nhỏ hơn.
+- **Sinh viên kiểm tra/điều chỉnh:**
+
+### 2026-11-27 (tiếp): tên "Gieo" và hàng chip ở máy ngang
+
+- **Agent/model:** Claude Code (Claude Opus 5.5), có dùng `ui-ux-pro-max` (quy tắc hàng chip: không cắt chữ, cho xuống dòng trước khi thu nhỏ). Đo bề rộng chip bằng `uiautomator dump`; hỏi sinh viên cách để bốn chip trên một hàng và danh sách commit (Q53). Kiểm trên emulator bằng ảnh chụp, cả dọc lẫn ngang.
+- **Nhiệm vụ được giao:** ở máy ngang, đưa chữ "Gieo" ra ngoài panel lọc như bản dọc và để bốn chip khu trên cùng một hàng.
+- **Code được sinh/sửa:** `layout-land/activity_main.xml` (tên "Gieo" nằm trên panel, panel có đệm dưới), `layout-land/view_filter_bar.xml`, `values/dimens.xml`, `values-land/dimens.xml` (cột trái 320dp, panel 304dp). Chụp lại ảnh ngang.
+- **Lỗi hoặc hạn chế của kết quả AI:**
+  - Bốn chip chỉ còn dư khoảng 6dp; nếu tăng cỡ chữ hệ thống thì chip vẫn xuống dòng (cố ý, để không bị cắt chữ).
+  - Panel lọc ngang thấp nên "Chỉ chỗ trống" và khoảng giá nằm dưới, phải cuộn panel mới thấy; ngoài thanh cuộn của hệ thống không có gợi ý nào khác.
+  - Sơ đồ ngang hẹp đi 24dp; chú thích vẫn che khoảng 22% sơ đồ (đo bằng `uiautomator`).
 - **Sinh viên kiểm tra/điều chỉnh:**
