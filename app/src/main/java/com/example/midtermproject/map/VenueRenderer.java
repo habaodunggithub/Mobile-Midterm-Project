@@ -253,6 +253,7 @@ public final class VenueRenderer {
                 canvas.scale(grow, grow, spot.cx, spot.cy);
             }
             final DisplayState state = states.displayStateOf(spot);
+            spotRenderer.setFocusSettle(effects.focusSettleOf(spot, now));
             spotRenderer.draw(canvas, spot, state, dim, states.isFocused(spot));
             if (transformed) {
                 canvas.restore();

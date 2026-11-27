@@ -279,6 +279,8 @@ public class MainActivity extends AppCompatActivity
         } else {
             mapView.playShake(spot);
         }
+        // Chỗ vừa chạm luôn thành chỗ đang xem (Q13): vòng đánh dấu thu về ôm sát nó (Q49).
+        mapView.playFocusSettle(spot);
         showResult(result);
     }
 

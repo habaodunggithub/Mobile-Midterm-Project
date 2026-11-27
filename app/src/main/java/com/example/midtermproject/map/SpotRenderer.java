@@ -66,6 +66,8 @@ public final class SpotRenderer {
     private boolean dimmed;
     /** Độ đậm (0–255) của chỗ đang vẽ: 255 khi rõ hẳn, {@link #DIMMED_ALPHA} khi mờ hẳn, ở giữa khi đang mờ dần. */
     private int dimAlpha = 255;
+    /** Xem {@link #setFocusSettle}. */
+    private float focusSettle;
 
     public SpotRenderer(Context context) {
         density = context.getResources().getDisplayMetrics().density;
@@ -192,12 +194,21 @@ public final class SpotRenderer {
     }
 
     /**
+     * Độ "chưa thu về" của vòng chỗ đang xem cho chỗ sắp vẽ (Q49), từ 0 đến 1; lấy từ
+     * {@code SpotEffects.focusSettleOf}. Gọi trước {@link #draw}.
+     */
+    public void setFocusSettle(float settle) {
+        this.focusSettle = settle;
+    }
+
+    /**
      * Vòng đôi: viền trắng bên dưới, vòng mực bên trên, nên thấy được trên mọi màu nền. Khi vừa định
-     * vị, vòng nở ra và dày lên theo {@code pulse} để thu hút mắt, rồi trở về bình thường.
+     * vị, vòng nở ra và dày lên theo {@code pulse} để thu hút mắt, rồi trở về bình thường. Khi vừa chạm,
+     * vòng bắt đầu rộng gấp 3 lần rồi thu về ôm sát chỗ theo {@code focusSettle} (Q49).
      */
     private void drawFocusRing(Canvas canvas, Spot spot) {
         dimmed = false;
-        final float grow = 1f + 3.2f * pulse;
+        final float grow = 1f + 3.2f * pulse + 2f * focusSettle;
         final float radius = spot.size + 4.2f * density * pixel * grow;
         shape(canvas, spot, radius, strokePaint(focusHalo, (4f + 4f * pulse) * density, 255));
         shape(canvas, spot, radius, strokePaint(focusInk, (1.8f + 2.4f * pulse) * density, 255));

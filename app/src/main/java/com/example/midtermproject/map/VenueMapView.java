@@ -249,6 +249,14 @@ public class VenueMapView extends View {
         }
     }
 
+    /** Chỗ vừa được chạm thành chỗ đang xem: vòng đánh dấu xuất hiện rộng rồi thu về ôm sát chỗ (Q49). */
+    public void playFocusSettle(Spot spot) {
+        if (effects != null) {
+            effects.settleFocus(spot, SystemClock.uptimeMillis());
+            invalidate();
+        }
+    }
+
     /** Chỗ vừa được chọn hoặc bỏ chọn: nảy lên kèm một vòng lan (Q43). */
     public void playPop(Spot spot) {
         if (effects != null) {
