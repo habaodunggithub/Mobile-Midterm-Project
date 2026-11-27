@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Outline;
-import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
 import android.util.AttributeSet;
@@ -28,9 +27,9 @@ public class StickerFrameView extends View {
      */
     private static final float CONTENT_CORNER_DP = 44f;
 
-    private final Paint bandPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    /** Dải viền: mép ngoài và mép trong trong cùng một Path, tô theo luật EVEN_ODD nên phần giữa để trống. */
-    private final Path band = new Path();
+    private StickerRelief relief;
+    private final Path outerPath = new Path();
+    private final Path innerPath = new Path();
     private final RectF rect = new RectF();
 
     private float density;
@@ -70,9 +69,7 @@ public class StickerFrameView extends View {
         margin = res.getDimension(R.dimen.sticker_margin);
         bandWidth = res.getDimension(R.dimen.sticker_band);
 
-        bandPaint.setStyle(Paint.Style.FILL);
-        bandPaint.setColor(ContextCompat.getColor(context, R.color.sticker_band));
-        band.setFillType(Path.FillType.EVEN_ODD);
+        relief = new StickerRelief(ContextCompat.getColor(context, R.color.sticker_band));
 
         setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
     }
@@ -130,18 +127,21 @@ public class StickerFrameView extends View {
             return;
         }
         final float bottom = h - bottomInset;
-        band.reset();
+        outerPath.rewind();
+        innerPath.rewind();
         rect.set(margin, margin, w - margin, bottom - margin);
-        StickerOutline.addOuter(band, rect, density);
+        StickerOutline.addOuter(outerPath, rect, density);
         // Mép trong cũng lượn như mép ngoài (mẫu G), gợn nhỏ hơn và lệch pha để hai mép không song song.
         rect.inset(bandWidth, bandWidth);
-        StickerOutline.addInner(band, rect, density);
+        StickerOutline.addInner(innerPath, rect, density);
+        rect.inset(-bandWidth, -bandWidth);
+        relief.update(outerPath, innerPath, rect, bandWidth);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.drawPath(band, bandPaint);
+        relief.draw(canvas, outerPath, innerPath);
     }
 
     /**
