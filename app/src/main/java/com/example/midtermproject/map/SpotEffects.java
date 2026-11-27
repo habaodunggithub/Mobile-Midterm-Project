@@ -30,6 +30,8 @@ public final class SpotEffects {
     /** Lật: chỗ thứ k (theo khoảng cách tới sân khấu) bắt đầu muộn hơn chỗ đầu k lần ngần này. */
     static final long FLIP_STAGGER_MS = 80L;
     static final long SHAKE_DURATION_MS = 400L;
+    /** Thời gian vòng chỗ đang xem thu về ôm sát chỗ. */
+    static final long FOCUS_SETTLE_MS = 180L;
     /** Số lần lắc qua lại trong một lần rung. */
     static final int SHAKE_CYCLES = 3;
     /** Độ vọt quá của đường cong "bật ra" khi chỗ hiện lên (back easing). */
@@ -71,6 +73,9 @@ public final class SpotEffects {
     /** Thời điểm chỗ xa nhất hiện xong, để biết lúc nào mở màn kết thúc. */
     private long introEnd = Long.MIN_VALUE;
     private boolean enabled = true;
+    /** Chỗ đang xem vừa được chạm, và lúc vòng đánh dấu của nó bắt đầu thu về (Q49). */
+    private String focusId;
+    private long focusStart = Long.MIN_VALUE;
 
     /** @param originX, originY tâm sân khấu theo tọa độ sơ đồ: nơi các làn sóng bắt đầu */
     public SpotEffects(float originX, float originY) {
@@ -94,6 +99,29 @@ public final class SpotEffects {
         entries.clear();
         introStart = Long.MIN_VALUE;
         introEnd = Long.MIN_VALUE;
+        focusId = null;
+        focusStart = Long.MIN_VALUE;
+    }
+
+    /** Chỗ vừa thành chỗ đang xem: vòng đánh dấu của nó xuất hiện to rồi thu về ôm sát (Q49). */
+    public void settleFocus(Spot spot, long now) {
+        if (!enabled) {
+            return;
+        }
+        focusId = spot.id;
+        focusStart = now;
+    }
+
+    /**
+     * Độ "chưa thu về" của vòng chỗ đang xem: 1 lúc vừa chạm (vòng to nhất), giảm về 0 khi đã ôm sát chỗ. Đi theo
+     * (1 − p)² với p là tiến độ từ 0 đến 1, tức là thu nhanh lúc đầu rồi chậm dần, như ống kính vừa lấy nét xong.
+     * Chỗ khác hoặc đã xong thì là 0.
+     */
+    public float focusSettleOf(Spot spot, long now) {
+        if (focusId == null || !focusId.equals(spot.id)) {
+            return 0f;
+        }
+        return focusSettle(now - focusStart);
     }
 
     /** Bắt đầu mở màn; {@code farthest} là khoảng cách lớn nhất từ sân khấu tới một chỗ, để biết lúc kết thúc. */
@@ -153,7 +181,9 @@ public final class SpotEffects {
                 entries.remove(i);
             }
         }
-        return !entries.isEmpty() || now < introEnd;
+        // Kiểm focusStart trước khi trừ: với Long.MIN_VALUE, phép trừ bị tràn số thành số âm.
+        final boolean settling = focusStart != Long.MIN_VALUE && now - focusStart < FOCUS_SETTLE_MS;
+        return !entries.isEmpty() || now < introEnd || settling;
     }
 
     /** Hệ số phóng của chỗ ở thời điểm {@code now}: 1 là bình thường, 0 là chưa hiện. */
@@ -253,6 +283,14 @@ public final class SpotEffects {
         }
         final float p = (float) elapsed / RING_DURATION_MS;
         return 1f - (1f - p) * (1f - p);
+    }
+
+    static float focusSettle(long elapsed) {
+        if (elapsed < 0 || elapsed >= FOCUS_SETTLE_MS) {
+            return 0f;
+        }
+        final float remaining = 1f - (float) elapsed / FOCUS_SETTLE_MS;
+        return remaining * remaining;
     }
 
     /** Rung: sin của {@link #SHAKE_CYCLES} vòng, biên độ giảm tuyến tính về 0. */
