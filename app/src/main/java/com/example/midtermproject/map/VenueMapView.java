@@ -202,6 +202,7 @@ public class VenueMapView extends View {
 
     /** Bật hoặc tắt hiệu ứng trên từng chỗ (theo cài đặt hiệu ứng của hệ thống, xem MainActivity). */
     public void setEffectsEnabled(boolean enabled) {
+        renderer.setFadeEnabled(enabled);
         if (effects != null) {
             effects.setEnabled(enabled);
             if (!enabled) {
@@ -483,7 +484,7 @@ public class VenueMapView extends View {
         renderer.draw(canvas, venue, states, worldToScreen, camera.getScale(), camera.getAngle(), focusPulse,
                 visibleBounds, effects, getWidth(), getHeight() - bottomInsetPx, now);
         // Còn hiệu ứng chạy thì hẹn vẽ khung tiếp theo; hết thì thôi, sơ đồ đứng yên không tốn pin.
-        if (effects.isRunning(now) || renderer.hasActiveLightShow(now)) {
+        if (effects.isRunning(now) || renderer.hasActiveLightShow(now) || renderer.isFading()) {
             postInvalidateOnAnimation();
         }
     }

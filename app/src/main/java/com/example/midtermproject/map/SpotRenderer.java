@@ -64,6 +64,8 @@ public final class SpotRenderer {
     /** 0 đến 1: độ "nhấp nháy" của vòng chỗ đang xem khi vừa được định vị; 0 là vòng bình thường. */
     private float pulse;
     private boolean dimmed;
+    /** Độ đậm (0–255) của chỗ đang vẽ: 255 khi rõ hẳn, {@link #DIMMED_ALPHA} khi mờ hẳn, ở giữa khi đang mờ dần. */
+    private int dimAlpha = 255;
 
     public SpotRenderer(Context context) {
         density = context.getResources().getDisplayMetrics().density;
@@ -116,11 +118,14 @@ public final class SpotRenderer {
     /**
      * Vẽ một chỗ.
      *
-     * @param dimmed  chỗ nằm ngoài bộ lọc: vẽ mờ nhưng giữ nguyên hình dạng và trạng thái
+     * @param dimLevel mức mờ từ 0 (rõ) đến 1 (mờ hẳn, chỗ ngoài bộ lọc); ở giữa khi đang mờ dần (Q49).
+     *                 Vẽ mờ nhưng giữ nguyên hình dạng và trạng thái
      * @param focused chỗ đang xem: thêm vòng đôi bên ngoài
      */
-    public void draw(Canvas canvas, Spot spot, DisplayState state, boolean dimmed, boolean focused) {
-        this.dimmed = dimmed;
+    public void draw(Canvas canvas, Spot spot, DisplayState state, float dimLevel, boolean focused) {
+        this.dimmed = dimLevel > 0f;
+        // Nội suy tuyến tính độ đậm: 255 + (DIMMED_ALPHA − 255)·mức mờ.
+        this.dimAlpha = Math.round(255 + (DIMMED_ALPHA - 255) * dimLevel);
         final boolean detail = showsDetails(spot.size);
         switch (state) {
             case SELECTED:
@@ -202,7 +207,7 @@ public final class SpotRenderer {
         text.setColor(color);
         text.setTextSize(spot.size * 0.62f);
         if (dimmed) {
-            text.setAlpha(DIMMED_ALPHA);
+            text.setAlpha(dimAlpha);
         }
         text.getFontMetrics(fontMetrics);
         canvas.save();
@@ -263,7 +268,7 @@ public final class SpotRenderer {
         fill.setStyle(Paint.Style.FILL);
         fill.setColor(color);
         if (dimmed) {
-            fill.setAlpha(DIMMED_ALPHA);
+            fill.setAlpha(dimAlpha);
         }
         return fill;
     }
@@ -272,7 +277,7 @@ public final class SpotRenderer {
         stroke.setStyle(Paint.Style.STROKE);
         stroke.setColor(color);
         stroke.setStrokeWidth(widthPx * pixel);
-        stroke.setAlpha(dimmed ? Math.min(alpha, DIMMED_ALPHA) : alpha);
+        stroke.setAlpha(dimmed ? alpha * dimAlpha / 255 : alpha);
         return stroke;
     }
 
@@ -280,7 +285,7 @@ public final class SpotRenderer {
         glyph.setColor(color);
         glyph.setStrokeWidth(widthWorld);
         if (dimmed) {
-            glyph.setAlpha(DIMMED_ALPHA);
+            glyph.setAlpha(dimAlpha);
         }
         return glyph;
     }

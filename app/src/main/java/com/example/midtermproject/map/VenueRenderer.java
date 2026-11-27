@@ -44,6 +44,11 @@ public final class VenueRenderer {
     private static final int STAGE_POINTS = 96;
 
     private final SpotRenderer spotRenderer;
+    /** Độ mờ từng chỗ khi đổi bộ lọc, tiến dần thay vì tắt bụp (Q49). */
+    private final DimFader dimFader = new DimFader();
+    private Venue fadeVenue;
+    /** Thời điểm khung trước, để tính khoảng thời gian cho {@link DimFader}; −1 là chưa có khung nào. */
+    private long lastFrameTime = -1L;
     private final MapLightShow lightShow;
     private final float density;
 
@@ -208,6 +213,12 @@ public final class VenueRenderer {
     private void drawSpots(Canvas canvas, Venue venue, SpotStateSource states, float scale, float angleRad,
                            float pulse, float[] visibleBounds, SpotEffects effects, long now) {
         spotRenderer.beginFrame(scale, (float) Math.toDegrees(angleRad), pulse);
+        if (fadeVenue != venue) {
+            dimFader.reset(venue.getSpots().size());
+            fadeVenue = venue;
+        }
+        dimFader.beginFrame(lastFrameTime < 0 ? 0f : now - lastFrameTime);
+        lastFrameTime = now;
         // Culling: bỏ qua chỗ nằm hẳn ngoài vùng nhìn (kể cả phần vòng sáng và viền vẽ rộng ra), nên khi
         // phóng to chỉ vẽ vài chục chỗ thay vì cả 224 chỗ.
         final float margin = CULL_MARGIN_DP * density / scale;
@@ -223,6 +234,8 @@ public final class VenueRenderer {
         final List<Spot> spots = venue.getSpots();
         for (int i = 0; i < spots.size(); i++) {
             final Spot spot = spots.get(i);
+            // Tính độ mờ cho mọi chỗ, kể cả chỗ ngoài màn hình, để chỗ nào cũng đi đúng nhịp mờ dần.
+            final float dim = dimFader.level(i, states.isDimmed(spot));
             if (spot.cx + spot.size < left || spot.cx - spot.size > right
                     || spot.cy + spot.size < top || spot.cy - spot.size > bottom) {
                 continue;
@@ -240,7 +253,7 @@ public final class VenueRenderer {
                 canvas.scale(grow, grow, spot.cx, spot.cy);
             }
             final DisplayState state = states.displayStateOf(spot);
-            spotRenderer.draw(canvas, spot, state, states.isDimmed(spot), states.isFocused(spot));
+            spotRenderer.draw(canvas, spot, state, dim, states.isFocused(spot));
             if (transformed) {
                 canvas.restore();
             }
@@ -249,6 +262,17 @@ public final class VenueRenderer {
                 spotRenderer.drawRing(canvas, spot, state, ring);
             }
         }
+        dimFader.endFrame();
+    }
+
+    /** Còn chỗ nào đang mờ dần hoặc rõ dần không (để View biết có cần vẽ khung tiếp theo). */
+    public boolean isFading() {
+        return dimFader.isMoving();
+    }
+
+    /** Tắt thì đổi bộ lọc là chỗ đổi độ mờ ngay (theo cài đặt hiệu ứng của hệ thống). */
+    public void setFadeEnabled(boolean enabled) {
+        dimFader.setEnabled(enabled);
     }
 
     private void buildUpperLabels(Venue venue) {
