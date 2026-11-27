@@ -2,14 +2,18 @@ package com.example.midtermproject.map;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.LinearGradient;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
+import android.graphics.Shader;
 import android.graphics.Typeface;
 
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.core.graphics.ColorUtils;
 
 import com.example.midtermproject.R;
 import com.example.midtermproject.model.DisplayState;
@@ -166,6 +170,12 @@ public final class VenueRenderer {
     private void drawStage(Canvas canvas, Venue venue, float scale) {
         if (stagePathVenue != venue) {
             buildStagePath(venue);
+            stageStrokePaint.setShader(new LinearGradient(venue.stageLeft, venue.stageTop,
+                    venue.stageRight, venue.stageBottom, new int[] {
+                            ColorUtils.blendARGB(stageStroke, Color.WHITE, 0.63f),
+                            stageStroke,
+                            ColorUtils.blendARGB(stageStroke, 0xFF240915, 0.46f)
+                    }, null, Shader.TileMode.CLAMP));
             stagePathVenue = venue;
         }
         final float height = venue.stageBottom - venue.stageTop;
