@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Bố cục ngang (Q36, Q51): cột trái rộng 296dp (panel 280dp) gồm panel lọc ở trên và bảng chi tiết ở đáy; sơ đồ bên phải cao trọn
-    màn hình nên không phải chừa chỗ cho bảng. Máy ngang ít chiều cao, nên mọi control lọc xếp dọc trong panel (cuộn
-    được) thay vì nằm ngang trên đầu như bản dọc. Các lớp của sơ đồ và bảng chi tiết dùng chung với bản dọc qua include;
-    id giống hệt nên FilterBar và DetailSheet không cần biết hướng màn hình.
+    Bố cục ngang (Q36, Q51, Q52): cột trái rộng 296dp (panel 280dp) gồm panel lọc ở trên và bảng chi tiết ở đáy; sơ đồ
+    bên phải cao trọn màn hình nên không phải chừa chỗ cho bảng. Máy ngang ít chiều cao, nên các control lọc xếp dọc
+    trong panel (cuộn được) thay vì nằm ngang trên đầu như bản dọc; riêng dòng "Đang lọc" là thẻ nổi trên sơ đồ như bản
+    dọc. Các lớp của sơ đồ và bảng chi tiết dùng chung với bản dọc qua include; id giống hệt nên FilterBar và DetailSheet
+    không cần biết hướng màn hình.
 -->
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -63,25 +64,6 @@
                         android:id="@+id/filter_bar"
                         layout="@layout/view_filter_bar" />
 
-                    <!--
-                        Dòng "Đang lọc" ngay dưới ô tìm kiếm và chip, để luôn nằm trong phần nhìn thấy được trên bảng chi tiết.
-                        Ẩn khi mọi tiêu chí đều mặc định.
-                    -->
-                    <LinearLayout
-                        android:id="@+id/layout_filter_status"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/bg_panel_card"
-                        android:gravity="center_vertical"
-                        android:minHeight="48dp"
-                        android:orientation="horizontal"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="4dp"
-                        android:visibility="gone">
-
-                        <include layout="@layout/view_filter_status" />
-                    </LinearLayout>
-
                     <!-- Các control giá hiện sẵn, không có nút Giá và không có thẻ nổi. -->
                     <LinearLayout
                         android:id="@+id/card_price_filter"
@@ -116,6 +98,33 @@
             android:clipChildren="false">
 
             <include layout="@layout/view_map_layers" />
+
+            <!--
+                Dòng "Đang lọc" kèm nút Xóa lọc (AC-4.6): thẻ nổi ở đầu sơ đồ, bên trong viền sticker, chừa chỗ bên phải cho cột
+                nút, giống bản dọc (Q52). Panel lọc bên trái thấp vì chừa chỗ cho bảng chi tiết, nên nếu đặt trong panel thì
+                dòng này bị đẩy khuất. Ẩn khi mọi tiêu chí đều mặc định.
+            -->
+            <LinearLayout
+                android:id="@+id/layout_filter_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|start"
+                android:layout_marginStart="@dimen/sticker_content_margin"
+                android:layout_marginTop="@dimen/sticker_content_margin"
+                android:layout_marginEnd="@dimen/sticker_overlay_end_margin"
+                android:background="@drawable/bg_floating_card"
+                android:clickable="true"
+                android:elevation="4dp"
+                android:focusable="false"
+                android:gravity="center_vertical"
+                android:minHeight="48dp"
+                android:orientation="horizontal"
+                android:paddingStart="16dp"
+                android:paddingEnd="4dp"
+                android:visibility="gone">
+
+                <include layout="@layout/view_filter_status" />
+            </LinearLayout>
         </FrameLayout>
     </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
