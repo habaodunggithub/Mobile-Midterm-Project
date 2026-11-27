@@ -13,7 +13,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.midtermproject.decor.StickerRelief;
-import com.google.android.material.shape.AdjustedCornerSize;
 import com.google.android.material.shape.ShapeAppearanceModel;
 import com.google.android.material.shape.ShapeAppearancePathProvider;
 
@@ -22,7 +21,6 @@ import java.util.function.Supplier;
 /** Vẽ lớp nổi trên đúng kích thước của nền Material, kể cả khi nền nằm trong inset của vùng chạm. */
 final class RaisedStickerStroke extends Drawable {
     private final ShapeAppearanceModel outerShape;
-    private final ShapeAppearanceModel innerShape;
     private final ShapeAppearancePathProvider paths = new ShapeAppearancePathProvider();
     private final Path outer = new Path();
     private final Path inner = new Path();
@@ -36,7 +34,6 @@ final class RaisedStickerStroke extends Drawable {
     RaisedStickerStroke(ShapeAppearanceModel shape, float width, ColorStateList colors,
                         Supplier<Drawable> background) {
         this.outerShape = shape;
-        this.innerShape = shape.withTransformedCornerSizes(size -> new AdjustedCornerSize(-width, size));
         this.width = width;
         this.colors = colors;
         this.background = background;
@@ -57,12 +54,25 @@ final class RaisedStickerStroke extends Drawable {
             contour.inset(width, width);
             inner.rewind();
             if (!contour.isEmpty()) {
-                paths.calculatePath(innerShape, 1f, contour, inner);
+                paths.calculatePath(insetCorners(outerShape, contour, width), 1f, contour, inner);
             }
             contour.set(bounds);
             relief.update(outer, inner, contour, width);
         }
         relief.draw(canvas, outer, inner);
+    }
+
+    /**
+     * Hình của mép trong: mỗi góc bo nhỏ hơn góc ngoài đúng bằng bề dày viền (không âm), để viền dày đều cả ở chỗ bo.
+     * Chỉ chạy khi kích thước nền đổi. Dùng các hàm công khai của Material thay cho AdjustedCornerSize (API nội bộ).
+     */
+    private static ShapeAppearanceModel insetCorners(ShapeAppearanceModel shape, RectF bounds, float width) {
+        return shape.toBuilder()
+                .setTopLeftCornerSize(Math.max(0f, shape.getTopLeftCornerSize().getCornerSize(bounds) - width))
+                .setTopRightCornerSize(Math.max(0f, shape.getTopRightCornerSize().getCornerSize(bounds) - width))
+                .setBottomRightCornerSize(Math.max(0f, shape.getBottomRightCornerSize().getCornerSize(bounds) - width))
+                .setBottomLeftCornerSize(Math.max(0f, shape.getBottomLeftCornerSize().getCornerSize(bounds) - width))
+                .build();
     }
 
     @Override
