@@ -40,7 +40,7 @@ Mỗi chỗ có một trong năm trạng thái hiển thị: **Còn trống**, *
 
 ### Ảnh chụp màn hình
 
-Chụp trên emulator Pixel 6 (Android 15) từ bản thử nghiệm giao diện “Poster lỏng” với viền sticker đang được chỉnh.
+Chụp trên emulator Pixel 6 (Android 15), giao diện “Poster lỏng”, từ bản code hiện tại.
 
 | Dọc, mặc định | Dọc, đã zoom, bảng chi tiết mở rộng | Hộp thoại đặt vé |
 |:---:|:---:|:---:|
