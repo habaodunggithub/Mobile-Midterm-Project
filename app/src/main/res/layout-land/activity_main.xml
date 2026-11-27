@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Bố cục ngang (Q36, Q51, Q52): cột trái rộng 296dp (panel 280dp) gồm panel lọc ở trên và bảng chi tiết ở đáy; sơ đồ
+    Bố cục ngang (Q36, Q51, Q52): cột trái rộng 320dp (panel 304dp) gồm panel lọc ở trên và bảng chi tiết ở đáy; sơ đồ
     bên phải cao trọn màn hình nên không phải chừa chỗ cho bảng. Máy ngang ít chiều cao, nên các control lọc xếp dọc
     trong panel (cuộn được) thay vì nằm ngang trên đầu như bản dọc; riêng dòng "Đang lọc" là thẻ nổi trên sơ đồ như bản
     dọc. Các lớp của sơ đồ và bảng chi tiết dùng chung với bản dọc qua include; id giống hệt nên FilterBar và DetailSheet

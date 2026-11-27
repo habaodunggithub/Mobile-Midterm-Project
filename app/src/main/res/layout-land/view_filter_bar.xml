@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Phần đầu của panel lọc ở bố cục ngang: ô tìm kiếm rồi bốn chip khu xuống dòng khi hết chỗ. Tên "Gieo" nằm ngoài panel
+    Phần đầu của panel lọc ở bố cục ngang: ô tìm kiếm rồi bốn chip khu trên một hàng (Q53). Tên "Gieo" nằm ngoài panel
     (xem layout-land/activity_main.xml). Dùng lại đúng id của bản dọc (layout/view_filter_bar.xml) để FilterBar không cần
     biết đang ở hướng nào; không có nút Giá vì các control giá hiện sẵn trong panel. Thanh tự nhận focus và tắt
     highlight focus, lý do như bản dọc.
@@ -41,7 +41,10 @@
             android:textSize="14sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Panel hẹp nên chip xuống dòng (singleLine=false) thay vì trượt ngang. -->
+    <!--
+        Panel đủ rộng cho bốn chip trên một hàng ở cỡ chữ mặc định (Q53). Vẫn để singleLine=false: nếu người dùng tăng cỡ
+        chữ hệ thống thì chip xuống dòng chứ không bị cắt mất chữ.
+    -->
     <com.google.android.material.chip.ChipGroup
         android:id="@+id/chip_group_zone"
         android:saveEnabled="false"

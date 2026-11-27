@@ -4,7 +4,7 @@
     <dimen name="legend_card_padding">8dp</dimen>
     <dimen name="legend_swatch_size">22dp</dimen>
     <!-- Cột trái gồm panel lọc và bảng chi tiết: chỉ bố cục ngang dùng (Q51, xem values-land); giá trị ở đây để dự phòng. -->
-    <dimen name="side_column_width">296dp</dimen>
+    <dimen name="side_column_width">320dp</dimen>
     <!-- Bảng chi tiết nổi như miếng sticker, cách hai mép 10dp (Q42). -->
     <dimen name="sheet_side_margin">10dp</dimen>
     <dimen name="sheet_band_width">8dp</dimen>
