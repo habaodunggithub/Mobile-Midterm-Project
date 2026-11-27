@@ -2,8 +2,9 @@
     <!-- Kích thước bảng chú thích; bản ngang (values-land) nhỏ hơn để thẻ thấp, che ít sơ đồ (AC-1.4). -->
     <dimen name="legend_item_min_height">28dp</dimen>
     <dimen name="legend_card_padding">8dp</dimen>
-    <!-- Bảng chi tiết rộng tối đa 420dp; chỉ bố cục ngang dùng giá trị này (Q40), bố cục dọc để bảng rộng hết chiều ngang. -->
-    <dimen name="sheet_max_width">420dp</dimen>
+    <dimen name="legend_swatch_size">22dp</dimen>
+    <!-- Cột trái gồm panel lọc và bảng chi tiết: chỉ bố cục ngang dùng (Q51, xem values-land); giá trị ở đây để dự phòng. -->
+    <dimen name="side_column_width">296dp</dimen>
     <!-- Bảng chi tiết nổi như miếng sticker, cách hai mép 10dp (Q42). -->
     <dimen name="sheet_side_margin">10dp</dimen>
     <dimen name="sheet_band_width">8dp</dimen>

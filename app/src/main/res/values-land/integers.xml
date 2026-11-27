@@ -1,4 +1,6 @@
 <resources>
-    <!-- Máy ngang rộng và thấp: 11 mục xếp 2 hàng để thẻ thấp, che ít sơ đồ nhất. -->
-    <integer name="legend_columns">6</integer>
+    <!-- Máy ngang: 11 mục xếp 3 hàng, mỗi mục một dòng chữ. 6 cột thì cột quá hẹp, chữ xuống 3 dòng và thẻ cao hơn. -->
+    <integer name="legend_columns">4</integer>
+    <!-- Máy ngang: bảng chi tiết hẹp bằng cột trái (Q51) nên mỗi dòng chữ được xuống 2 dòng. -->
+    <integer name="sheet_text_lines">2</integer>
 </resources>

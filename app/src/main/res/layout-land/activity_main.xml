@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Bố cục ngang: panel lọc rộng 260dp bên trái, sơ đồ bên phải (Q36). Máy ngang ít chiều cao, nên mọi control lọc xếp
-    dọc trong panel (cuộn được) thay vì nằm ngang trên đầu như bản dọc. Các lớp của sơ đồ và bảng chi tiết dùng chung
-    với bản dọc qua include; id giống hệt nên MainActivity và FilterBar không cần biết hướng màn hình.
+    Bố cục ngang (Q36, Q51): cột trái rộng 296dp (panel 280dp) gồm panel lọc ở trên và bảng chi tiết ở đáy; sơ đồ bên phải cao trọn
+    màn hình nên không phải chừa chỗ cho bảng. Máy ngang ít chiều cao, nên mọi control lọc xếp dọc trong panel (cuộn
+    được) thay vì nằm ngang trên đầu như bản dọc. Các lớp của sơ đồ và bảng chi tiết dùng chung với bản dọc qua include;
+    id giống hệt nên FilterBar và DetailSheet không cần biết hướng màn hình.
 -->
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -27,62 +28,85 @@
         android:orientation="horizontal">
 
         <!--
-            Panel lọc: một miếng sticker kem viền tím nổi trên nền poster, cuộn được vì máy ngang ít chiều cao. Bảng chi tiết chỉ rộng 420dp ở góc dưới phải nên
-            không che panel này.
+            Cột trái. Là một CoordinatorLayout riêng để bảng chi tiết (BottomSheetBehavior) nằm gọn trong cột: thu gọn ở
+            đáy cột, mở rộng thì phủ lên panel lọc chứ không phủ sơ đồ.
         -->
-        <ScrollView
-            android:id="@+id/filter_panel"
-            android:layout_width="260dp"
-            android:layout_height="match_parent"
-            android:layout_margin="@dimen/sticker_margin"
-            android:background="@drawable/bg_sticker_panel"
-            android:fillViewport="true"
-            android:overScrollMode="ifContentScrolls"
-            android:paddingStart="12dp"
-            android:paddingTop="8dp"
-            android:paddingEnd="12dp">
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:id="@+id/side_column"
+            android:layout_width="@dimen/side_column_width"
+            android:layout_height="match_parent">
 
-            <LinearLayout
+            <!--
+                Panel lọc: một miếng sticker kem viền tím nổi trên nền poster, cuộn được vì máy ngang ít chiều cao. Lề dưới
+                được MainActivity đặt bằng chiều cao bảng chi tiết thu gọn, nên panel kết thúc ngay trên bảng.
+            -->
+            <ScrollView
+                android:id="@+id/filter_panel"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="@dimen/sticker_margin"
+                android:background="@drawable/bg_sticker_panel"
+                android:fillViewport="true"
+                android:overScrollMode="ifContentScrolls"
+                android:paddingStart="12dp"
+                android:paddingTop="8dp"
+                android:paddingEnd="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:divider="@drawable/divider_vertical_8dp"
+                    android:orientation="vertical"
+                    android:showDividers="middle">
+
+                    <include
+                        android:id="@+id/filter_bar"
+                        layout="@layout/view_filter_bar" />
+
+                    <!--
+                        Dòng "Đang lọc" ngay dưới ô tìm kiếm và chip, để luôn nằm trong phần nhìn thấy được trên bảng chi tiết.
+                        Ẩn khi mọi tiêu chí đều mặc định.
+                    -->
+                    <LinearLayout
+                        android:id="@+id/layout_filter_status"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_panel_card"
+                        android:gravity="center_vertical"
+                        android:minHeight="48dp"
+                        android:orientation="horizontal"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="4dp"
+                        android:visibility="gone">
+
+                        <include layout="@layout/view_filter_status" />
+                    </LinearLayout>
+
+                    <!-- Các control giá hiện sẵn, không có nút Giá và không có thẻ nổi. -->
+                    <LinearLayout
+                        android:id="@+id/card_price_filter"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <include layout="@layout/view_price_controls" />
+                    </LinearLayout>
+                </LinearLayout>
+            </ScrollView>
+
+            <!--
+                Bảng chi tiết ở máy ngang (Q51, AC-7.2): rộng bằng cột trái, nằm ở đáy cột ngay dưới panel lọc. Khi include
+                ghi đè layout_*, LayoutParams được dựng lại chỉ từ các thuộc tính trên include, nên layout_behavior của bảng
+                phải được khai báo lại ở đây, không thì BottomSheetBehavior.from báo lỗi.
+            -->
+            <include
+                layout="@layout/view_bottom_sheet"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:divider="@drawable/divider_vertical_8dp"
-                android:orientation="vertical"
-                android:showDividers="middle">
-
-                <include
-                    android:id="@+id/filter_bar"
-                    layout="@layout/view_filter_bar" />
-
-                <!--
-                    Dòng "Đang lọc" ngay dưới ô tìm kiếm và chip, để luôn nằm trong phần nhìn thấy được trên bảng chi tiết.
-                    Ẩn khi mọi tiêu chí đều mặc định.
-                -->
-                <LinearLayout
-                    android:id="@+id/layout_filter_status"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_panel_card"
-                    android:gravity="center_vertical"
-                    android:minHeight="48dp"
-                    android:orientation="horizontal"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="4dp"
-                    android:visibility="gone">
-
-                    <include layout="@layout/view_filter_status" />
-                </LinearLayout>
-
-                <!-- Các control giá hiện sẵn, không có nút Giá và không có thẻ nổi. -->
-                <LinearLayout
-                    android:id="@+id/card_price_filter"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <include layout="@layout/view_price_controls" />
-                </LinearLayout>
-            </LinearLayout>
-        </ScrollView>
+                android:layout_marginStart="@dimen/sticker_margin"
+                android:layout_marginEnd="@dimen/sticker_margin"
+                app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior" />
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
         <FrameLayout
             android:id="@+id/map_container"
@@ -94,20 +118,4 @@
             <include layout="@layout/view_map_layers" />
         </FrameLayout>
     </LinearLayout>
-
-    <!--
-        Bảng chi tiết ở máy ngang: rộng tối đa 420dp, nằm sát đáy bên phải (Q40, AC-7.2). Nhờ vậy panel lọc bên trái
-        thấy trọn chiều cao và không bị bảng che. Ghi đè chiều rộng và gravity ngay trên include; id giữ nguyên.
-        Khi include ghi đè layout_*, LayoutParams được dựng lại chỉ từ các thuộc tính trên include, nên layout_behavior
-        của bảng phải được khai báo lại ở đây, không thì BottomSheetBehavior.from báo lỗi.
-    -->
-    <include
-        layout="@layout/view_bottom_sheet"
-        android:layout_width="@dimen/sheet_max_width"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:layout_marginStart="@dimen/sheet_side_margin"
-        android:layout_marginEnd="@dimen/sheet_side_margin"
-        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior" />
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

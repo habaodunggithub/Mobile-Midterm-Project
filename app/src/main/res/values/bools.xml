@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        Bảng chi tiết nằm cạnh sơ đồ (ở đáy cột trái) thay vì đè lên đáy sơ đồ. Chỉ bố cục ngang bật (Q51); khi bật,
+        sơ đồ không chừa chỗ cho bảng mà panel lọc chừa.
+    -->
+    <bool name="sheet_beside_map">false</bool>
+</resources>

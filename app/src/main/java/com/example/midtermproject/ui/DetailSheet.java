@@ -168,6 +168,11 @@ final class DetailSheet {
         this.peekHeightListener = listener;
     }
 
+    /** Khoảng từ đáy thẻ tới đáy màn hình: thanh điều hướng cộng khe 10dp dưới thẻ. */
+    int getFloatingBottomPx() {
+        return sheet.getPaddingBottom();
+    }
+
     /** Chừa vết khuyết hai bên, thanh điều hướng và khe 10dp dưới thẻ. */
     void setInsets(int leftPx, int rightPx, int bottomPx) {
         sheet.setPadding(leftPx, sheet.getPaddingTop(), rightPx, bottomPx + floatGapPx);

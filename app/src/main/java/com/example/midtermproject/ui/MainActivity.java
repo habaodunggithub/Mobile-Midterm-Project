@@ -116,14 +116,27 @@ public class MainActivity extends AppCompatActivity
         // Bảng chi tiết thu gọn che bao nhiêu thì sơ đồ, bảng chú thích và thông báo M7 phải chừa bấy nhiêu.
         // Sticker sơ đồ kết thúc cách bảng thu gọn một khe 10dp (mẫu G, Q48). Camera chừa thêm 16dp để vùng nhìn mặc định
         // cách mép trong của viền dưới đúng bằng ba cạnh kia.
+        // Máy ngang (Q51): bảng nằm ở đáy cột trái nên panel lọc chừa chỗ cho bảng, còn sơ đồ cao trọn màn hình và chỉ
+        // chừa khe trên thanh điều hướng, để đáy sticker sơ đồ thẳng hàng với đáy bảng.
         final int sheetGap = getResources().getDimensionPixelSize(R.dimen.sheet_side_margin);
         final int mapInset = getResources().getDimensionPixelSize(R.dimen.sticker_map_inset);
+        final int stickerMargin = getResources().getDimensionPixelSize(R.dimen.sticker_margin);
+        final boolean sheetBesideMap = getResources().getBoolean(R.bool.sheet_beside_map);
+        final View filterPanel = findViewById(R.id.filter_panel);
         detailSheet.setPeekHeightListener(peekHeightPx -> {
             final int covered = peekHeightPx + sheetGap;
-            stickerFrame.setBottomInset(covered);
-            mapView.setBottomInset(covered + mapInset);
-            legendCard.setBottomInset(covered);
-            filterBar.setBottomInset(covered);
+            int mapCovered = covered;
+            if (sheetBesideMap) {
+                final ViewGroup.MarginLayoutParams panel = (ViewGroup.MarginLayoutParams) filterPanel.getLayoutParams();
+                panel.bottomMargin = covered;
+                filterPanel.setLayoutParams(panel);
+                // Đáy sticker = đáy khung − (mapCovered + lề sticker) = đáy thẻ của bảng chi tiết.
+                mapCovered = detailSheet.getFloatingBottomPx() - stickerMargin;
+            }
+            stickerFrame.setBottomInset(mapCovered);
+            mapView.setBottomInset(mapCovered + mapInset);
+            legendCard.setBottomInset(mapCovered);
+            filterBar.setBottomInset(mapCovered);
         });
         // Mọi thay đổi đều đi qua state; state báo thì cả sơ đồ lẫn bảng chi tiết cùng vẽ lại.
         state.addListener(() -> {
@@ -140,7 +153,8 @@ public class MainActivity extends AppCompatActivity
             ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) contentColumn.getLayoutParams();
             params.setMargins(bars.left, bars.top, bars.right, 0);
             contentColumn.setLayoutParams(params);
-            detailSheet.setInsets(bars.left, bars.right, bars.bottom);
+            // Máy ngang: bảng nằm trong cột nội dung, đã được chừa vết khuyết hai bên nên chỉ còn thanh điều hướng.
+            detailSheet.setInsets(sheetBesideMap ? 0 : bars.left, sheetBesideMap ? 0 : bars.right, bars.bottom);
             return insets;
         });
 

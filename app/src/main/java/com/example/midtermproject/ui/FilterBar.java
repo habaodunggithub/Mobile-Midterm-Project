@@ -277,7 +277,7 @@ final class FilterBar {
 
     /**
      * Chừa chỗ cho bảng chi tiết đang thu gọn (cao {@code peekHeightPx}): đặt thông báo M7 giữa phần sơ đồ nằm trên
-     * bảng. Panel lọc ở bố cục ngang không bị bảng che nên không cần đệm thêm (Q40).
+     * bảng. Panel lọc ở bố cục ngang thì MainActivity chừa chỗ cho bảng (Q51).
      */
     void setBottomInset(int peekHeightPx) {
         final ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) noResultBanner.getLayoutParams();

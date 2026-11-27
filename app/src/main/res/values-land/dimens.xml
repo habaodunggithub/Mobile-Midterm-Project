@@ -1,4 +1,8 @@
 <resources>
-    <dimen name="legend_item_min_height">24dp</dimen>
+    <dimen name="legend_item_min_height">20dp</dimen>
+    <dimen name="legend_swatch_size">18dp</dimen>
     <dimen name="legend_card_padding">6dp</dimen>
+    <!-- Cột trái máy ngang (Q51): panel lọc 280dp cộng lề 8dp hai bên; bảng chi tiết nằm ở đáy cột này. Hẹp hơn thì
+         dòng tổng tiền của bảng (2 dòng) bị cắt. -->
+    <dimen name="side_column_width">296dp</dimen>
 </resources>

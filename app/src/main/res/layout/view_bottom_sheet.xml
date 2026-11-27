@@ -2,7 +2,7 @@
 <!--
     Bảng chi tiết: luôn hiện ở dạng thu gọn (không ẩn được), kéo lên hoặc bấm phần đầu để mở rộng.
     Không đặt layout_gravity: BottomSheetBehavior tự dịch bảng xuống đáy, thêm gravity sẽ đẩy bảng ra ngoài màn hình.
-    Phần đầu có chiều cao cố định (mỗi dòng chỉ một dòng chữ) nên peekHeight không đổi theo nội dung.
+    Phần đầu có chiều cao cố định (số dòng chữ cố định: 1 khi dọc, 2 khi ngang) nên peekHeight không đổi theo nội dung.
     FloatingSheetLayout vẽ viền bao quanh phần thẻ đang hiện và chừa khe 10dp phía trên thanh điều hướng (mẫu G).
 -->
 <com.example.midtermproject.ui.FloatingSheetLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -54,7 +54,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:ellipsize="end"
-                android:maxLines="1"
+                android:lines="@integer/sheet_text_lines"
                 android:textColor="@color/sheet_text"
                 android:textSize="14sp" />
 
@@ -92,7 +92,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:ellipsize="end"
-                android:maxLines="1"
+                android:lines="@integer/sheet_text_lines"
                 android:textColor="@color/sheet_text"
                 android:textSize="14sp" />
 

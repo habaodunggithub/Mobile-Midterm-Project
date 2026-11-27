@@ -12,8 +12,8 @@
     <!-- Mẫu chỉ là hình minh họa; chữ bên cạnh đã nói đủ nghĩa nên bỏ qua với trình đọc màn hình. -->
     <ImageView
         android:id="@+id/legend_swatch"
-        android:layout_width="22dp"
-        android:layout_height="22dp"
+        android:layout_width="@dimen/legend_swatch_size"
+        android:layout_height="@dimen/legend_swatch_size"
         android:importantForAccessibility="no" />
 
     <TextView
