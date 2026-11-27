@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | Repository | https://github.com/habaodunggithub/Mobile-Midterm-Project |
-| Video minh họa | _chưa cập nhật_ |
+| Video minh họa | [Xem video demo trên YouTube](https://youtu.be/8vDpGWvj9Hw) |
 | Nền tảng | Android 7.0 (API 24) trở lên, `compileSdk`/`targetSdk` 37 |
 | Ngôn ngữ | Java 11 + XML Views (không dùng Kotlin, Compose hay thư viện bản đồ/zoom bên thứ ba) |
 
