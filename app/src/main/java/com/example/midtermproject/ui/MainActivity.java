@@ -2,6 +2,7 @@ package com.example.midtermproject.ui;
 
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.view.ViewGroup;
@@ -164,7 +165,7 @@ public class MainActivity extends AppCompatActivity
         // Nút ⋮ mở menu nhỏ (Q39); chọn "Làm mới dữ liệu" thì hỏi xác nhận trước (AC-8.1).
         final ImageButton moreButton = findViewById(R.id.btn_more);
         moreButton.setOnClickListener(v -> {
-            final PopupMenu menu = new PopupMenu(this, moreButton);
+            final PopupMenu menu = new PopupMenu(this, moreButton, Gravity.END);
             menu.inflate(R.menu.menu_map_more);
             menu.setOnMenuItemClickListener(item -> {
                 if (item.getItemId() == R.id.action_reset_data) {

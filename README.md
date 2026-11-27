@@ -70,7 +70,7 @@ Ngang: cột trái gồm tên "Gieo", panel lọc và bảng chi tiết; sơ đ�
 - Kéo một ngón: di chuyển sơ đồ. Vuốt nhanh rồi thả: sơ đồ trượt tiếp.
 - Hai ngón chụm hoặc nở: zoom. Xoay hai ngón: xoay sơ đồ. Nút ⟲: Reset View. Nút la bàn (hiện khi sơ đồ lệch góc): về góc mặc định.
 - Chạm vào chỗ: chọn hoặc bỏ chọn. Kéo bảng chi tiết ở đáy lên hoặc bấm phần đầu để mở rộng.
-- Nút ⓘ: bảng chú thích. Nút ⋮: "Làm mới dữ liệu".
+- Nút ⓘ mở bảng chú thích. Nút ⋮ nằm phía trên mép phải ô tìm kiếm, ở góc trên bên phải khi dùng màn hình dọc và sát phía sơ đồ khi dùng màn hình ngang. Chọn “Làm mới dữ liệu” để mở hộp thoại xác nhận.
 
 ## 3. Kiến trúc mã nguồn
 
@@ -122,7 +122,7 @@ Các quyết định kiến trúc chính:
 - **Cử chỉ:** `GestureDetector` cho kéo một ngón và chạm (`onSingleTapUp`, phản hồi tức thì, không chờ chạm đúp); zoom và xoay hai ngón tự đo, vì `ScaleGestureDetector` chỉ bắt đầu khi hai ngón cách nhau tối thiểu `getScaledMinimumScalingSpan()` (đo được 446px trên emulator Android 15) nên zoom bị trễ rõ rệt.
 - **Bottom Sheet:** `CoordinatorLayout` + `BottomSheetBehavior` (persistent sheet, sơ đồ vẫn chạm được khi sheet mở). Hai hộp thoại xác nhận là `DialogFragment` nên `FragmentManager` tự tạo lại sau khi xoay.
 - **Trang trí tách khỏi sơ đồ.** Nền poster và viền sticker là hai View riêng trong package `decor/`, không phải là chỗ, nên không vi phạm yêu cầu "mọi chỗ vẽ bởi một Custom View". `VenueMapView` vẫn chỉ vẽ sân khấu và 224 chỗ; sơ đồ lùi vào 16dp để mép nằm khuất dưới viền. Sơ đồ vẫn kéo xuống dưới bảng chi tiết như trước (camera không đổi), nhưng được cắt bằng outline của View: bo góc 44dp và bỏ phần dưới đáy sticker. Chạm lên viền hay vào khe giữa sticker và bảng không lọt xuống sơ đồ.
-- **Bố cục dọc và ngang** dùng chung các file include (`view_map_layers`, `view_bottom_sheet`, `view_price_controls`, `view_filter_status`) với **cùng bộ id**, nên `MainActivity` không cần biết hướng màn hình. `layout-land/` chỉ khác ở vị trí các khối: bảng chi tiết nằm trong một `CoordinatorLayout` riêng ở cột trái, nên khi mở rộng nó phủ lên panel lọc chứ không phủ sơ đồ. Cờ `sheet_beside_map` (`values-land/bools.xml`) báo cho `MainActivity` biết bảng nằm cạnh sơ đồ: khi đó panel lọc chừa chỗ cho bảng, còn sơ đồ chỉ chừa thanh điều hướng.
+- **Bố cục dọc và ngang** dùng chung các file include (`view_concert_header`, `view_map_layers`, `view_bottom_sheet`, `view_price_controls`, `view_filter_status`) với **cùng bộ id**, nên `MainActivity` không cần biết hướng màn hình. `layout-land/` chỉ khác ở vị trí các khối: bảng chi tiết nằm trong một `CoordinatorLayout` riêng ở cột trái, nên khi mở rộng nó phủ lên panel lọc chứ không phủ sơ đồ. Cờ `sheet_beside_map` (`values-land/bools.xml`) báo cho `MainActivity` biết bảng nằm cạnh sơ đồ: khi đó panel lọc chừa chỗ cho bảng, còn sơ đồ chỉ chừa thanh điều hướng.
 
 ## 4. Cách tổ chức dữ liệu
 
@@ -494,3 +494,11 @@ Dự án có sử dụng **Claude Code** (Anthropic) và **Codex** (OpenAI). Quy
   - Panel lọc ngang thấp nên "Chỉ chỗ trống" và khoảng giá nằm dưới, phải cuộn panel mới thấy; ngoài thanh cuộn của hệ thống không có gợi ý nào khác.
   - Sơ đồ ngang hẹp đi 24dp; chú thích vẫn che khoảng 22% sơ đồ (đo bằng `uiautomator`).
 - **Sinh viên kiểm tra/điều chỉnh:** Đã rà soát và kiểm tra bố cục ngang trên emulator. Đã xác nhận tên “Gieo” nằm phía trên và bên ngoài panel lọc, còn bốn chip “Tất cả”, “Standing”, “VIP” và “Standard” hiển thị trên cùng một hàng với cỡ chữ mặc định.
+
+### 2026-11-27 (tiếp): chuyển nút ba chấm lên cạnh ô tìm kiếm
+
+- **Agent/model:** Codex (OpenAI). Build APK, kiểm tra vị trí nút và thao tác menu trên emulator Pixel 6 (Android 15).
+- **Nhiệm vụ được giao:** chuyển nút ⋮ “Làm mới dữ liệu” lên góc trên bên phải ở màn hình dọc. Ở màn hình ngang, đặt nút ở phía trên mép phải ô tìm kiếm, về phía sơ đồ chọn chỗ. Cập nhật ảnh và nhật ký trong README.
+- **Code được sinh/sửa:** thêm `view_concert_header.xml` dùng chung cho hai hướng, chuyển nút ⋮ khỏi `view_map_layers.xml` và căn menu theo mép phải của nút trong `MainActivity`. Chụp lại bốn ảnh giao diện trong `docs/screenshots/`.
+- **Lỗi hoặc hạn chế của kết quả AI:** Đã kiểm tra việc mở menu, hiện hộp thoại và hủy ở hai hướng trên emulator. Nhánh xác nhận xóa ba chỗ đang chọn được thử trên bản cài riêng có dữ liệu mẫu. Kiểm tra giao diện trên thiết bị thật còn để ngỏ.
+- **Sinh viên kiểm tra/điều chỉnh:** Đã rà soát và yêu cầu chuyển nút ⋮ lên cạnh ô tìm kiếm. Codex đối chiếu vị trí mới ở cả hai hướng trên emulator và kiểm tra luồng xác nhận làm mới dữ liệu.

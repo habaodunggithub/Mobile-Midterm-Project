@@ -22,12 +22,7 @@
     android:paddingBottom="4dp"
     tools:targetApi="o">
 
-    <!-- Tên đêm nhạc "Gieo" (Q49): chữ rơi xuống khi mở app rồi lắc lư chậm. -->
-    <com.example.midtermproject.decor.ConcertTitleView
-        android:id="@+id/concert_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="4dp" />
+    <include layout="@layout/view_concert_header" />
 
     <!-- Có nút xóa (endIconMode); lọc ngay mỗi lần gõ, không cần bấm tìm (AC-4.2). -->
     <com.google.android.material.textfield.TextInputLayout
