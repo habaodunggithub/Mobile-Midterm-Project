@@ -9,12 +9,14 @@ import android.text.Spanned;
 import android.text.style.StyleSpan;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.OvershootInterpolator;
 import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.ColorRes;
 import androidx.annotation.StringRes;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.ColorUtils;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -45,6 +47,12 @@ final class DetailSheet {
     /** Dòng chỗ đang xem trượt vào khi đổi chỗ (Q49): quãng trượt và thời gian. */
     private static final float FOCUS_SLIDE_DP = 6f;
     private static final long FOCUS_SLIDE_MS = 180L;
+    /** Chip trạng thái đổi màu (Q49). */
+    private static final long STATE_CHIP_FADE_MS = 180L;
+    /** Nút Đặt vé nảy khi vừa bật (Q49): cao 4dp, lên 110ms, xuống 220ms. */
+    private static final float BOOK_HOP_DP = 4f;
+    private static final long BOOK_HOP_UP_MS = 110L;
+    private static final long BOOK_HOP_DOWN_MS = 220L;
 
     /** Báo cho sơ đồ biết bảng thu gọn đang che bao nhiêu pixel phía dưới. */
     interface PeekHeightListener {
@@ -85,6 +93,10 @@ final class DetailSheet {
     private boolean animated = true;
     /** Mã chỗ đang xem lần render trước, để biết khi nào chỗ đang xem đổi; {@code null} là chưa có. */
     private String shownFocusId;
+    /** Màu đang tô trên chip trạng thái; 0 là chưa tô lần nào. */
+    private int shownChipBackground;
+    private int shownChipForeground;
+    private ValueAnimator chipAnimator;
     private final int floatGapPx;
     private PeekHeightListener peekHeightListener;
 
@@ -191,7 +203,11 @@ final class DetailSheet {
         final int count = state.getSelectedCount();
         renderSummary(count, state.getSelectedTotal());
         // Nút chỉ bật khi đã chọn ít nhất một chỗ (UC-10: lựa chọn rỗng thì không có hộp thoại).
+        final boolean wasEnabled = bookButton.isEnabled();
         bookButton.setEnabled(count >= 1);
+        if (!wasEnabled && count >= 1) {
+            hopBookButton();
+        }
         bookButton.setText(count >= 1 ? context.getString(R.string.book_button, count)
                 : context.getString(R.string.book_button_empty));
         adapter.refresh(context);
@@ -313,9 +329,60 @@ final class DetailSheet {
                 break;
         }
         focusState.setText(label);
-        focusState.setTextColor(ContextCompat.getColor(context, foreground));
-        chipBackground.setTint(ContextCompat.getColor(context, background));
+        tintStateChip(ContextCompat.getColor(context, background), ContextCompat.getColor(context, foreground));
         focusState.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Tô chip trạng thái. Nếu chip đang hiện với màu khác thì chuyển dần trong 180ms (Q49) bằng cách trộn màu cũ và
+     * màu mới theo tỉ lệ f từ 0 đến 1; chip vừa mới hiện, chưa lên màn hình hoặc hiệu ứng bị tắt thì tô ngay.
+     */
+    private void tintStateChip(int background, int foreground) {
+        if (chipAnimator != null) {
+            chipAnimator.cancel();
+            chipAnimator = null;
+        }
+        final boolean fade = animated && focusState.isLaidOut() && focusState.getVisibility() == View.VISIBLE
+                && shownChipBackground != 0 && shownChipBackground != background;
+        if (!fade) {
+            applyChipColors(background, foreground);
+            return;
+        }
+        final int fromBackground = shownChipBackground;
+        final int fromForeground = shownChipForeground;
+        chipAnimator = ValueAnimator.ofFloat(0f, 1f);
+        chipAnimator.setDuration(STATE_CHIP_FADE_MS);
+        chipAnimator.addUpdateListener(animation -> {
+            final float f = (float) animation.getAnimatedValue();
+            applyChipColors(ColorUtils.blendARGB(fromBackground, background, f),
+                    ColorUtils.blendARGB(fromForeground, foreground, f));
+        });
+        chipAnimator.start();
+    }
+
+    private void applyChipColors(int background, int foreground) {
+        chipBackground.setTint(background);
+        focusState.setTextColor(foreground);
+        shownChipBackground = background;
+        shownChipForeground = foreground;
+    }
+
+    /**
+     * Nút Đặt vé vừa chuyển từ tắt sang bật (chọn chỗ đầu tiên): nút bật lên 4dp rồi rơi về, hơi vọt qua (Q49), để
+     * mắt thấy giờ đã đặt được. Dùng dịch dọc chứ không phóng to, vì phóng to đã dành cho hiệu ứng bấm nút.
+     */
+    private void hopBookButton() {
+        if (!animated || !bookButton.isLaidOut()) {
+            return;
+        }
+        final float lift = -BOOK_HOP_DP * context.getResources().getDisplayMetrics().density;
+        bookButton.animate().cancel();
+        bookButton.setTranslationY(0f);
+        bookButton.animate().translationY(lift).setDuration(BOOK_HOP_UP_MS)
+                .setInterpolator(new DecelerateInterpolator())
+                .withEndAction(() -> bookButton.animate().translationY(0f).setDuration(BOOK_HOP_DOWN_MS)
+                        .setInterpolator(new OvershootInterpolator(3f)).start())
+                .start();
     }
 
     /**
