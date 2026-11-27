@@ -21,7 +21,6 @@ import com.example.midtermproject.data.MockVenueFactory;
 import com.example.midtermproject.decor.ConcertTitleView;
 import com.example.midtermproject.decor.LiquidPosterView;
 import com.example.midtermproject.decor.StickerFrameView;
-import com.example.midtermproject.decor.TickerText;
 import com.example.midtermproject.map.VenueMapStateSource;
 import com.example.midtermproject.map.VenueMapView;
 import com.example.midtermproject.model.SelectionResult;
@@ -99,11 +98,8 @@ public class MainActivity extends AppCompatActivity
             // Tên "Gieo" cũng chỉ rơi xuống khi app mở mới; xoay máy thì hiện ngay ở vị trí cuối.
             ((ConcertTitleView) findViewById(R.id.concert_title)).showSettled();
         }
-        // Dòng chữ chạy quanh viền sticker: tên khu và giá thấp nhất, dựng một lần từ dữ liệu.
         final StickerFrameView stickerFrame = findViewById(R.id.sticker_frame);
         stickerFrame.clipContent(mapView);
-        stickerFrame.setTickerItems(TickerText.items(venue, getString(R.string.stage_label),
-                getString(R.string.ticker_section_format), PriceFormatter::format));
         mapView.setOnSpotTapListener(this);
 
         // Các control lọc tự nghe state. Truyền cả khung gốc vì chúng nằm ở nhiều chỗ: thanh lọc phía trên, các thẻ
@@ -196,7 +192,6 @@ public class MainActivity extends AppCompatActivity
         legendCard.setAnimated(animated);
         ((LiquidPosterView) findViewById(R.id.poster_background)).setAnimated(animated);
         ((ConcertTitleView) findViewById(R.id.concert_title)).setAnimated(animated);
-        ((StickerFrameView) findViewById(R.id.sticker_frame)).setAnimated(animated);
         mapView.setEffectsEnabled(animated);
         detailSheet.setAnimated(animated);
         filterBar.setAnimated(animated);

@@ -9,9 +9,8 @@
     <color name="liquid_green">#FF0B7A2A</color>
     <color name="liquid_violet">#FF5B1BFF</color>
 
-    <!-- Viền sticker quanh sơ đồ và chữ chạy trên viền (mực tím trên cam: 5,6:1) -->
+    <!-- Viền sticker quanh sơ đồ -->
     <color name="sticker_band">#FFFF6A00</color>
-    <color name="sticker_band_text">#FF2A0A5E</color>
     <color name="sticker_outline">#FF5B1BFF</color>
 
     <!-- Nền và chữ trên sơ đồ -->

@@ -18,7 +18,7 @@
         android:layout_marginEnd="@dimen/sticker_map_inset" />
 
     <!--
-        Viền sticker cam có chữ chạy (Q42), đè lên mép sơ đồ. Cạnh dưới của viền nằm khuất sau bảng chi tiết, như
+        Viền sticker cam đè lên mép sơ đồ. Cạnh dưới của viền nằm khuất sau bảng chi tiết, như
         miếng dán bị miếng khác dán chồng lên. Chạm lên viền không lọt xuống sơ đồ.
     -->
     <com.example.midtermproject.decor.StickerFrameView
