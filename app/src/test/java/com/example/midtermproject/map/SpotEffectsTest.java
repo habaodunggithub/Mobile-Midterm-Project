@@ -130,4 +130,44 @@ public class SpotEffectsTest {
         assertEquals(0f, effects.shakeOf(spot, 100L), EPS);
         assertFalse(effects.isRunning(10L));
     }
+
+    @Test
+    public void q49_focusRingStartsWideAndSettles() {
+        SpotEffects effects = new SpotEffects(0f, 0f);
+        Spot spot = seatAt(1, 100f);
+        effects.settleFocus(spot, 1000L);
+        assertEquals(1f, effects.focusSettleOf(spot, 1000L), EPS);
+        float half = effects.focusSettleOf(spot, 1000L + SpotEffects.FOCUS_SETTLE_MS / 2);
+        assertEquals("(1 - 0,5)^2 = 0,25", 0.25f, half, 0.01f);
+        assertEquals(0f, effects.focusSettleOf(spot, 1000L + SpotEffects.FOCUS_SETTLE_MS), EPS);
+    }
+
+    @Test
+    public void q49_focusSettleOnlyForFocusedSpot() {
+        SpotEffects effects = new SpotEffects(0f, 0f);
+        Spot focused = seatAt(1, 100f);
+        Spot other = seatAt(2, 200f);
+        effects.settleFocus(focused, 0L);
+        assertEquals(0f, effects.focusSettleOf(other, 10L), EPS);
+    }
+
+    @Test
+    public void q49_focusSettleKeepsMapRedrawingUntilDone() {
+        SpotEffects effects = new SpotEffects(0f, 0f);
+        Spot spot = seatAt(1, 100f);
+        assertFalse("nothing focused yet", effects.isRunning(5000L));
+        effects.settleFocus(spot, 5000L);
+        assertTrue(effects.isRunning(5000L + SpotEffects.FOCUS_SETTLE_MS - 1));
+        assertFalse(effects.isRunning(5000L + SpotEffects.FOCUS_SETTLE_MS));
+    }
+
+    @Test
+    public void q49_disabledEffectsSkipFocusSettle() {
+        SpotEffects effects = new SpotEffects(0f, 0f);
+        Spot spot = seatAt(1, 100f);
+        effects.setEnabled(false);
+        effects.settleFocus(spot, 0L);
+        assertEquals(0f, effects.focusSettleOf(spot, 10L), EPS);
+        assertFalse(effects.isRunning(10L));
+    }
 }
